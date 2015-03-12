@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      th,td {padding: 10px; text-align: left;}
+    </style>
+  </head>
+  <body>
+    <table>
+        <tr> <th>URL</th> <th>Action</th> </tr>
+        <tr> <td>/</td> <td>Returns this help message</td> </tr>
+        <tr> <td><a href=/cluster>/cluster</a></td>
+             <td>Returns a snapshot of this cluster's resources and relations in Cluster-Insight
+                 data collector format (JSON)
+             </td> </tr>
+        <tr> <td><a href=/cluster/resources>/cluster/resources</a></td>
+             <td>Returns a snapshot of this cluster's resources in Cluster-Insight
+                 data collector format (JSON)
+             </td> </tr>
+        <tr> <td><a href=/cluster/resources/nodes>/cluster/resources/nodes</a></td>
+             <td>State of all Kubernetes nodes (JSON)</td> </tr>
+        <tr> <td><a href=/cluster/resources/pods>/cluster/resources/pods</a></td>
+             <td>State of all Kubernetes pods (JSON)</td> </tr>
+        <tr> <td><a href=/cluster/resources/services>/cluster/resources/services</a></td>
+             <td>State of all Kubernetes services (JSON)</td> </tr>
+        <tr> <td><a href=/cluster/resources/rcontrollers>/cluster/resources/rcontrollers</a></td>
+             <td>State of all Kubernetes replication controllers (JSON)</td> </tr>
+        <tr> <td><a href=/cluster/resources/containers>/cluster/resources/containers</a></td>
+             <td>State of all Docker containers (JSON)</td> </tr>
+        <tr> <td><a href=/cluster/resources/processes>/cluster/resources/processes</a></td>
+             <td>State of all Docker processes (JSON)</td> </tr>
+        <tr> <td><a href=/cluster/resources/images>/cluster/resources/images</a></td>
+             <td>State of all Docker images (JSON)</td> </tr>
+        <tr> <td><a href=/graph>/graph</a></td>
+             <td>Returns a snapshot of this cluster's Config Graph
+                 (<a href=https://github.com/jsongraph/json-graph-specification>JSON-graph</a>)
+                 <b>deprecated</b>.
+             </td> </tr>
+        <tr> <td><a href=/debug>/debug</a></td>
+             <td>Returns the contents of /graph in DOT format
+                 (<a href=http://en.wikipedia.org/wiki/DOT_%28graph_description_language%29>DOT</a>)
+             </td> </tr>
+    </table>
+  </body>
+</html>
