@@ -38,8 +38,8 @@ To install and activate this service, follow these instructions:
 
 * On each of the Kubernetes minion nodes the following:
    * Login to the minion host.
-   * Edit the file /etc/default/docker, and replace the line "DOCKER_OPTS="
-     with the line: "DOCKER_OPTS='-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock'"
+   * Edit the file /etc/default/docker, and replace the line `DOCKER_OPTS=`
+     with the line: `DOCKER_OPTS='-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock'`
    * Restart the Docker daemon: `sudo service docker restart`
 
 * On the Kubernetes master do the following:
@@ -64,9 +64,7 @@ To install and activate this service, follow these instructions:
   firewall rule on your platform to enable HTTP access to port 5555 on the
   Kubernetes master host.
    * On the Google Cloud Platform, you can do this using the gcloud command
-     line tool: `gcloud compute firewall-rules create FIREWALL_RULE_NAME \
-     --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" \
-     --target-tags KUBERNETES_MASTER_NAME`
+     line tool: `gcloud compute firewall-rules create FIREWALL_RULE_NAME --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags KUBERNETES_MASTER_NAME`
 
 
 ## Data collection details
@@ -104,35 +102,33 @@ from the cache.
 ## Context graph format
 
 The context graph is a JSON document with the following format:
-```json
-{
-  "timestamp": SNAPSHOT-TIME,
-  "resources" : [
-    {
-      "id" : RESOURCE-ID,
-      "type" : RESOURCE-TYPE,
-      "timestamp" : WHEN-OBSERVED,
-      "properties" : RESOURCE-METADATA,
-      "annotations" : {
-        "label" : RESOURCE-LABEL
+      {
+        "timestamp": SNAPSHOT-TIME,
+        "resources" : [
+          {
+            "id" : RESOURCE-ID,
+            "type" : RESOURCE-TYPE,
+            "timestamp" : WHEN-OBSERVED,
+            "properties" : RESOURCE-METADATA,
+            "annotations" : {
+              "label" : RESOURCE-LABEL
+            }
+          },
+          ...
+        ],
+        "relations" : [
+          {
+            "type" : RELATION-TYPE,
+            "timestamp" : WHEN-INFERRED,
+            "source" : RESOURCE-ID,
+            "target" : RESOURCE-ID,
+            "annotations" : {
+              "label" : RELATION-LABEL
+            }
+          },
+          ...
+        ]
       }
-    },
-    ...
-  ],
-  "relations" : [
-    {
-      "type" : RELATION-TYPE,
-      "timestamp" : WHEN-INFERRED,
-      "source" : RESOURCE-ID,
-      "target" : RESOURCE-ID,
-      "annotations" : {
-        "label" : RELATION-LABEL
-      }
-    },
-    ...
-  ]
-}
-```
 
 The properties field is the observed runtime metadata for a resource that was
 collected from the Kubernetes master and the Docker daemons on its minion nodes.

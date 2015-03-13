@@ -8,3 +8,5 @@
 #
 # Names should be added to this file as:
 #     Name <email address>
+Eran Gabber <eran@google.com>
+Vas Bala <vasbala@google.com>
