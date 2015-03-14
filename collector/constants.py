@@ -22,3 +22,7 @@ DATA_COLLECTOR_PORT = 5555
 
 # The cache will keep data for at most this many seconds.
 MAX_CACHED_DATA_AGE_SECONDS = 10
+
+# Delete data that was last updated more than this many seconds ago from the
+# cache.
+CACHE_DATA_CLEANUP_AGE_SECONDS = 10 * MAX_CACHED_DATA_AGE_SECONDS

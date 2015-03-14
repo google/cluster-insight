@@ -226,12 +226,12 @@ def get_resources():
 @app.route('/cluster', methods=['GET'])
 def get_cluster():
   try:
-    response = config.compute_graph('cluster')
+    response = config.compute_graph('context_graph')
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
-    msg = ('compute_graph(\"cluster\") failed with exception %s' %
+    msg = ('compute_graph(\"context_graph\") failed with exception %s' %
            sys.exc_info()[0])
     app.logger.exception(msg)
     return flask.jsonify(make_error(msg))
@@ -250,18 +250,25 @@ if __name__ == '__main__':
   # keep global caches in the 'app' object because Flask allocates all other
   # objects in thread-local memory.
   app._nodes_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS)
+      constants.MAX_CACHED_DATA_AGE_SECONDS,
+      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
   app._pods_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS)
+      constants.MAX_CACHED_DATA_AGE_SECONDS,
+      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
   app._services_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS)
+      constants.MAX_CACHED_DATA_AGE_SECONDS,
+      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
   app._rcontrollers_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS)
+      constants.MAX_CACHED_DATA_AGE_SECONDS,
+      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
   app._containers_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS)
+      constants.MAX_CACHED_DATA_AGE_SECONDS,
+      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
   app._images_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS)
+      constants.MAX_CACHED_DATA_AGE_SECONDS,
+      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
   app._processes_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS)
+      constants.MAX_CACHED_DATA_AGE_SECONDS,
+      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
 
   app.run(host='0.0.0.0', port=port, debug=True)

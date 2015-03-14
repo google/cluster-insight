@@ -54,8 +54,8 @@ class ConfigGraph:
       'Process': 'gold',
       'Image': 'maroon'
     }
-    self._cluster_resources = []
-    self._cluster_relations = []
+    self._context_resources = []
+    self._context_relations = []
 
   def add_resource(self, rid, rlabel, rtype, timestamp, obj=None):
     assert utilities.valid_string(rid) and utilities.valid_string(rlabel)
@@ -75,7 +75,7 @@ class ConfigGraph:
 
     self._graph_resources.append(resource)
 
-    # Add the resource to the cluster data structure.
+    # Add the resource to the context graph data structure.
     resource = {
       'id' : rid,
       'type' : rtype,
@@ -87,7 +87,7 @@ class ConfigGraph:
     if obj is not None:
       resource['properties'] = obj
 
-    self._cluster_resources.append(resource)
+    self._context_resources.append(resource)
 
   def add_relation(self, source, target, kind, label=None, metadata=None):
     assert utilities.valid_string(source) and utilities.valid_string(target)
@@ -108,30 +108,21 @@ class ConfigGraph:
       relation['metadata'] = metadata
     self._graph_relations.append(relation)
 
-    # Add the relation to the cluster data structure.
-    if kind == 'contains':
-      relation = {
-        'source' : target,
-        'target' : source,
-        'type' : 'memberOf',
-    }
-    else:
-      relation = {
-        'source' : source,
-        'target' : target,
-        'type' : kind,
+    # Add the relation to the context graph data structure.
+    relation = {
+      'source' : source,
+      'target' : target,
+      'type' : kind,
     }
 
     # Add annotations as needed.
+    relation['annotations'] = {}
     if metadata is not None:
-      relation['annotations'] = metadata
+      relation['annotations']['metadata'] = metadata
 
-    if label is not None:
-      if 'annotations' not in relation:
-        relation['annotations'] = {}
-      relation['annotations']['label'] = label
+    relation['annotations']['label'] = label if label is not None else kind
 
-    self._cluster_relations.append(relation)
+    self._context_relations.append(relation)
 
   def set_title(self, title):
     self._graph_title = title
@@ -152,22 +143,22 @@ class ConfigGraph:
     }
     return json_graph
 
-  def to_cluster_insight(self):
-    # return graph in Cluster-Insight data collector format.
-    cluster = {
+  def to_context_graph(self):
+    # return graph in Cluster-Insight context graph format.
+    context_graph = {
         'success': True,
         'timestamp': datetime.datetime.now().isoformat(),
-        'resources': self._cluster_resources,
-        'relations': self._cluster_relations
+        'resources': self._context_resources,
+        'relations': self._context_relations
     }
-    return cluster
+    return context_graph
 
-  def to_cluster_resources(self):
-    # return just the resources in Cluster-Insight data collector format.
+  def to_context_resources(self):
+    # return just the resources in Cluster-Insight context graph format.
     resources = {
         'success': True,
         'timestamp': datetime.datetime.now().isoformat(),
-        'resources': self._cluster_resources,
+        'resources': self._context_resources,
     }
     return resources
 
@@ -175,17 +166,18 @@ class ConfigGraph:
     # return graph in Dot format
     if show_node_labels:
       resource_list = ['"{0}"[label="{1}",color={2}]'.format(
-                        res['id'], res['type'] + ':' + res['label'],
+                        res['id'],
+                        res['type'] + ':' + res['annotations']['label'],
                         self._graph_color.get(res['type']) or 'black')
-                      for res in self._graph_resources]
+                      for res in self._context_resources]
     else:
       resource_list = ['"{0}"[label="",fillcolor={1},style=filled]'.format(
                         res['id'],
                         self._graph_color.get(res['type']) or 'black')
-                      for res in self._graph_resources]
+                      for res in self._context_resources]
     relation_list = ['"{0}"->"{1}"[label="{2}"]'.format(
-                      rel['source'], rel['target'], rel['label'])
-                     for rel in self._graph_relations]
+                      rel['source'], rel['target'], rel['annotations']['label'])
+                    for rel in self._context_relations]
     graph_items = resource_list + relation_list
     graph_data = 'digraph{' + ';'.join(graph_items) + '}'
     return graph_data
@@ -195,10 +187,10 @@ class ConfigGraph:
       return self.to_json_graph()
     elif output_format == 'dot':
       return self.to_dot_graph()
-    elif output_format == 'cluster':
-      return self.to_cluster_insight()
+    elif output_format == 'context_graph':
+      return self.to_context_graph()
     elif output_format == 'resources':
-      return self.to_cluster_resources()
+      return self.to_context_resources()
     else:
       msg = 'invalid dump() output_format: %s' % output_format
       current_app.logger.exception(msg)

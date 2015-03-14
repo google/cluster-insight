@@ -21,11 +21,11 @@ enabled on port 4243 on the Docker host.
 """
 
 from flask import current_app
-import logging
 import re
 import requests
 import sys
 import time
+import types
 
 # local imports
 import collector_error
@@ -58,6 +58,15 @@ def _inspect_container(docker_host, container_id):
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     current_app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
+
+  # Sort the "Env" attribute because it tends to contain elements in
+  # a different order each time you fetch the container information.
+  if (isinstance(result, types.DictType) and ('Config' in result) and
+      isinstance(result['Config'], types.DictType) and
+      ('Env' in result['Config']) and
+      isinstance(result['Config']['Env'], types.ListType)):
+    # Sort the contents of the 'Env' list in place.
+    result['Config']['Env'].sort()
 
   return (result, time.time())
 
@@ -132,13 +141,13 @@ def get_containers(docker_host, pod_id=None):
       containers.append(wrapped_container)
       timestamps.append(ts)
 
-  current_app._containers_cache.update(
+  ret_value = current_app._containers_cache.update(
       containers_label, containers,
       min(timestamps) if timestamps else time.time())
   current_app.logger.info(
       'get_containers(docker_host=%s, pod_id=%s) returns %d containers',
       docker_host, pod_id, len(containers))
-  return containers
+  return ret_value
 
 
 def get_one_container(docker_host, container_id):
@@ -227,11 +236,12 @@ def get_processes(docker_host, container_id):
     processes.append(utilities.wrap_object(
             process, 'Process', process_id, now, process['PID']))
 
-  current_app._processes_cache.update(processes_label, processes, now)
+  ret_value = current_app._processes_cache.update(
+      processes_label, processes, now)
   current_app.logger.info(
       'get_processes(docker_host=%s, container_id=%s) returns %d processes',
       docker_host, container_id, len(processes))
-  return processes
+  return ret_value
 
 def get_image(docker_host, image_id):
   """ Gets the information of the given image in the given host.
@@ -279,10 +289,10 @@ def get_image(docker_host, image_id):
       image, 'Image', '%s/%s' % (docker_host, image_hex_label), now,
       image_hex_label, image_name_label)
 
-  current_app._images_cache.update(cache_key, wrapped_image, now)
+  ret_value = current_app._images_cache.update(cache_key, wrapped_image, now)
   current_app.logger.info('get_image(docker_host=%s, image_id=%s)',
                           docker_host, image_id)
-  return wrapped_image
+  return ret_value
 
 
 def get_images(docker_host):

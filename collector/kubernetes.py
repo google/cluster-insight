@@ -63,12 +63,13 @@ def get_nodes():
 
   now = time.time()
   for node in result['items']:
-    nodes.append(utilities.wrap_object(node, 'Node', node['id'], now,
-                                       utilities.node_id_to_host_name(node['id'])))
+    nodes.append(utilities.wrap_object(
+            node, 'Node', node['id'], now,
+            utilities.node_id_to_host_name(node['id'])))
 
-  current_app._nodes_cache.update('', nodes, now)
+  ret_value = current_app._nodes_cache.update('', nodes, now)
   current_app.logger.info('get_nodes() returns %d nodes', len(nodes))
-  return nodes
+  return ret_value
 
 
 def get_pods(node_id=None):
@@ -113,10 +114,10 @@ def get_pods(node_id=None):
     else:
       pods.append(wrapped_pod)
 
-  current_app._pods_cache.update(pods_label, pods, now)
+  ret_value = current_app._pods_cache.update(pods_label, pods, now)
   current_app.logger.info('get_pods(node_id=%s) returns %d pods',
                           pods_label, len(pods))
-  return pods
+  return ret_value
 
 
 def get_selected_pods(selector):
@@ -158,10 +159,10 @@ def get_selected_pods(selector):
   for pod in result['items']:
     pods.append(utilities.wrap_object(pod, 'Pod', pod['id'], now))
 
-  current_app._pods_cache.update(labels, pods, now)
+  ret_value = current_app._pods_cache.update(labels, pods, now)
   current_app.logger.info('get_selected_pods(labels=%s) returns %d pods',
                           labels, len(pods))
-  return pods
+  return ret_value
 
 
 def get_pod_host(pod_id):
@@ -219,9 +220,9 @@ def get_services():
     services.append(utilities.wrap_object(
             service, 'Service', service['id'], now))
 
-  current_app._services_cache.update('', services, now)
+  ret_value = current_app._services_cache.update('', services, now)
   current_app.logger.info('get_services() returns %d services', len(services))
-  return services
+  return ret_value
 
 
 def get_rcontrollers():
@@ -257,7 +258,7 @@ def get_rcontrollers():
     rcontrollers.append(utilities.wrap_object(
             rcontroller, 'ReplicationController', rcontroller['id'], now))
 
-  current_app._rcontrollers_cache.update('', rcontrollers, now)
+  ret_value = current_app._rcontrollers_cache.update('', rcontrollers, now)
   current_app.logger.info('get_rcontrollers() returns %d rcontrollers',
                           len(rcontrollers))
-  return rcontrollers
+  return ret_value

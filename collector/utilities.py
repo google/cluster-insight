@@ -16,8 +16,10 @@
 
 """Common utility routines for the Castanet data collector.
 """
-
+import copy
 import datetime
+import hashlib
+import json
 import re
 import types
 
@@ -74,6 +76,25 @@ def is_wrapped_object(obj, expected_type):
           ('type' in obj) and (obj['type'] == expected_type) and
           ('timestamp' in obj) and valid_string(obj['timestamp']) and
           ('properties' in obj))
+
+
+def timeless_json_hash(obj):
+  """Compute the hash of 'obj' without continuously changing attributes.
+
+  Returns:
+  The SHA1 digest of the JSON representation of 'obj' after removing the
+  'timestamp', 'lastProbeTime', and 'resourceVersion' attributes and their
+  values. The values of these attributes change continously and they do not
+  add much to the semantics of the object. Ignoring the values of these
+  attributes prevent false positive indications that the object changed.
+  The JSON representation sorts the attributes to ensure consistent hashing.
+  """
+  s = json.dumps(obj, sort_keys=True)
+  m = hashlib.sha1()
+  s = re.sub('"(timestamp|lastProbeTime)": "[-0-9:.TZ]+"', '', s)
+  s = re.sub('"resourceVersion": [0-9]+', '', s)
+  m.update(s)
+  return m.digest()
 
 
 def object_to_hex_id(obj):
