@@ -1,0 +1,105 @@
+{
+  "resources": [
+    {
+      "annotations": {
+        "label": "k8s-guestbook-node-1"
+      }, 
+      "id": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
+      "properties": {
+        "creationTimestamp": "2015-02-20T21:39:34Z", 
+        "hostIP": "130.211.181.148", 
+        "id": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
+        "resourceVersion": 1694535, 
+        "resources": {
+          "capacity": {
+            "cpu": "1", 
+            "memory": 4026531840
+          }
+        }, 
+        "selfLink": "/api/v1beta1/nodes/k8s-guestbook-node-1.c.rising-apricot-840.internal", 
+        "status": {
+          "conditions": [
+            {
+              "kind": "Ready", 
+              "lastProbeTime": "2015-03-16T15:35:03Z", 
+              "lastTransitionTime": "2015-02-20T22:53:43Z", 
+              "reason": "Node health check succeeded: kubelet /healthz endpoint returns ok", 
+              "status": "Full"
+            }
+          ]
+        }, 
+        "uid": "f5cf5b5e-b948-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T15:35:09.083547", 
+      "type": "Node"
+    }, 
+    {
+      "annotations": {
+        "label": "k8s-guestbook-node-2"
+      }, 
+      "id": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
+      "properties": {
+        "creationTimestamp": "2015-02-20T21:39:34Z", 
+        "hostIP": "130.211.145.7", 
+        "id": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
+        "resourceVersion": 1694536, 
+        "resources": {
+          "capacity": {
+            "cpu": "1", 
+            "memory": 4026531840
+          }
+        }, 
+        "selfLink": "/api/v1beta1/nodes/k8s-guestbook-node-2.c.rising-apricot-840.internal", 
+        "status": {
+          "conditions": [
+            {
+              "kind": "Ready", 
+              "lastProbeTime": "2015-03-16T15:35:03Z", 
+              "lastTransitionTime": "2015-02-20T22:22:34Z", 
+              "reason": "Node health check succeeded: kubelet /healthz endpoint returns ok", 
+              "status": "Full"
+            }
+          ]
+        }, 
+        "uid": "f5f32d14-b948-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T15:35:09.083547", 
+      "type": "Node"
+    }, 
+    {
+      "annotations": {
+        "label": "k8s-guestbook-node-3"
+      }, 
+      "id": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
+      "properties": {
+        "creationTimestamp": "2015-02-20T21:39:34Z", 
+        "hostIP": "104.154.41.133", 
+        "id": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
+        "resourceVersion": 1694537, 
+        "resources": {
+          "capacity": {
+            "cpu": "1", 
+            "memory": 4026531840
+          }
+        }, 
+        "selfLink": "/api/v1beta1/nodes/k8s-guestbook-node-3.c.rising-apricot-840.internal", 
+        "status": {
+          "conditions": [
+            {
+              "kind": "Ready", 
+              "lastProbeTime": "2015-03-16T15:35:03Z", 
+              "lastTransitionTime": "2015-02-20T22:56:30Z", 
+              "reason": "Node health check succeeded: kubelet /healthz endpoint returns ok", 
+              "status": "Full"
+            }
+          ]
+        }, 
+        "uid": "f5f40196-b948-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T15:35:09.083547", 
+      "type": "Node"
+    }
+  ], 
+  "success": true, 
+  "timestamp": "2015-03-16T15:35:09.084327"
+}

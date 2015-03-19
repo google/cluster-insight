@@ -1,0 +1,258 @@
+{
+  "resources": [
+    {
+      "id": "guestbook-controller", 
+      "properties": {
+        "creationTimestamp": "2015-02-20T21:46:49Z", 
+        "currentState": {
+          "podTemplate": {
+            "desiredState": {
+              "manifest": {
+                "containers": null, 
+                "id": "", 
+                "restartPolicy": {}, 
+                "version": "", 
+                "volumes": null
+              }
+            }
+          }, 
+          "replicas": 3
+        }, 
+        "desiredState": {
+          "podTemplate": {
+            "desiredState": {
+              "manifest": {
+                "containers": [
+                  {
+                    "capabilities": {}, 
+                    "cpu": 100, 
+                    "image": "brendanburns/php-redis", 
+                    "imagePullPolicy": "PullIfNotPresent", 
+                    "memory": 50000000, 
+                    "name": "php-redis", 
+                    "ports": [
+                      {
+                        "containerPort": 80, 
+                        "name": "http-server", 
+                        "protocol": "TCP"
+                      }
+                    ], 
+                    "resources": {
+                      "limits": {
+                        "cpu": "0.1", 
+                        "memory": 50000000
+                      }
+                    }, 
+                    "terminationMessagePath": "/dev/termination-log"
+                  }
+                ], 
+                "dnsPolicy": "ClusterFirst", 
+                "id": "", 
+                "restartPolicy": {
+                  "always": {}
+                }, 
+                "version": "v1beta2", 
+                "volumes": null
+              }
+            }, 
+            "labels": {
+              "name": "guestbook"
+            }
+          }, 
+          "replicaSelector": {
+            "name": "guestbook"
+          }, 
+          "replicas": 3
+        }, 
+        "id": "guestbook-controller", 
+        "labels": {
+          "name": "guestbook"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 268, 
+        "selfLink": "/api/v1beta1/replicationControllers/guestbook-controller?namespace=default", 
+        "uid": "f98cd2cb-b949-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:54:39.685560", 
+      "type": "ReplicationController"
+    }, 
+    {
+      "id": "redis-worker-controller", 
+      "properties": {
+        "creationTimestamp": "2015-02-20T21:45:09Z", 
+        "currentState": {
+          "podTemplate": {
+            "desiredState": {
+              "manifest": {
+                "containers": null, 
+                "id": "", 
+                "restartPolicy": {}, 
+                "version": "", 
+                "volumes": null
+              }
+            }
+          }, 
+          "replicas": 2
+        }, 
+        "desiredState": {
+          "podTemplate": {
+            "desiredState": {
+              "manifest": {
+                "containers": [
+                  {
+                    "capabilities": {}, 
+                    "cpu": 200, 
+                    "image": "brendanburns/redis-slave", 
+                    "imagePullPolicy": "PullIfNotPresent", 
+                    "name": "redis-worker", 
+                    "ports": [
+                      {
+                        "containerPort": 6379, 
+                        "hostPort": 6380, 
+                        "name": "redis-server", 
+                        "protocol": "TCP"
+                      }
+                    ], 
+                    "resources": {
+                      "limits": {
+                        "cpu": "0.2"
+                      }
+                    }, 
+                    "terminationMessagePath": "/dev/termination-log"
+                  }
+                ], 
+                "dnsPolicy": "ClusterFirst", 
+                "id": "", 
+                "restartPolicy": {
+                  "always": {}
+                }, 
+                "version": "v1beta2", 
+                "volumes": null
+              }
+            }, 
+            "labels": {
+              "name": "redis", 
+              "role": "worker"
+            }
+          }, 
+          "replicaSelector": {
+            "name": "redis", 
+            "role": "worker"
+          }, 
+          "replicas": 2
+        }, 
+        "id": "redis-worker-controller", 
+        "labels": {
+          "name": "redis", 
+          "role": "worker"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 199, 
+        "selfLink": "/api/v1beta1/replicationControllers/redis-worker-controller?namespace=default", 
+        "uid": "bdb3d06e-b949-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:54:39.685560", 
+      "type": "ReplicationController"
+    }, 
+    {
+      "id": "skydns", 
+      "properties": {
+        "creationTimestamp": "2015-02-20T21:39:42Z", 
+        "currentState": {
+          "podTemplate": {
+            "desiredState": {
+              "manifest": {
+                "containers": null, 
+                "id": "", 
+                "restartPolicy": {}, 
+                "version": "", 
+                "volumes": null
+              }
+            }
+          }, 
+          "replicas": 1
+        }, 
+        "desiredState": {
+          "podTemplate": {
+            "desiredState": {
+              "manifest": {
+                "containers": [
+                  {
+                    "capabilities": {}, 
+                    "command": [
+                      "/etcd", 
+                      "-bind-addr=127.0.0.1", 
+                      "-peer-bind-addr=127.0.0.1"
+                    ], 
+                    "image": "quay.io/coreos/etcd:latest", 
+                    "imagePullPolicy": "PullAlways", 
+                    "name": "etcd", 
+                    "resources": {}, 
+                    "terminationMessagePath": "/dev/termination-log"
+                  }, 
+                  {
+                    "capabilities": {}, 
+                    "command": [
+                      "-domain=kubernetes.local"
+                    ], 
+                    "image": "kubernetes/kube2sky:1.0", 
+                    "imagePullPolicy": "PullIfNotPresent", 
+                    "name": "kube2sky", 
+                    "resources": {}, 
+                    "terminationMessagePath": "/dev/termination-log"
+                  }, 
+                  {
+                    "capabilities": {}, 
+                    "command": [
+                      "-machines=http://localhost:4001", 
+                      "-addr=0.0.0.0:53", 
+                      "-domain=kubernetes.local."
+                    ], 
+                    "image": "kubernetes/skydns:2014-12-23-001", 
+                    "imagePullPolicy": "PullIfNotPresent", 
+                    "name": "skydns", 
+                    "ports": [
+                      {
+                        "containerPort": 53, 
+                        "name": "dns", 
+                        "protocol": "UDP"
+                      }
+                    ], 
+                    "resources": {}, 
+                    "terminationMessagePath": "/dev/termination-log"
+                  }
+                ], 
+                "dnsPolicy": "Default", 
+                "id": "", 
+                "restartPolicy": {
+                  "always": {}
+                }, 
+                "version": "v1beta2", 
+                "volumes": null
+              }
+            }, 
+            "labels": {
+              "k8s-app": "skydns"
+            }
+          }, 
+          "replicaSelector": {
+            "k8s-app": "skydns"
+          }, 
+          "replicas": 1
+        }, 
+        "id": "skydns", 
+        "labels": {
+          "k8s-app": "skydns"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 37, 
+        "selfLink": "/api/v1beta1/replicationControllers/skydns?namespace=default", 
+        "uid": "fab0227c-b948-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:54:39.685560", 
+      "type": "ReplicationController"
+    }
+  ], 
+  "success": true, 
+  "timestamp": "2015-03-16T17:54:39.686845"
+}

@@ -36,6 +36,63 @@ def valid_optional_string(x):
   """Returns True iff is either None or a non-empty string."""
   return (x is None) or valid_string(x)
 
+def one_string_arg(func):
+  """A decorator for a function that should be given exactly one valid string.
+  """
+  def inner(arg1):
+    assert valid_string(arg1)
+    return func(arg1)
+
+  return inner
+
+def one_optional_string_arg(func):
+  """A decorator for a function that should be given an optional valid string.
+  """
+  def inner(arg1=None):
+    assert valid_optional_string(arg1)
+    return func(arg1)
+
+  return inner
+
+def one_dictionary_arg(func):
+  """A decorator for a function that should be given a dictionary argument.
+  """
+  def inner(arg1):
+    assert isinstance(arg1, types.DictType)
+    return func(arg1)
+
+  return inner
+
+def two_string_args(func):
+  """A decorator for a function that should be given exactly two valid strings.
+  """
+  def inner(arg1, arg2):
+    assert valid_string(arg1) and valid_string(arg2)
+    return func(arg1, arg2)
+
+  return inner
+
+def one_string_one_optional_string_args(func):
+  """A decorator for a function that should be given two string arguments.
+
+  The first argument must be a valid string (see valid_string() above).
+  The second argument must be an optional string (see valid_optional_string()
+  above).
+  """
+  def inner(arg1, arg2=None):
+    assert valid_string(arg1) and valid_optional_string(arg2)
+    return func(arg1, arg2)
+
+  return inner
+
+def two_dict_args(func):
+  """A decorator for a function that should be given two dictionary arguments.
+  """
+  def inner(arg1, arg2):
+    assert isinstance(arg1, types.DictType) and isinstance(arg2, types.DictType)
+    return func(arg1, arg2)
+
+  return inner
 
 def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
                 alt_label=None):
@@ -87,7 +144,8 @@ def timeless_json_hash(obj):
   values. The values of these attributes change continously and they do not
   add much to the semantics of the object. Ignoring the values of these
   attributes prevent false positive indications that the object changed.
-  The JSON representation sorts the attributes to ensure consistent hashing.
+  The JSON representation lists all attributes in sorted order to ensure
+  consistent hashing.
   """
   s = json.dumps(obj, sort_keys=True)
   m = hashlib.sha1()
@@ -104,7 +162,8 @@ def object_to_hex_id(obj):
   output of the "docker ps" command or the contents of the "IMAGE ID"
   column in the output of the "docker images" command.
   """
-  assert isinstance(obj, types.DictType) and ('Id' in obj)
+  assert isinstance(obj, types.DictType)
+  assert isinstance(obj.get('Id'), types.StringTypes)
   id = obj['Id']
   assert re.match('^[0-9a-f]+$', id) and (len(id) > 12)
 

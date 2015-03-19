@@ -127,11 +127,13 @@ def get_pods():
 @app.route('/cluster/resources/containers', methods=['GET'])
 def get_containers():
   url = flask.url_for('get_containers')
+  containers = []
+
   try:
     for node in kubernetes.get_nodes():
       # The node_id is the Docker host name.
       docker_host = node['id']
-      containers = docker.get_containers(docker_host)
+      containers.extend(docker.get_containers(docker_host))
 
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -237,16 +239,7 @@ def get_cluster():
     return flask.jsonify(make_error(msg))
 
 
-# Start the web server on port DATA_COLLECTOR_PORT and listen on all external
-# IPs associated with this host.
-if __name__ == '__main__':
-  try:
-    port = int(sys.argv[1])
-  except:
-    port = constants.DATA_COLLECTOR_PORT
-
-  app.logger.setLevel(logging.DEBUG)
-
+def init_caching():
   # keep global caches in the 'app' object because Flask allocates all other
   # objects in thread-local memory.
   app._nodes_cache = simple_cache.SimpleCache(
@@ -270,5 +263,17 @@ if __name__ == '__main__':
   app._processes_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
+
+
+# Start the web server on port DATA_COLLECTOR_PORT and listen on all external
+# IPs associated with this host.
+if __name__ == '__main__':
+  try:
+    port = int(sys.argv[1])
+  except:
+    port = constants.DATA_COLLECTOR_PORT
+
+  app.logger.setLevel(logging.DEBUG)
+  init_caching()
 
   app.run(host='0.0.0.0', port=port, debug=True)

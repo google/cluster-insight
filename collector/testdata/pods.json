@@ -1,0 +1,699 @@
+{
+  "items": [
+      {
+        "creationTimestamp": "2015-02-20T21:46:49Z", 
+        "currentState": {
+          "Condition": [
+            {
+              "kind": "Ready", 
+              "status": "None"
+            }
+          ], 
+          "host": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
+          "hostIP": "130.211.145.7", 
+          "info": {
+            "POD": {
+              "containerID": "docker://b726ff497159c9629bc5bf2e95a38b42534a88da73e69083aa502b5a29cd9f28", 
+              "image": "kubernetes/pause:latest", 
+              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+              "ready": false, 
+              "restartCount": 6, 
+              "state": {
+                "termination": {
+                  "exitCode": 2, 
+                  "finishedAt": "2015-03-16T17:43:21Z", 
+                  "startedAt": "2015-03-16T17:42:11Z"
+                }
+              }
+            }, 
+            "php-redis": {
+              "containerID": "docker://be2fc9d473f21c8c925dc84115a65369167b9c0539349b55d0a76fa9451e6c4f", 
+              "image": "brendanburns/php-redis", 
+              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
+              "ready": false, 
+              "restartCount": 7, 
+              "state": {
+                "waiting": {
+                  "reason": "Container cannot run"
+                }
+              }
+            }
+          }, 
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "status": "Waiting"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "cpu": 100, 
+                "image": "brendanburns/php-redis", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "memory": 50000000, 
+                "name": "php-redis", 
+                "ports": [
+                  {
+                    "containerPort": 80, 
+                    "name": "http-server", 
+                    "protocol": "TCP"
+                  }
+                ], 
+                "resources": {
+                  "limits": {
+                    "cpu": "0.1", 
+                    "memory": 50000000
+                  }
+                }, 
+                "terminationMessagePath": "/dev/termination-log"
+              }
+            ], 
+            "dnsPolicy": "ClusterFirst", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": null
+          }
+        }, 
+        "generateName": "guestbook-controller-", 
+        "id": "guestbook-controller-0133o", 
+        "labels": {
+          "name": "guestbook"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 269, 
+        "selfLink": "/api/v1beta1/pods/guestbook-controller-0133o?namespace=default", 
+        "uid": "f9914838-b949-11e4-8246-42010af0c3dd"
+      }, 
+      {
+        "creationTimestamp": "2015-02-20T21:46:49Z", 
+        "currentState": {
+          "Condition": [
+            {
+              "kind": "Ready", 
+              "status": "Full"
+            }
+          ], 
+          "host": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
+          "hostIP": "130.211.181.148", 
+          "info": {
+            "POD": {
+              "containerID": "docker://71ef793eaaccf9045780a6f003f6d47bb7cee01fbd6aca66063aac5262bd2ceb", 
+              "image": "kubernetes/pause:latest", 
+              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+              "podIP": "10.64.0.26", 
+              "ready": false, 
+              "restartCount": 6, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-03-16T17:42:18Z"
+                }
+              }
+            }, 
+            "php-redis": {
+              "containerID": "docker://91c3cf0d7808e2cf246fc44838b90b5d8422cea51122163e7d29697db85c9b9c", 
+              "image": "brendanburns/php-redis", 
+              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
+              "ready": true, 
+              "restartCount": 6, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-03-16T17:42:18Z"
+                }
+              }
+            }
+          }, 
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "podIP": "10.64.0.26", 
+          "status": "Running"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "cpu": 100, 
+                "image": "brendanburns/php-redis", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "memory": 50000000, 
+                "name": "php-redis", 
+                "ports": [
+                  {
+                    "containerPort": 80, 
+                    "name": "http-server", 
+                    "protocol": "TCP"
+                  }
+                ], 
+                "resources": {
+                  "limits": {
+                    "cpu": "0.1", 
+                    "memory": 50000000
+                  }
+                }, 
+                "terminationMessagePath": "/dev/termination-log"
+              }
+            ], 
+            "dnsPolicy": "ClusterFirst", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": null
+          }
+        }, 
+        "generateName": "guestbook-controller-", 
+        "id": "guestbook-controller-hh2gd", 
+        "labels": {
+          "name": "guestbook"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 271, 
+        "selfLink": "/api/v1beta1/pods/guestbook-controller-hh2gd?namespace=default", 
+        "uid": "f991f13c-b949-11e4-8246-42010af0c3dd"
+      }, 
+      {
+        "creationTimestamp": "2015-02-20T21:46:49Z", 
+        "currentState": {
+          "Condition": [
+            {
+              "kind": "Ready", 
+              "status": "Full"
+            }
+          ], 
+          "host": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
+          "hostIP": "104.154.41.133", 
+          "info": {
+            "POD": {
+              "containerID": "docker://81a3733d1e0bce81a1a53eb9ece053c050c7633a85fd988c9d082c415d714bac", 
+              "image": "kubernetes/pause:latest", 
+              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+              "podIP": "10.64.2.49", 
+              "ready": false, 
+              "restartCount": 6, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-03-16T17:42:04Z"
+                }
+              }
+            }, 
+            "php-redis": {
+              "containerID": "docker://b48fbb4c42f17a5657d40d7a58b4fee0c5f37e1a299d646fb9afc1722cfbc89c", 
+              "image": "brendanburns/php-redis", 
+              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
+              "ready": true, 
+              "restartCount": 6, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-03-16T17:42:05Z"
+                }
+              }
+            }
+          }, 
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "podIP": "10.64.2.49", 
+          "status": "Running"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "cpu": 100, 
+                "image": "brendanburns/php-redis", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "memory": 50000000, 
+                "name": "php-redis", 
+                "ports": [
+                  {
+                    "containerPort": 80, 
+                    "name": "http-server", 
+                    "protocol": "TCP"
+                  }
+                ], 
+                "resources": {
+                  "limits": {
+                    "cpu": "0.1", 
+                    "memory": 50000000
+                  }
+                }, 
+                "terminationMessagePath": "/dev/termination-log"
+              }
+            ], 
+            "dnsPolicy": "ClusterFirst", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": null
+          }
+        }, 
+        "generateName": "guestbook-controller-", 
+        "id": "guestbook-controller-ls6k1", 
+        "labels": {
+          "name": "guestbook"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 270, 
+        "selfLink": "/api/v1beta1/pods/guestbook-controller-ls6k1?namespace=default", 
+        "uid": "f991d53e-b949-11e4-8246-42010af0c3dd"
+      }, 
+      {
+        "creationTimestamp": "2015-02-20T21:41:16Z", 
+        "currentState": {
+          "Condition": [
+            {
+              "kind": "Ready", 
+              "status": "Full"
+            }
+          ], 
+          "host": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
+          "hostIP": "130.211.145.7", 
+          "info": {
+            "POD": {
+              "containerID": "docker://f15272658bbd7be306d9ee14a06602bf1530866edc8724f843beeb3efdad0088", 
+              "image": "kubernetes/pause:latest", 
+              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+              "podIP": "10.64.1.4", 
+              "ready": false, 
+              "restartCount": 2, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:55:24Z"
+                }
+              }
+            }, 
+            "master": {
+              "containerID": "docker://93475404a11774b9dfe74be20c689a07a481e98e365793a505f5a2355dd7ec69", 
+              "image": "dockerfile/redis", 
+              "imageID": "docker://c059fe93c46a2fb873656b65eeed5153208bbbaecc420f53fe2131262cce0549", 
+              "ready": true, 
+              "restartCount": 2, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:55:24Z"
+                }
+              }
+            }
+          }, 
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "podIP": "10.64.1.4", 
+          "status": "Running"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "cpu": 100, 
+                "image": "dockerfile/redis", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "name": "master", 
+                "ports": [
+                  {
+                    "containerPort": 6379, 
+                    "name": "redis-server", 
+                    "protocol": "TCP"
+                  }
+                ], 
+                "resources": {
+                  "limits": {
+                    "cpu": "0.1"
+                  }
+                }, 
+                "terminationMessagePath": "/dev/termination-log"
+              }
+            ], 
+            "dnsPolicy": "ClusterFirst", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": null
+          }
+        }, 
+        "id": "redis-master", 
+        "labels": {
+          "name": "redis", 
+          "role": "master"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 110, 
+        "selfLink": "/api/v1beta1/pods/redis-master?namespace=default", 
+        "uid": "32a27c5a-b949-11e4-8246-42010af0c3dd"
+      }, 
+      {
+        "creationTimestamp": "2015-02-20T21:45:09Z", 
+        "currentState": {
+          "Condition": [
+            {
+              "kind": "Ready", 
+              "status": "Full"
+            }
+          ], 
+          "host": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
+          "hostIP": "104.154.41.133", 
+          "info": {
+            "POD": {
+              "containerID": "docker://a8515e7b12ba52eed616cc8530eaeadf702c3e29e2e466a923cff0be30a1403a", 
+              "image": "kubernetes/pause:latest", 
+              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+              "podIP": "10.64.2.3", 
+              "ready": false, 
+              "restartCount": 2, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:56:23Z"
+                }
+              }
+            }, 
+            "redis-worker": {
+              "containerID": "docker://3b2da7c60ec7d85c33af1c4596854b38f404fc4c08b10b3f95b78811f5cee885", 
+              "image": "brendanburns/redis-slave", 
+              "imageID": "docker://81b1b696a77a9b5ca5e8954b0428208daa67853c118bb8d15cae073028a0ee3c", 
+              "ready": true, 
+              "restartCount": 2, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:56:23Z"
+                }
+              }
+            }
+          }, 
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "podIP": "10.64.2.3", 
+          "status": "Running"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "cpu": 200, 
+                "image": "brendanburns/redis-slave", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "name": "redis-worker", 
+                "ports": [
+                  {
+                    "containerPort": 6379, 
+                    "hostPort": 6380, 
+                    "name": "redis-server", 
+                    "protocol": "TCP"
+                  }
+                ], 
+                "resources": {
+                  "limits": {
+                    "cpu": "0.2"
+                  }
+                }, 
+                "terminationMessagePath": "/dev/termination-log"
+              }
+            ], 
+            "dnsPolicy": "ClusterFirst", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": null
+          }
+        }, 
+        "generateName": "redis-worker-controller-", 
+        "id": "redis-worker-controller-gziey", 
+        "labels": {
+          "name": "redis", 
+          "role": "worker"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 200, 
+        "selfLink": "/api/v1beta1/pods/redis-worker-controller-gziey?namespace=default", 
+        "uid": "bdb88fe4-b949-11e4-8246-42010af0c3dd"
+      }, 
+      {
+        "creationTimestamp": "2015-02-20T21:45:09Z", 
+        "currentState": {
+          "Condition": [
+            {
+              "kind": "Ready", 
+              "status": "Full"
+            }
+          ], 
+          "host": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
+          "hostIP": "130.211.181.148", 
+          "info": {
+            "POD": {
+              "containerID": "docker://56befea62157f224bb95cb2fdea8babbfd6809c37c703d97b9a17a39655b9206", 
+              "image": "kubernetes/pause:latest", 
+              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+              "podIP": "10.64.0.3", 
+              "ready": false, 
+              "restartCount": 3, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:53:43Z"
+                }
+              }
+            }, 
+            "redis-worker": {
+              "containerID": "docker://83fd58c4c8abecd49e454d68c2326a5ab406a28fa6f5f1a8b93530b8177c1001", 
+              "image": "brendanburns/redis-slave", 
+              "imageID": "docker://81b1b696a77a9b5ca5e8954b0428208daa67853c118bb8d15cae073028a0ee3c", 
+              "ready": true, 
+              "restartCount": 3, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:53:43Z"
+                }
+              }
+            }
+          }, 
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "podIP": "10.64.0.3", 
+          "status": "Running"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "cpu": 200, 
+                "image": "brendanburns/redis-slave", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "name": "redis-worker", 
+                "ports": [
+                  {
+                    "containerPort": 6379, 
+                    "hostPort": 6380, 
+                    "name": "redis-server", 
+                    "protocol": "TCP"
+                  }
+                ], 
+                "resources": {
+                  "limits": {
+                    "cpu": "0.2"
+                  }
+                }, 
+                "terminationMessagePath": "/dev/termination-log"
+              }
+            ], 
+            "dnsPolicy": "ClusterFirst", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": null
+          }
+        }, 
+        "generateName": "redis-worker-controller-", 
+        "id": "redis-worker-controller-oh43e", 
+        "labels": {
+          "name": "redis", 
+          "role": "worker"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 201, 
+        "selfLink": "/api/v1beta1/pods/redis-worker-controller-oh43e?namespace=default", 
+        "uid": "bdb8f295-b949-11e4-8246-42010af0c3dd"
+      }, 
+      {
+        "creationTimestamp": "2015-02-20T21:39:46Z", 
+        "currentState": {
+          "Condition": [
+            {
+              "kind": "Ready", 
+              "status": "Full"
+            }
+          ], 
+          "host": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
+          "hostIP": "130.211.181.148", 
+          "info": {
+            "POD": {
+              "containerID": "docker://471189efe7f42db7e283ca9b807dabdf05d0e9076df52840f2af9f8b0e063a7d", 
+              "image": "kubernetes/pause:latest", 
+              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+              "podIP": "10.64.0.4", 
+              "ready": false, 
+              "restartCount": 3, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:53:43Z"
+                }
+              }
+            }, 
+            "etcd": {
+              "containerID": "docker://326a9191db3c66b6a3ba41184bf3f4ec2ff316202e287757a375f9398457b7db", 
+              "image": "quay.io/coreos/etcd:latest", 
+              "imageID": "docker://c5f34efc44466ec7abb9a68af20d2f876ea691095747e7e5a62e890cdedadcdc", 
+              "ready": true, 
+              "restartCount": 3, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:53:46Z"
+                }
+              }
+            }, 
+            "kube2sky": {
+              "containerID": "docker://436644a4173923f1de0848545fd996496826a854766a137312e8ed5da81f1d9b", 
+              "image": "kubernetes/kube2sky:1.0", 
+              "imageID": "docker://3ea44ca9f1bd295f38fb1922e39d26e59294453ac0c5da9ae3c12cea5834c4ad", 
+              "ready": true, 
+              "restartCount": 3, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:53:47Z"
+                }
+              }
+            }, 
+            "skydns": {
+              "containerID": "docker://5af2989e53c311a1d84f72ec23768dc1e2d305edf11b4d8cbe6450be92be5c1d", 
+              "image": "kubernetes/skydns:2014-12-23-001", 
+              "imageID": "docker://93f9564eaa3307440f3486b109c2fd39172d59a4b49ee4470d0b6141b4113388", 
+              "ready": true, 
+              "restartCount": 3, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-02-20T22:53:47Z"
+                }
+              }
+            }
+          }, 
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "podIP": "10.64.0.4", 
+          "status": "Running"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "command": [
+                  "/etcd", 
+                  "-bind-addr=127.0.0.1", 
+                  "-peer-bind-addr=127.0.0.1"
+                ], 
+                "image": "quay.io/coreos/etcd:latest", 
+                "imagePullPolicy": "PullAlways", 
+                "name": "etcd", 
+                "resources": {}, 
+                "terminationMessagePath": "/dev/termination-log"
+              }, 
+              {
+                "capabilities": {}, 
+                "command": [
+                  "-domain=kubernetes.local"
+                ], 
+                "image": "kubernetes/kube2sky:1.0", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "name": "kube2sky", 
+                "resources": {}, 
+                "terminationMessagePath": "/dev/termination-log"
+              }, 
+              {
+                "capabilities": {}, 
+                "command": [
+                  "-machines=http://localhost:4001", 
+                  "-addr=0.0.0.0:53", 
+                  "-domain=kubernetes.local."
+                ], 
+                "image": "kubernetes/skydns:2014-12-23-001", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "name": "skydns", 
+                "ports": [
+                  {
+                    "containerPort": 53, 
+                    "name": "dns", 
+                    "protocol": "UDP"
+                  }
+                ], 
+                "resources": {}, 
+                "terminationMessagePath": "/dev/termination-log"
+              }
+            ], 
+            "dnsPolicy": "Default", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": null
+          }
+        }, 
+        "generateName": "skydns-", 
+        "id": "skydns-fplln", 
+        "labels": {
+          "k8s-app": "skydns"
+        }, 
+        "namespace": "default", 
+        "resourceVersion": 42, 
+        "selfLink": "/api/v1beta1/pods/skydns-fplln?namespace=default", 
+        "uid": "fd673cff-b948-11e4-8246-42010af0c3dd"
+      }
+  ]
+}

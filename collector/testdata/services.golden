@@ -1,0 +1,156 @@
+{
+  "resources": [
+    {
+      "id": "guestbook", 
+      "properties": {
+        "containerPort": "http-server", 
+        "createExternalLoadBalancer": true, 
+        "creationTimestamp": "2015-02-20T21:48:12Z", 
+        "id": "guestbook", 
+        "labels": {
+          "name": "guestbook"
+        }, 
+        "namespace": "default", 
+        "port": 3000, 
+        "portalIP": "10.67.244.170", 
+        "protocol": "TCP", 
+        "publicIPs": [
+          "146.148.91.51"
+        ], 
+        "resourceVersion": 345, 
+        "selector": {
+          "name": "guestbook"
+        }, 
+        "selfLink": "/api/v1beta1/services/guestbook?namespace=default", 
+        "sessionAffinity": "None", 
+        "uid": "2a8f311b-b94a-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:48:55.190156", 
+      "type": "Service"
+    }, 
+    {
+      "id": "kubernetes", 
+      "properties": {
+        "containerPort": 0, 
+        "creationTimestamp": "2015-02-20T21:39:29Z", 
+        "id": "kubernetes", 
+        "labels": {
+          "component": "apiserver", 
+          "provider": "kubernetes"
+        }, 
+        "namespace": "default", 
+        "port": 443, 
+        "portalIP": "10.67.240.2", 
+        "protocol": "TCP", 
+        "resourceVersion": 5, 
+        "selector": null, 
+        "selfLink": "/api/v1beta1/services/kubernetes?namespace=default", 
+        "sessionAffinity": "None", 
+        "uid": "f30905e0-b948-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:48:55.190156", 
+      "type": "Service"
+    }, 
+    {
+      "id": "kubernetes-ro", 
+      "properties": {
+        "containerPort": 0, 
+        "creationTimestamp": "2015-02-20T21:39:29Z", 
+        "id": "kubernetes-ro", 
+        "labels": {
+          "component": "apiserver", 
+          "provider": "kubernetes"
+        }, 
+        "namespace": "default", 
+        "port": 80, 
+        "portalIP": "10.67.240.1", 
+        "protocol": "TCP", 
+        "resourceVersion": 4, 
+        "selector": null, 
+        "selfLink": "/api/v1beta1/services/kubernetes-ro?namespace=default", 
+        "sessionAffinity": "None", 
+        "uid": "f3044d15-b948-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:48:55.190156", 
+      "type": "Service"
+    }, 
+    {
+      "id": "redis-master", 
+      "properties": {
+        "containerPort": "redis-server", 
+        "creationTimestamp": "2015-02-20T21:44:28Z", 
+        "id": "redis-master", 
+        "labels": {
+          "name": "redis", 
+          "role": "master"
+        }, 
+        "namespace": "default", 
+        "port": 6379, 
+        "portalIP": "10.67.253.42", 
+        "protocol": "TCP", 
+        "resourceVersion": 185, 
+        "selector": {
+          "name": "redis", 
+          "role": "master"
+        }, 
+        "selfLink": "/api/v1beta1/services/redis-master?namespace=default", 
+        "sessionAffinity": "None", 
+        "uid": "a51b892f-b949-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:48:55.190156", 
+      "type": "Service"
+    }, 
+    {
+      "id": "redis-worker", 
+      "properties": {
+        "containerPort": "redis-server", 
+        "creationTimestamp": "2015-02-20T21:46:12Z", 
+        "id": "redis-worker", 
+        "labels": {
+          "name": "redis", 
+          "role": "worker"
+        }, 
+        "namespace": "default", 
+        "port": 6379, 
+        "portalIP": "10.67.248.146", 
+        "protocol": "TCP", 
+        "resourceVersion": 257, 
+        "selector": {
+          "name": "redis", 
+          "role": "worker"
+        }, 
+        "selfLink": "/api/v1beta1/services/redis-worker?namespace=default", 
+        "sessionAffinity": "None", 
+        "uid": "e35601f7-b949-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:48:55.190156", 
+      "type": "Service"
+    }, 
+    {
+      "id": "skydns", 
+      "properties": {
+        "containerPort": 53, 
+        "creationTimestamp": "2015-02-20T21:39:42Z", 
+        "id": "skydns", 
+        "labels": {
+          "k8s-app": "skydns"
+        }, 
+        "namespace": "default", 
+        "port": 53, 
+        "portalIP": "10.67.240.10", 
+        "protocol": "UDP", 
+        "resourceVersion": 36, 
+        "selector": {
+          "k8s-app": "skydns"
+        }, 
+        "selfLink": "/api/v1beta1/services/skydns?namespace=default", 
+        "sessionAffinity": "None", 
+        "uid": "faa8fab0-b948-11e4-8246-42010af0c3dd"
+      }, 
+      "timestamp": "2015-03-16T17:48:55.190156", 
+      "type": "Service"
+    }
+  ], 
+  "success": true, 
+  "timestamp": "2015-03-16T17:48:55.191078"
+}

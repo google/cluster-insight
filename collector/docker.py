@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """
 Collects config metadata from Docker. Assumes the Docker daemon's remote API is
 enabled on port 4243 on the Docker host.
 """
 
 from flask import current_app
+import json
 import re
 import requests
 import sys
@@ -34,6 +34,42 @@ import utilities
 
 ## Docker APIs
 
+# No decorator for this function signature.
+def fetch_data(url, base_name, expect_missing=False):
+  """Fetch the named URL from Kubernetes (in production) or a file (in a test).
+
+  Raises:
+  ValueError: when 'expect_missing' is True and failed to open the file.
+  CollectorError: if any other exception occured or 'expect_missing' is False.
+  """
+  assert isinstance(url, types.StringTypes)
+  assert isinstance(base_name, types.StringTypes)
+  if current_app.config.get('TESTING'):
+    # Read the data from a file.
+    fname = 'testdata/' + base_name + '.json'
+    try:
+      f = open(fname, 'r')
+      v = json.loads(f.read())
+      f.close()
+      return v
+    except IOError:
+      # File not found
+      if expect_missing:
+        raise ValueError
+      else:
+        msg = 'failed to read %s' % fname
+        current_app.logger.exception(msg)
+        raise collector_error.CollectorError(msg)
+    except:
+      msg = 'reading %s failed with exception %s' % (fname, sys.exc_info()[0])
+      current_app.logger.exception(msg)
+      raise collector_error.CollectorError(msg)
+  else:
+    # Send the request to Kubernetes
+    return requests.get(url).json()
+
+
+@utilities.two_string_args
 def _inspect_container(docker_host, container_id):
   """Fetch detailed information about the given container in the given host.
 
@@ -45,15 +81,23 @@ def _inspect_container(docker_host, container_id):
     CollectorError in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  assert utilities.valid_string(docker_host)
-  assert utilities.valid_string(container_id)
   url = "http://{docker_host}:4243/containers/{container_id}/json".format(
       docker_host=docker_host, container_id=container_id)
+  # A typical value of 'docker_host' is:
+  # k8s-guestbook-node-3.c.rising-apricot-840.internal
+  # Use only the first period-seperated element for the test file name.
+  # The typical value of 'container_id' is:
+  # k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
+  # Use just the tail of the container ID after the last '-' sign.
+  fname = '{host}-container-{id}'.format(
+      host=docker_host.split('.')[0], id=container_id.split('-')[-1])
   try:
-    result = requests.get(url).json()
+    result = fetch_data(url, fname, expect_missing=True)
   except ValueError:
     # TODO: this container does not exist anymore. What should we do here?
     return (None, time.time())
+  except collector_error.CollectorError:
+    raise
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     current_app.logger.exception(msg)
@@ -61,16 +105,16 @@ def _inspect_container(docker_host, container_id):
 
   # Sort the "Env" attribute because it tends to contain elements in
   # a different order each time you fetch the container information.
-  if (isinstance(result, types.DictType) and ('Config' in result) and
-      isinstance(result['Config'], types.DictType) and
-      ('Env' in result['Config']) and
-      isinstance(result['Config']['Env'], types.ListType)):
+  if (isinstance(result, types.DictType) and
+      isinstance(result.get('Config'), types.DictType) and
+      isinstance(result['Config'].get('Env'), types.ListType)):
     # Sort the contents of the 'Env' list in place.
     result['Config']['Env'].sort()
 
   return (result, time.time())
 
 
+@utilities.one_string_one_optional_string_args
 def get_containers(docker_host, pod_id=None):
   """ Gets the list of all containers in the 'docker_host' and 'pod_id'.
 
@@ -86,8 +130,6 @@ def get_containers(docker_host, pod_id=None):
     CollectorError in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  assert utilities.valid_string(docker_host)
-  assert utilities.valid_optional_string(pod_id)
   if pod_id is None:
     containers_label = docker_host
   else:
@@ -102,10 +144,17 @@ def get_containers(docker_host, pod_id=None):
 
   url = 'http://{docker_host}:4243/containers/json'.format(
       docker_host=docker_host)
+  # A typical value of 'docker_host' is:
+  # k8s-guestbook-node-3.c.rising-apricot-840.internal
+  # Use only the first period-seperated element for the test file name.
+  fname = '{host}-containers'.format(host=docker_host.split('.')[0])
   try:
-    containers_list = requests.get(url).json()
+    containers_list = fetch_data(url, fname)
+  except collector_error.CollectorError:
+    raise
   except:
-    msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
+    msg = ('fetching %s or %s failed with exception %s' %
+           (url, fname, sys.exc_info()[0]))
     current_app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
@@ -119,6 +168,11 @@ def get_containers(docker_host, pod_id=None):
     # The container Name is the only element of the array 'Names' -
     # why is Names an array here?
     # skip the leading / in the Name
+    if not isinstance(container_info.get('Names'), types.ListType):
+      msg = 'invalid containers data format. docker_host=%s' % docker_host
+      current_app.logger.exception(msg)
+      raise collector_error.CollectorError(msg)
+
     assert container_info['Names'][0][0] == '/'
     container_id = container_info['Names'][0][1:]
     container, ts = _inspect_container(docker_host, container_id)
@@ -134,6 +188,7 @@ def get_containers(docker_host, pod_id=None):
     wrapped_container = utilities.wrap_object(
         container, 'Container', container_id, ts, container_label)
     if pod_id:
+      # container['Config']['Hostname'] is the name of the pod (not the host).
       if pod_id == container['Config']['Hostname']:
         containers.append(wrapped_container)
         timestamps.append(ts)
@@ -150,6 +205,7 @@ def get_containers(docker_host, pod_id=None):
   return ret_value
 
 
+@utilities.two_string_args
 def get_one_container(docker_host, container_id):
   """Gets the given container that runs in the given Docker host.
 
@@ -163,15 +219,22 @@ def get_one_container(docker_host, container_id):
   Passes through all exceptions from lower-level routines.
   May raise exceptions due to run-time errors.
   """
-  assert utilities.valid_string(docker_host)
-  assert utilities.valid_string(container_id)
   for container in get_containers(docker_host):
     if container['id'] == container_id:
       return container
 
   return None
 
+@utilities.two_string_args
+def invalid_processes(docker_host, container_id):
+  """Raise the CollectorError exception because the response is invalid.
+  """
+  msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
+  current_app.logger.exception(msg)
+  raise collector_error.CollectorError(msg)
 
+
+@utilities.two_string_args
 def get_processes(docker_host, container_id):
   """ Gets the list of all processes in the 'docker_host' and 'container_id'.
 
@@ -186,9 +249,6 @@ def get_processes(docker_host, container_id):
     CollectorError in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  assert utilities.valid_string(docker_host)
-  assert utilities.valid_string(container_id)
-
   processes_label = '%s/%s' % (docker_host, container_id)
   processes, timestamp_seconds = current_app._processes_cache.lookup(
       processes_label)
@@ -211,23 +271,45 @@ def get_processes(docker_host, container_id):
   url = ('http://{docker_host}:4243/containers/{container_id}/top?'
          'ps_args=aux'.format(docker_host=docker_host,
                               container_id=container_id))
+  # A typical value of 'docker_host' is:
+  # k8s-guestbook-node-3.c.rising-apricot-840.internal
+  # Use only the first period-seperated element for the test file name.
+  # The typical value of 'container_id' is:
+  # k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
+  # Use just the tail of the container ID after the last '-' sign.
+  fname = '{host}-processes-{id}'.format(
+      host=docker_host.split('.')[0], id=container_id.split('-')[-1])
+
   try:
     # TODO: what should we do in cases where the container is gone
     # (and replaced by a different one)?
-    result = requests.get(url).json()
+    result = fetch_data(url, fname, expect_missing=True)
   except ValueError:
      # this container does not exist anymore
     return []
+  except collector_error.CollectorError:
+    raise
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     current_app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
+
+  if not isinstance(result, types.DictType):
+    invalid_processes(docker_host, container_id)
+  if not isinstance(result.get('Titles'), types.ListType):
+    invalid_processes(docker_host, container_id)
+  if not isinstance(result.get('Processes'), types.ListType):
+    invalid_processes(docker_host, container_id)
 
   pstats = result['Titles']
   processes = []
   now = time.time()
   for pvalues in result['Processes']:
     process = {}
+    if not isinstance(pvalues, types.ListType):
+      invalid_processes(docker_host, container_id)
+    if len(pstats) != len(pvalues):
+      invalid_processes(docker_host, container_id)
     for pstat, pvalue in zip(pstats, pvalues):
       process[pstat] = pvalue
 
@@ -243,6 +325,8 @@ def get_processes(docker_host, container_id):
       docker_host, container_id, len(processes))
   return ret_value
 
+
+@utilities.two_string_args
 def get_image(docker_host, image_id):
   """ Gets the information of the given image in the given host.
 
@@ -255,8 +339,6 @@ def get_image(docker_host, image_id):
     CollectorError in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  assert utilities.valid_string(docker_host)
-  assert utilities.valid_string(image_id)
   # 'image_id' should be a symbolic name and not a very long hexadecimal string.
   assert not (len(image_id) >= 32 and re.match('^[0-9a-fA-F]+$', image_id))
   cache_key = '%s|%s' % (docker_host, image_id)
@@ -266,13 +348,26 @@ def get_image(docker_host, image_id):
                             docker_host, image_id)
     return image
 
+  # A typical value of 'docker_host' is:
+  # k8s-guestbook-node-3.c.rising-apricot-840.internal
+  # Use only the first period-seperated element for the test file name.
+  # The typical value of 'image_id' is:
+  # brendanburns/php-redis
+  # We convert embedded '/' and ':' characters to '-' to avoid interference with
+  # the directory structure or file system.
   url = "http://{docker_host}:4243/images/{image_id}/json".format(
       docker_host=docker_host, image_id=image_id)
+  fname = '{host}-image-{id}'.format(
+      host=docker_host.split('.')[0],
+      id=image_id.replace('/', '-').replace(':', '-'))
+
   try:
-    image = requests.get(url).json()
+    image = fetch_data(url, fname, expect_missing=True)
   except ValueError:
     # image not found.
     return None
+  except collector_error.CollectorError:
+    raise
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     current_app.logger.exception(msg)
@@ -295,6 +390,7 @@ def get_image(docker_host, image_id):
   return ret_value
 
 
+@utilities.one_string_arg
 def get_images(docker_host):
   """ Gets the list of all images in 'docker_host'.
 
@@ -307,7 +403,6 @@ def get_images(docker_host):
     CollectorError in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  assert utilities.valid_string(docker_host)
   # The images are already cached by get_image(), so there is no need to
   # check the cache on entry to this method.
 

@@ -96,15 +96,21 @@ class SimpleCache:
     self._namedtuple = collections.namedtuple(
         'Tuple', ['update_timestamp', 'value'])
 
-  def _cleanup(self):
+  def _cleanup(self, now):
     """Removes all data older than _data_cleanup_age_seconds from the cache.
 
     This routine prevents the accumulation of stale ephemeral data.
     Such data usually has a unique label.
 
     This method must be called when '_lock' is held.
+
+    Params:
+    now:  current time in seconds since the Epoch or None. If the value is
+          None, then _cleanup() is using the wallclock time.
     """
-    threshold = time.time() - self._data_cleanup_age_seconds
+    assert (now is None) or isinstance(now, types.FloatType)
+    ts = time.time() if now is None else now
+    threshold = ts - self._data_cleanup_age_seconds
     # Scan the cache using a list of keys instead of iterating on the cache
     # directly because we are deleting elements from the cache while iterating.
     for key in self._label_to_tuple.keys():
@@ -159,6 +165,15 @@ class SimpleCache:
     changed.
     The cache keeps a deep copy of 'value', so the caller may change 'value'
     afterwards.
+
+    Returns:
+    The values that was stored in the cache. If the value stored in the cache
+    was not changed, then the returned value is the deep copy of the old cached
+    value.
+    Otherwise the returned value is 'value'.
+
+    In any case, the caller may modify 'value' or the returned value after
+    this method returns.
     """
     assert isinstance(label, types.StringTypes)
     assert value is not None
@@ -168,18 +183,34 @@ class SimpleCache:
     self._lock.acquire()
     # Cleanup only when inserting new values into the cache in order to
     # avoid penalizing the cache hit operation.
-    self._cleanup()
+    self._cleanup(update_timestamp)
     if ((label in self._label_to_tuple) and
         (utilities.timeless_json_hash(value) ==
          utilities.timeless_json_hash(self._label_to_tuple[label].value))):
       # cannot update just the one attribute in the named tuple.
       keep_value = self._label_to_tuple[label].value
+      ret_value = copy.deepcopy(keep_value)
     else:
       keep_value = copy.deepcopy(value)
+      ret_value = value
 
     ts = time.time() if update_timestamp is None else update_timestamp
     self._label_to_tuple[label] = self._namedtuple(
         update_timestamp=ts, value=keep_value)
 
     self._lock.release()
-    return keep_value
+    return ret_value
+
+  def size(self):
+    """Returns the number of entries in the cache.
+
+    Note that you may lookup only recent entries in the cache
+    (see the explanation of the lookup() function), even when the
+    cache contains additional older entries.
+    """
+    self._lock.acquire()
+    n = len(self._label_to_tuple)
+    self._lock.release()
+    return n
+
+
