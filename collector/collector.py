@@ -186,19 +186,6 @@ def get_images():
   return flask.jsonify(make_response(images_list, 'resources'))
 
 
-@app.route('/graph', methods=['GET'])
-def get_graph():
-  try:
-    return flask.jsonify(config.compute_graph('graph'))
-  except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
-  except:
-    msg = ('compute_graph(\"graph\") failed with exception %s' %
-           sys.exc_info()[0])
-    app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
-
-
 @app.route('/debug', methods=['GET'])
 def get_debug():
   try:
@@ -276,4 +263,4 @@ if __name__ == '__main__':
   app.logger.setLevel(logging.DEBUG)
   init_caching()
 
-  app.run(host='0.0.0.0', port=port, debug=True)
+  app.run(host='0.0.0.0', port=port, debug=False)
