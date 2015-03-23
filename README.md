@@ -132,12 +132,12 @@ The context graph is a JSON document with the following format:
 }
 ```
 
-The properties field is the observed runtime metadata for a resource that was
+The `properties` field is the observed runtime metadata for a resource that was
 collected from the Kubernetes master and the Docker daemons on its minion nodes.
-The annotations field contains key-value pairs inserted by the cluster-insight
+The `annotations` field contains key-value pairs inserted by the cluster-insight
 logic.
 
-Each of the resources and relations has a timestamp field, indicating when
+Each of the resources and relations has a `timestamp` field, indicating when
 it was observed or inferred respectively. The entire context graph has a
 separate timestamp indiciating when the graph was computed from the resource
 metadata.
