@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 #
 # Copyright 2015 The Cluster-Insight Authors. All Rights Reserved
 #
@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" CollectorError is a user-defined exception for handilg run-time
+""" CollectorError is a user-defined exception for handling run-time
 errors in the data collector.
 
 Typical usage:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 #
 # Copyright 2015 The Cluster-Insight Authors. All Rights Reserved
 #
@@ -14,27 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for collector/utilities.py """
+"""Tests for collector/utilities.py. """
 
 # global imports
 import datetime
-import copy
 import time
 import unittest
 
 # local imports
 import utilities
 
+
 class TestUtilities(unittest.TestCase):
 
   def test_timeless_json_hash(self):
     """Tests timeless_json_hash() with multiple similar and dissimilar objects.
     """
-    a = { 'uid': 'A', 'creationTimestamp': '2015-02-20T21:39:34Z' }
+    a = {'uid': 'A', 'creationTimestamp': '2015-02-20T21:39:34Z'}
 
     # 'b1' and 'b2' differs just by the value of the 'lastProbeTime' attribute.
-    b1 = { 'uid': 'B', 'lastProbeTime': '2015-03-13T22:32:15Z' }
-    b2 = { 'uid': 'B', 'lastProbeTime': datetime.datetime.now().isoformat() }
+    b1 = {'uid': 'B', 'lastProbeTime': '2015-03-13T22:32:15Z'}
+    b2 = {'uid': 'B', 'lastProbeTime': datetime.datetime.now().isoformat()}
 
     # 'wrapped_xxx' objects look like the objects we normally keep in the cache.
     # The difference between 'wrapped_a1' and 'wrapped_a2' is the value of the
