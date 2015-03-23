@@ -16,7 +16,7 @@
 
 
 """
-Computes a config graph from raw config metadata gathered from
+Computes a context graph from raw context metadata gathered from
 a Kubernetes master and the Docker daemons of its nodes.
 """
 
@@ -37,7 +37,7 @@ import docker
 import kubernetes
 import utilities
 
-class ConfigGraph:
+class ContextGraph:
 
   def __init__(self):
     self._graph_resources = []
@@ -203,7 +203,7 @@ def _make_error(error_message):
            '_error_message': error_message }
 
 def _do_compute_graph(output_format):
-  G = ConfigGraph()
+  G = ContextGraph()
   G.set_metadata({'timestamp' : datetime.datetime.now().isoformat()})
 
   # Nodes

@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Collects config metadata from Docker. Assumes the Docker daemon's remote API is
+Collects context metadata from Docker. Assumes the Docker daemon's remote API is
 enabled on port 4243 on the Docker host.
 """
 

@@ -16,7 +16,7 @@
 
 
 """
-Collects config metadata from Kubernetes. Assumes the Kubernetes REST API
+Collects context metadata from Kubernetes. Assumes the Kubernetes REST API
 is accessible via the url defined by KUBERNETES_API.
 """
 
