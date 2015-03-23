@@ -102,33 +102,35 @@ from the cache.
 ## Context graph format
 
 The context graph is a JSON document with the following format:
-      {
-        "timestamp": SNAPSHOT-TIME,
-        "resources" : [
-          {
-            "id" : RESOURCE-ID,
-            "type" : RESOURCE-TYPE,
-            "timestamp" : WHEN-OBSERVED,
-            "properties" : RESOURCE-METADATA,
-            "annotations" : {
-              "label" : RESOURCE-LABEL
-            }
-          },
-          ...
-        ],
-        "relations" : [
-          {
-            "type" : RELATION-TYPE,
-            "timestamp" : WHEN-INFERRED,
-            "source" : RESOURCE-ID,
-            "target" : RESOURCE-ID,
-            "annotations" : {
-              "label" : RELATION-LABEL
-            }
-          },
-          ...
-        ]
+```js
+{
+  "timestamp": SNAPSHOT-TIME,
+  "resources" : [
+    {
+      "id" : RESOURCE-ID,
+      "type" : RESOURCE-TYPE,
+      "timestamp" : WHEN-OBSERVED,
+      "properties" : RESOURCE-METADATA,
+      "annotations" : {
+        "label" : RESOURCE-LABEL
       }
+    },
+    ...
+  ],
+  "relations" : [
+    {
+      "type" : RELATION-TYPE,
+      "timestamp" : WHEN-INFERRED,
+      "source" : RESOURCE-ID,
+      "target" : RESOURCE-ID,
+      "annotations" : {
+        "label" : RELATION-LABEL
+      }
+    },
+    ...
+  ]
+}
+```
 
 The properties field is the observed runtime metadata for a resource that was
 collected from the Kubernetes master and the Docker daemons on its minion nodes.
