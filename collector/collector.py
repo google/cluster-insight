@@ -15,21 +15,20 @@
 # limitations under the License.
 
 
-""" Collects context metadata from multiple places and computes a graph from it.
+"""Collects context metadata from multiple places and computes a graph from it.
 """
 
 import datetime
-import flask
-from flask_cors import CORS
 import logging
 import sys
-import time
-import types
+
+import flask
+from flask_cors import CORS
 
 # local imports
 import collector_error
-import context
 import constants
+import context
 import docker
 import kubernetes
 import simple_cache
@@ -40,35 +39,73 @@ app = flask.Flask(__name__)
 # enable cross-origin resource sharing (CORS) HTTP headers on all routes
 cors = CORS(app)
 
+
 def valid_id(x):
-  """Returns True when 'x' a valid resource identifier.
+  """Tests whether 'x' a valid resource identifier.
+
   A valid resource identifier is either None (which means you refer to every
   resource) or a non-empty string.
+
+  Args:
+    x: a resource identifier or None.
+
+  Returns:
+    True iff 'x' is a valid resource identifier.
   """
   return utilities.valid_optional_string(x)
 
+
 def make_response(value, attribute_name):
   """Makes the JSON response containing the given attribute name and value.
+
+  Args:
+    value: the value associated with 'attribute_name'.
+    attribute_name: a string containing the attribute name.
+
+  Returns:
+    A dictionary containing a context-graph successful response with the given
+    attribute name and value.
   """
   assert utilities.valid_string(attribute_name)
-  return { 'success': True,
-           'timestamp': datetime.datetime.now().isoformat(),
-           attribute_name: value }
+  return {'success': True,
+          'timestamp': datetime.datetime.now().isoformat(),
+          attribute_name: value}
+
 
 def make_error(error_message):
   """Makes the JSON response indicating an error.
+
+  Args:
+    error_message: a string containing the error message describing the
+    failure.
+
+  Returns:
+    A dictionary containing an failed context-graph response with a given
+    error message.
   """
   assert utilities.valid_string(error_message)
-  return { 'success': False,
-           'timestamp': datetime.datetime.now().isoformat(),
-           'error_message': error_message }
+  return {'success': False,
+          'timestamp': datetime.datetime.now().isoformat(),
+          'error_message': error_message}
+
 
 @app.route('/', methods=['GET'])
-def help():
-  return flask.send_from_directory('static', 'help.html')
+def home():
+  """Returns the home.html contents for all accesses to the '/' URI.
+
+  Returns:
+    The home page of the Cluster-Insight data collector.
+  """
+  return flask.send_from_directory('static', 'home.html')
+
 
 @app.route('/cluster/resources/nodes', methods=['GET'])
 def get_nodes():
+  """Computes the response of accessing the '/cluster/resources/nodes' URI.
+
+  Returns:
+    The nodes of the context graph.
+  """
   try:
     nodes_list = kubernetes.get_nodes()
   except collector_error.CollectorError as e:
@@ -80,8 +117,14 @@ def get_nodes():
 
   return flask.jsonify(make_response(nodes_list, 'resources'))
 
+
 @app.route('/cluster/resources/services', methods=['GET'])
 def get_services():
+  """Computes the response of accessing the '/cluster/resources/services' URI.
+
+  Returns:
+    The services of the context graph.
+  """
   try:
     services_list = kubernetes.get_services()
   except collector_error.CollectorError as e:
@@ -94,8 +137,14 @@ def get_services():
 
   return flask.jsonify(make_response(services_list, 'resources'))
 
+
 @app.route('/cluster/resources/rcontrollers', methods=['GET'])
 def get_rcontrollers():
+  """Computes the response of accessing the '/cluster/resources/rcontrollers'.
+
+  Returns:
+    The replication controllers of the context graph.
+  """
   try:
     rcontrollers_list = kubernetes.get_rcontrollers()
   except collector_error.CollectorError as e:
@@ -108,10 +157,14 @@ def get_rcontrollers():
 
   return flask.jsonify(make_response(rcontrollers_list, 'resources'))
 
+
 @app.route('/cluster/resources/pods', methods=['GET'])
 def get_pods():
-  url = flask.url_for('get_pods')
+  """Computes the response of accessing the '/cluster/resources/pods' URI.
 
+  Returns:
+    The pods of the context graph.
+  """
   try:
     pods_list = kubernetes.get_pods(None)
   except collector_error.CollectorError as e:
@@ -126,7 +179,11 @@ def get_pods():
 
 @app.route('/cluster/resources/containers', methods=['GET'])
 def get_containers():
-  url = flask.url_for('get_containers')
+  """Computes the response of accessing the '/cluster/resources/containers' URI.
+
+  Returns:
+    The containers of the context graph.
+  """
   containers = []
 
   try:
@@ -146,8 +203,12 @@ def get_containers():
 
 
 @app.route('/cluster/resources/processes', methods=['GET'])
-def get_processes(node_id=None, pod_id=None, container_id=None):
-  url = flask.url_for('get_processes')
+def get_processes():
+  """Computes the response of accessing the '/cluster/resources/processes' URI.
+
+  Returns:
+    The processes of the context graph.
+  """
   processes = []
 
   try:
@@ -167,9 +228,14 @@ def get_processes(node_id=None, pod_id=None, container_id=None):
 
   return flask.jsonify(make_response(processes, 'resources'))
 
+
 @app.route('/cluster/resources/images', methods=['GET'])
 def get_images():
-  url = flask.url_for('get_images')
+  """Computes the response of accessing the '/cluster/resources/images' URI.
+
+  Returns:
+    The images of the context graph.
+  """
   images_list = []
 
   try:
@@ -188,6 +254,11 @@ def get_images():
 
 @app.route('/debug', methods=['GET'])
 def get_debug():
+  """Computes the response of accessing the '/cluster/resources/debug' URI.
+
+  Returns:
+    The DOT graph depicting the context graph.
+  """
   try:
     return context.compute_graph('dot')
   except collector_error.CollectorError as e:
@@ -198,8 +269,14 @@ def get_debug():
     app.logger.exception(msg)
     return flask.jsonify(make_error(msg))
 
+
 @app.route('/cluster/resources', methods=['GET'])
 def get_resources():
+  """Computes the response of accessing the '/cluster/resources' URI.
+
+  Returns:
+    The 'resources' section of the context graph.
+  """
   try:
     response = context.compute_graph('resources')
     return flask.jsonify(response)
@@ -214,6 +291,11 @@ def get_resources():
 
 @app.route('/cluster', methods=['GET'])
 def get_cluster():
+  """Computes the response of accessing the '/cluster' URI.
+
+  Returns:
+    The entire context graph.
+  """
   try:
     response = context.compute_graph('context_graph')
     return flask.jsonify(response)
@@ -227,32 +309,35 @@ def get_cluster():
 
 
 def init_caching():
-  # keep global caches in the 'app' object because Flask allocates all other
-  # objects in thread-local memory.
-  app._nodes_cache = simple_cache.SimpleCache(
+  """Initializes all caches.
+
+  Keeps global caches in the 'app' object because Flask allocates all other
+  objects in thread-local memory.
+  """
+  app.context_graph_nodes_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app._pods_cache = simple_cache.SimpleCache(
+  app.context_graph_pods_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app._services_cache = simple_cache.SimpleCache(
+  app.context_graph_services_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app._rcontrollers_cache = simple_cache.SimpleCache(
+  app.context_graph_rcontrollers_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app._containers_cache = simple_cache.SimpleCache(
+  app.context_graph_containers_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app._images_cache = simple_cache.SimpleCache(
+  app.context_graph_images_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app._processes_cache = simple_cache.SimpleCache(
+  app.context_graph_processes_cache = simple_cache.SimpleCache(
       constants.MAX_CACHED_DATA_AGE_SECONDS,
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
 
 
-# Start the web server on port DATA_COLLECTOR_PORT and listen on all external
+# Starts the web server on port DATA_COLLECTOR_PORT and listen on all external
 # IPs associated with this host.
 if __name__ == '__main__':
   try:

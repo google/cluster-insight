@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" CollectorError is a user-defined exception for handling run-time
+"""CollectorError is raised by run-time errors in the data collector.
+
+CollectorError is a user-defined exception for handling run-time
 errors in the data collector.
 
 Typical usage:
@@ -28,9 +30,11 @@ except:
 
 import types
 
+
 class CollectorError(Exception):
 
   def __init__(self, message):
+    Exception.__init__()
     assert isinstance(message, types.StringTypes)
     self._message = message
 

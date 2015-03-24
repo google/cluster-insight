@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for collector/utilities.py. """
+"""Tests for collector/utilities.py."""
 
 # global imports
 import datetime

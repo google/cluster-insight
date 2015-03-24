@@ -14,22 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for collector/collector.py """
+"""Tests for collector/collector.py."""
 
 # global imports
-import re
 import json
+import re
 import types
 import unittest
 
 # local imports
 import collector
 
+
 # A regular expression that matches the 'timestamp' attribute and value
 # in JSON data.
 TIMESTAMP_REGEXP = '"timestamp": "[-0-9:.TZ]+"'
 
+
 class TestCollector(unittest.TestCase):
+  """Test harness."""
 
   def setUp(self):
     collector.app.config['TESTING'] = True
@@ -37,7 +40,7 @@ class TestCollector(unittest.TestCase):
     self.app = collector.app.test_client()
 
   def compare_to_golden(self, ret_value, fname):
-    """Compare the returned value to the golden (expected) value.
+    """Compares the returned value to the golden (expected) value.
 
     The golden value is read from the file
     'testdata/<last element of fname>.golden'.
@@ -45,9 +48,12 @@ class TestCollector(unittest.TestCase):
     value and the golden value prior to comparing them.
 
     Args:
-    ret_value: JSON output from the server.
-    fname: the middle part of the file name containing the golden
-      (expected) output from the server.
+      ret_value: JSON output from the server.
+      fname: the middle part of the file name containing the golden
+        (expected) output from the server.
+    Raises:
+      AssertError if the sanitized golden data differs from the sanitized
+      return value.
     """
     assert isinstance(ret_value, types.StringTypes)
     assert isinstance(fname, types.StringTypes)
@@ -169,5 +175,5 @@ class TestCollector(unittest.TestCase):
     self.compare_to_golden(ret_value.data, 'debug')
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
 

@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common constants for the Castanet data collector.
+"""Common constants for the Cluster-Insight data collector.
 """
 
-# The Castanet data collector listens on this port for requests.
+# The Cluster-Insight data collector listens on this port for requests.
 DATA_COLLECTOR_PORT = 5555
 
 # The cache will keep data for at most this many seconds.

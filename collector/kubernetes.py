@@ -15,29 +15,58 @@
 # limitations under the License.
 
 
-"""
-Collects context metadata from Kubernetes. Assumes the Kubernetes REST API
-is accessible via the url defined by KUBERNETES_API.
+"""Routines for collecting context metadata from Kubernetes.
+
+This module assumes that the Kubernete REST API
+is accessible via the URL defined by KUBERNETES_API.
 """
 
-from flask import current_app
 import json
-import requests
 import sys
 import time
 import types
+
+from flask import current_app
+import requests
 
 # local imports
 import collector_error
 import utilities
 
+
 ## Kubernetes APIs
 
-KUBERNETES_API = "http://127.0.0.1:8080/api/v1beta1"
+KUBERNETES_API = 'http://127.0.0.1:8080/api/v1beta1'
+
 
 @utilities.one_string_arg
 def fetch_data(url):
-  """Fetch the named URL from Kubernetes (in production) or a file (in a test).
+  """Fetches a URL from Kubernetes (production) or reads it from a file (test).
+
+  The production/test mode is determined by the existence of the
+  attribute 'TESTING' in 'current_app.config'.
+
+  The file name is derived from the URL in the following way:
+  The file name is 'testdata/' + last element of the URL + '.json'.
+
+  For example, if the URL is 'http://ab/cd/ef', then the file name is
+  'testdata/ef.json'.
+
+  The input is always JSON. It is converted to an internal representation
+  by this routine.
+
+  Args:
+   url: the URL to fetch from Kubernetes in production.
+
+  Returns:
+    The contents of the URL (in production) or the contents of the file
+    (in a test).
+
+  Raises:
+    IOError: if cannot open the test file.
+    ValueError: if cannot convert the contents of the file to JSON.
+    Other exceptions may be raised as the result of attempting to
+    fetch the URL.
   """
   if current_app.config.get('TESTING'):
     # Read the data from a file.
@@ -50,7 +79,7 @@ def fetch_data(url):
 
 
 def get_nodes():
-  """ Gets the list of all nodes in the current cluster.
+  """Gets the list of all nodes in the current cluster.
 
   Returns:
     list of wrapped node objects.
@@ -61,8 +90,8 @@ def get_nodes():
     CollectorError in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  nodes, timestamp_seconds = current_app._nodes_cache.lookup('')
-  if timestamp_seconds is not None:
+  nodes, timestamp_secs = current_app.context_graph_nodes_cache.lookup('')
+  if timestamp_secs is not None:
     current_app.logger.info('get_nodes() cache hit returns %d nodes',
                             len(nodes))
     return nodes
@@ -79,10 +108,10 @@ def get_nodes():
   now = time.time()
   for node in result['items']:
     nodes.append(utilities.wrap_object(
-            node, 'Node', node['id'], now,
-            utilities.node_id_to_host_name(node['id'])))
+        node, 'Node', node['id'], now,
+        utilities.node_id_to_host_name(node['id'])))
 
-  ret_value = current_app._nodes_cache.update('', nodes, now)
+  ret_value = current_app.context_graph_nodes_cache.update('', nodes, now)
   current_app.logger.info('get_nodes() returns %d nodes', len(nodes))
   return ret_value
 
@@ -95,6 +124,9 @@ def get_pods(node_id=None):
   When 'node_id' is a non-empty string, it returns the list of pods in that
   node.
 
+  Args:
+    node_id: the parent node of the pods or None.
+
   Returns:
     list of wrapped pod objects.
     Each element in the list is the result of
@@ -105,14 +137,14 @@ def get_pods(node_id=None):
     Other exceptions may be raised due to exectution errors.
   """
   pods_label = '' if node_id is None else node_id
-  pods, timestamp_seconds = current_app._pods_cache.lookup(pods_label)
-  if timestamp_seconds is not None:
+  pods, timestamp_secs = current_app.context_graph_pods_cache.lookup(pods_label)
+  if timestamp_secs is not None:
     current_app.logger.info('get_pods(pods_label=%s) cache hit returns %d pods',
                             pods_label, len(pods))
     return pods
 
   pods = []
-  url = "{kubernetes}/pods".format(kubernetes=KUBERNETES_API)
+  url = '{kubernetes}/pods'.format(kubernetes=KUBERNETES_API)
   try:
     result = fetch_data(url)
   except:
@@ -129,7 +161,7 @@ def get_pods(node_id=None):
     else:
       pods.append(wrapped_pod)
 
-  ret_value = current_app._pods_cache.update(pods_label, pods, now)
+  ret_value = current_app.context_graph_pods_cache.update(pods_label, pods, now)
   current_app.logger.info('get_pods(node_id=%s) returns %d pods',
                           pods_label, len(pods))
   return ret_value
@@ -137,7 +169,14 @@ def get_pods(node_id=None):
 
 @utilities.two_dict_args
 def matching_labels(pod, selector):
-  """Returns True iff the the pod's labels contain the selector's labels.
+  """Compares the key/vale pairs in 'selector' with the pod's label.
+
+  Args:
+    pod: the pod to be compared with 'selector'.
+    selector: a dictionary of key/value pairs.
+
+  Returns:
+    True iff the pod's label matches the key/value pairs in 'selector'.
   """
   assert utilities.is_wrapped_object(pod, 'Pod')
   if not isinstance(pod['properties']['labels'], types.DictType):
@@ -150,6 +189,10 @@ def matching_labels(pod, selector):
 @utilities.one_dictionary_arg
 def get_selected_pods(selector):
   """Gets the list of pods in the current cluster matching 'selector'.
+
+  Args:
+    selector: a dictionary of key/value pairs describing the labels of
+      the matching pods.
 
   Returns:
     list of wrapped pod objects.
@@ -165,7 +208,7 @@ def get_selected_pods(selector):
   except collector_error.CollectorError:
     raise
   except:
-    msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
+    msg = 'get_pods() failed with exception %s' % sys.exc_info()[0]
     current_app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
@@ -183,6 +226,9 @@ def get_selected_pods(selector):
 @utilities.one_string_arg
 def get_pod_host(pod_id):
   """Gets the host name associated with the given pod.
+
+  Args:
+    pod_id: the pod name.
 
   Returns:
     If the pod was found, returns the associated host name.
@@ -215,14 +261,14 @@ def get_services():
     CollectorError in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  services, timestamp_seconds = current_app._services_cache.lookup('')
-  if timestamp_seconds is not None:
+  services, timestamp_secs = current_app.context_graph_services_cache.lookup('')
+  if timestamp_secs is not None:
     current_app.logger.info('get_services() cache hit returns %d services',
                             len(services))
     return services
 
   services = []
-  url = "{kubernetes}/services".format(kubernetes=KUBERNETES_API)
+  url = '{kubernetes}/services'.format(kubernetes=KUBERNETES_API)
   try:
     result = fetch_data(url)
   except:
@@ -232,10 +278,10 @@ def get_services():
 
   now = time.time()
   for service in result['items']:
-    services.append(utilities.wrap_object(
-            service, 'Service', service['id'], now))
+    services.append(
+        utilities.wrap_object(service, 'Service', service['id'], now))
 
-  ret_value = current_app._services_cache.update('', services, now)
+  ret_value = current_app.context_graph_services_cache.update('', services, now)
   current_app.logger.info('get_services() returns %d services', len(services))
   return ret_value
 
@@ -252,15 +298,15 @@ def get_rcontrollers():
     CollectorError in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  rcontrollers, timestamp_seconds = current_app._rcontrollers_cache.lookup('')
-  if timestamp_seconds is not None:
+  rcontrollers, ts = current_app.context_graph_rcontrollers_cache.lookup('')
+  if ts is not None:
     current_app.logger.info(
         'get_rcontrollers() cache hit returns %d rcontrollers',
         len(rcontrollers))
     return rcontrollers
 
   rcontrollers = []
-  url = "{kubernetes}/replicationControllers".format(kubernetes=KUBERNETES_API)
+  url = '{kubernetes}/replicationControllers'.format(kubernetes=KUBERNETES_API)
   try:
     result = fetch_data(url)
   except:
@@ -271,9 +317,10 @@ def get_rcontrollers():
   now = time.time()
   for rcontroller in result['items']:
     rcontrollers.append(utilities.wrap_object(
-            rcontroller, 'ReplicationController', rcontroller['id'], now))
+        rcontroller, 'ReplicationController', rcontroller['id'], now))
 
-  ret_value = current_app._rcontrollers_cache.update('', rcontrollers, now)
-  current_app.logger.info('get_rcontrollers() returns %d rcontrollers',
-                          len(rcontrollers))
+  ret_value = current_app.context_graph_rcontrollers_cache.update(
+      '', rcontrollers, now)
+  current_app.logger.info(
+      'get_rcontrollers() returns %d rcontrollers', len(rcontrollers))
   return ret_value

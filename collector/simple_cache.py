@@ -57,15 +57,17 @@ Usage:
 
 import collections
 import copy
-import time
 import threading
+import time
 import types
 
 # local import
 import utilities
 
-class SimpleCache:
-  """
+
+class SimpleCache(object):
+  """A cache of named objects with specified freshness and cleanup times.
+
   Attributes:
     _lock: a lock protecting access to the data.
     _max_data_age_seconds: data older than this many seconds will not be
@@ -104,9 +106,9 @@ class SimpleCache:
 
     This method must be called when '_lock' is held.
 
-    Params:
-    now:  current time in seconds since the Epoch or None. If the value is
-          None, then _cleanup() is using the wallclock time.
+    Args:
+      now: current time in seconds since the Epoch or None. If the value is
+        None, then _cleanup() is using the wallclock time.
     """
     assert (now is None) or isinstance(now, types.FloatType)
     ts = time.time() if now is None else now
@@ -121,10 +123,11 @@ class SimpleCache:
   def lookup(self, label, now=None):
     """Lookup the data with the given label in the cache.
 
-    'label' must be a string. It can be empty.
-    If 'now' is None, the cached entry is compared with the current
-    wallclock time. Otherwise the cached entry is compared with the
-    value of 'now'.
+    Args:
+      label: the label of the data. must be a string. may be empty.
+      now: current time in seconds. If 'now' is None, the cached entry is
+        compared with the current wallclock time. Otherwise the cached entry
+        is compared with the value of 'now'.
 
     Returns:
     When the given label has recent data in the cache (less than
@@ -138,9 +141,9 @@ class SimpleCache:
 
     self._lock.acquire()
     ts_seconds = time.time() if now is None else now
-    if (label in self._label_to_tuple) and (ts_seconds <
-        (self._label_to_tuple[label].update_timestamp +
-         self._max_data_age_seconds)):
+    if ((label in self._label_to_tuple) and
+        (ts_seconds < (self._label_to_tuple[label].update_timestamp +
+                       self._max_data_age_seconds))):
       # a cache hit
       assert self._label_to_tuple[label].value is not None
       value, timestamp = (copy.deepcopy(self._label_to_tuple[label].value),
@@ -155,10 +158,13 @@ class SimpleCache:
   def update(self, label, value, update_timestamp=None):
     """Stores the given value and timestamp for the given label.
 
-    'label' must be a string. It can be empty. 'value' must not be None.
-    If 'update_timestamp' is None, then the update timestamp associated
-    with 'value' is the current wallclock time. If 'update_timestamp'
-    is not None, then this timestamp is stored with 'value'.
+    Args:
+      label: the value's label. It must be a string. It can be empty.
+      value: the value stored in the cache. Must not be None.
+      update_timestamp: the timestamp in seconds of the value.
+        If 'update_timestamp' is None, then the update timestamp associated
+        with 'value' is the current wallclock time. If 'update_timestamp'
+        is not None, then this timestamp is stored with 'value'.
 
     If 'value' is the same as the current value associated with the label
     after removal of 'timestamp' attributes, then the cached value is not
@@ -207,6 +213,9 @@ class SimpleCache:
     Note that you may lookup only recent entries in the cache
     (see the explanation of the lookup() function), even when the
     cache contains additional older entries.
+
+    Returns:
+    Number of entries in the cache.
     """
     self._lock.acquire()
     n = len(self._label_to_tuple)
