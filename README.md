@@ -5,7 +5,7 @@ about resources in a Kubernetes managed cluster, and infers relationships
 between those resources to create a *context graph*. The nodes of the context
 graph are cluster resources (e.g. nodes, pods, services,
 replication-controllers, containers, processes, and images), and the edges are
-inferred relationships between those resources (e.g. memberOf, monitors,
+inferred relationships between those resources (e.g. contains, monitors,
 loadBalances, createdFrom).
 
 The context graph represents a point-in-time snapshot of the cluster’s state.
@@ -80,10 +80,10 @@ In addition, it listens for external HTTP requests to its REST endpoint on port
 ## REST API
 
 These are the APIs that clients of Cluster Insight can use to get the context
-graph snapshot, and raw resource-specific metadata:
+graph snapshot and raw resource-specific metadata:
 
-* `/cluster` - returns a context graph snapshot, with a timestamp. The context
-  graph is a JSON document consisting of “resources” and “relation” keys. The
+* `/cluster` - returns a context graph snapshot with a timestamp. The context
+  graph is a JSON document consisting of `resources` and `relations` keys. The
   format of this JSON document is described later.
 * `/cluster/resources/TYPE` - returns the raw metadata for cluster resources
   of type TYPE, where TYPE must be one of {Node, Pod, Service,
@@ -94,10 +94,10 @@ graph snapshot, and raw resource-specific metadata:
 In order to minimize monitoring overhead on the Kubernetes cluster, the context
 graph is computed from cached metadata about the cluster resources. The cache
 is internal to the Cluster Insight service, and its update frequency is fixed
-in this release. In a future release, the cache will update automatically in
-response to Kubernetes API events, ensuring that the resource data is always
-up to date. The context graph is computed on demand using the resource metadata
-from the cache.
+in this release (10 seconds). In a future release, the cache will update
+automatically in response to Kubernetes API events, ensuring that the resource
+data is always up to date. The context graph is computed on demand using the
+resource metadata from the cache.
 
 ## Context graph format
 
@@ -132,13 +132,15 @@ The context graph is a JSON document with the following format:
 }
 ```
 
-The properties field is the observed runtime metadata for a resource that was
-collected from the Kubernetes master and the Docker daemons on its minion nodes.
-The annotations field contains key-value pairs inserted by the cluster-insight
-logic.
+The `properties` field in the resource is the observed runtime data for the
+corresponding resource that was collected from the Kubernetes master or
+the Docker daemons on its minion nodes.
+The observed data is immutable.
+The `annotations` field in resources and relations contains key-value pairs
+inserted by the cluster-insight logic.
 
-Each of the resources and relations has a timestamp field, indicating when
-it was observed or inferred respectively. The entire context graph has a
+Each of the resources and relations has a `timestamp` field, indicating when
+it was observed or inferred, respectively. The entire context graph has a
 separate timestamp indiciating when the graph was computed from the resource
 metadata.
 

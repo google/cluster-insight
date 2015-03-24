@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-""" Collects config metadata from multiple places and computes a graph from it.
+""" Collects context metadata from multiple places and computes a graph from it.
 """
 
 import datetime
@@ -28,7 +28,7 @@ import types
 
 # local imports
 import collector_error
-import config
+import context
 import constants
 import docker
 import kubernetes
@@ -189,7 +189,7 @@ def get_images():
 @app.route('/debug', methods=['GET'])
 def get_debug():
   try:
-    return config.compute_graph('dot')
+    return context.compute_graph('dot')
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
@@ -201,7 +201,7 @@ def get_debug():
 @app.route('/cluster/resources', methods=['GET'])
 def get_resources():
   try:
-    response = config.compute_graph('resources')
+    response = context.compute_graph('resources')
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -215,7 +215,7 @@ def get_resources():
 @app.route('/cluster', methods=['GET'])
 def get_cluster():
   try:
-    response = config.compute_graph('context_graph')
+    response = context.compute_graph('context_graph')
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
