@@ -27,12 +27,12 @@ source code.
 To build a Docker image from the source code, follow these instructions:
 
 * Install and start the Docker service on the machine, if it not already present.
-* Pull the cluster-insight sources from Github into a local directory
-  ./cluster-insight
-* Change directory to ./cluster-insight
-* Run: `sudo docker build -t google/cluster-insight . `
+* Clone the Cluster-Insight sources from Github into a local directory
+  ./cluster-insight with the command `git clone https://github.com/google/cluster-insight.git`
+* Change directory to ./cluster-insight/collector
+* Run: `sudo docker build -t kubernetes/cluster-insight . `
 * Check for the image: `sudo docker images`. You should see an image named
-  google/cluster-insight.
+  kubernetes/cluster-insight.
 
 To install and activate this service, follow these instructions:
 
@@ -46,15 +46,15 @@ To install and activate this service, follow these instructions:
    * Login to the master host.
    * Check if the Docker service is running: `sudo docker ps`. If this gives
      an error, you must install and start the Docker service on this machine.
-   * Download the Docker image google/cluster-insight:
-       * If you want to use a pre-built image, use `sudo docker pull google/cluster-insight`
+   * Download the Docker image kubernetes/cluster-insight:
+       * If you want to use a pre-built image, use `sudo docker pull kubernetes/cluster-insight`
          to download it from Docker Hub.
        * If you want to use the image you created from sources using the build
-         instructions above, then copy that google/cluster-insight image into
+         instructions above, then copy that kubernetes/cluster-insight image into
          this machine.
 
-   * Start the cluster-insight service like this:
-     `sudo docker run -d --net=host -p 5555:5555 --name cluster-insight google/cluster-insight`.
+   * Start the Cluster-Insight service like this:
+     `sudo docker run -d --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight`.
    * The Cluster-Insight service should now be listening for REST
      API requests on port 5555 in the Kubernetes master. Check this by typing:
      `sudo docker ps` - you should see a running container with the name
@@ -137,7 +137,7 @@ corresponding resource that was collected from the Kubernetes master or
 the Docker daemons on its minion nodes.
 The observed data is immutable.
 The `annotations` field in resources and relations contains key-value pairs
-inserted by the cluster-insight logic.
+inserted by the Cluster-Insight logic.
 
 Each of the resources and relations has a `timestamp` field, indicating when
 it was observed or inferred, respectively. The entire context graph has a

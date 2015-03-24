@@ -32,8 +32,8 @@
 # To build the image you should first change your location to the directory
 # containing Dockerfile then build it.
 #   cd cluster-insight/collector
-#   sudo docker build -t google/cluster-insight .
-# Check that you now have a new image called "google/cluster-insight":
+#   sudo docker build -t kubernetes/cluster-insight .
+# Check that you now have a new image called "kubernetes/cluster-insight":
 #   sudo docker images
 
 # You must configure the Cluster-Insight data collector as explained in the
@@ -41,9 +41,9 @@
 
 # To run a container from this image in dev/test mode
 # (Ctrl-C will stop and remove the container):
-#   sudo docker run --rm --net=host -p 5555:5555 --name cluster-insight google/cluster-insight 
+#   sudo docker run --rm --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight 
 # To run a container from this image in detached production mode:
-#   sudo docker run -d --net=host -p 5555:5555 --name cluster-insight google/cluster-insight
+#   sudo docker run -d --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight
 # (this assumes that the Web Server port specified in collector.py is 5555)
 
 # To check if the Cluster-Insight data collector is running:
@@ -52,8 +52,8 @@
 # To stop and remove the container:
 #   sudo docker rm -f cluster-insight
 
-# To remove the google/cluster-insight image:
-#   sudo docker rmi google/cluster-insight
+# To remove the kubernetes/cluster-insight image:
+#   sudo docker rmi kubernetes/cluster-insight
 
 
 FROM python:2-onbuild
