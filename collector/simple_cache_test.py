@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for collector/simple_cache.py """
+"""Tests for collector/simple_cache.py."""
 
 # global imports
 
@@ -27,11 +27,13 @@ import unittest
 import simple_cache
 
 
+# Global constants
 MAX_DATA_AGE_SECONDS = 10
 DATA_CLEANUP_AGE_SECONDS = 100
 KEY = 'abc123'
-BLOB_ID_EMPTY = { 'id': '' }
-BLOB_ID_KEY = { 'id': KEY }
+BLOB_ID_EMPTY = {'id': ''}
+BLOB_ID_KEY = {'id': KEY}
+
 
 class TestSimpleCache(unittest.TestCase):
 
@@ -74,13 +76,17 @@ class TestSimpleCache(unittest.TestCase):
     value, timestamp = self._cache.lookup(KEY, now + MAX_DATA_AGE_SECONDS + 3)
     self.assertTrue((value is None) and (timestamp is None))
 
-
-  def make_blob(self, id):
+  def make_blob(self, i):
     """Makes a blob containing the ID ("id%d" % i).
-    """
-    assert isinstance(id, types.IntType)
-    return { 'id': 'id%d' % id }
 
+    Args:
+      i: the numeric part of the identifier.
+
+    Returns:
+    The string 'id' followed by the string representation of the number 'i'.
+    """
+    assert isinstance(i, types.IntType)
+    return {'id': 'id%d' % i}
 
   def test_cleanup(self):
     """Verify that objects older than DATA_CLEANUP_AGE_SECONDS are cleaned.
@@ -106,17 +112,23 @@ class TestSimpleCache(unittest.TestCase):
       else:
         self.assertTrue((value is None) and (timestamp is None))
 
+  def make_fancy_blob(self, name, timestamp_seconds, value):
+    """Makes a blob containing "name", "timestamp" and "value" attributes.
 
-  def make_fancy_blob(self, id, timestamp_seconds, value):
-    """Makes a blob containing "id", "timestamp" and "value" attributes.
+    Args:
+      name: the name of this object (the value of the 'id' attribute).
+      timestamp_seconds: a timestamp in seconds.
+      value: a value of any type.
+
+    Returns:
+    A dictionary containing 'id', 'timestamp', and 'value' key/value pairs.
     """
-    assert isinstance(id, types.StringTypes)
+    assert isinstance(name, types.StringTypes)
     assert isinstance(timestamp_seconds, types.FloatType)
-    return { 'id': id,
-             'timestamp':
-               datetime.datetime.fromtimestamp(timestamp_seconds).isoformat(),
-             'value': value }
-
+    return {'id': name,
+            'timestamp':
+                datetime.datetime.fromtimestamp(timestamp_seconds).isoformat(),
+            'value': value}
 
   def test_update(self):
     """Verify that updating an object with equivalent/non-equivalent objects.
@@ -163,4 +175,4 @@ class TestSimpleCache(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

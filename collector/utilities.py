@@ -14,17 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common utility routines for the Castanet data collector.
+"""Common utility routines for the Cluster-Insight data collector.
 """
-import copy
 import datetime
 import hashlib
 import json
 import re
 import types
-
-# local imports
-import constants
 
 
 def valid_string(x):
@@ -36,6 +32,7 @@ def valid_optional_string(x):
   """Returns True iff is either None or a non-empty string."""
   return (x is None) or valid_string(x)
 
+
 def one_string_arg(func):
   """A decorator for a function that should be given exactly one valid string.
   """
@@ -44,6 +41,7 @@ def one_string_arg(func):
     return func(arg1)
 
   return inner
+
 
 def one_optional_string_arg(func):
   """A decorator for a function that should be given an optional valid string.
@@ -54,6 +52,7 @@ def one_optional_string_arg(func):
 
   return inner
 
+
 def one_dictionary_arg(func):
   """A decorator for a function that should be given a dictionary argument.
   """
@@ -63,6 +62,7 @@ def one_dictionary_arg(func):
 
   return inner
 
+
 def two_string_args(func):
   """A decorator for a function that should be given exactly two valid strings.
   """
@@ -71,6 +71,7 @@ def two_string_args(func):
     return func(arg1, arg2)
 
   return inner
+
 
 def one_string_one_optional_string_args(func):
   """A decorator for a function that should be given two string arguments.
@@ -85,6 +86,7 @@ def one_string_one_optional_string_args(func):
 
   return inner
 
+
 def two_dict_args(func):
   """A decorator for a function that should be given two dictionary arguments.
   """
@@ -93,6 +95,7 @@ def two_dict_args(func):
     return func(arg1, arg2)
 
   return inner
+
 
 def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
                 alt_label=None):
@@ -104,10 +107,10 @@ def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
   assert valid_optional_string(alt_label)
 
   wrapped_obj = {
-      'id' : obj_id, 'type' : obj_type,
-      'timestamp' :
-           datetime.datetime.fromtimestamp(timestamp_seconds).isoformat(),
-      'properties' : obj }
+      'id': obj_id, 'type': obj_type,
+      'timestamp':
+          datetime.datetime.fromtimestamp(timestamp_seconds).isoformat(),
+      'properties': obj}
   if (label is not None) or (alt_label is not None):
     wrapped_obj['annotations'] = {}
     if label is not None:
@@ -126,6 +129,14 @@ def is_wrapped_object(obj, expected_type):
   is_wrapped_object(wrap_object('some_type', 'some_id', time.time(), obj),
                     'some_type')
   is always true.
+
+  Args:
+    obj: any object. If the object does not have the expected type or structure,
+      is_wrapped_object() will return False.
+    expected_type: the expected value of obj['type'].
+
+  Returns:
+  True iff 'obj' is a wrapped object of the expected type.
   """
   assert valid_string(expected_type)
   return (isinstance(obj, types.DictType) and
@@ -137,6 +148,9 @@ def is_wrapped_object(obj, expected_type):
 
 def timeless_json_hash(obj):
   """Compute the hash of 'obj' without continuously changing attributes.
+
+  Args:
+    obj: an object.
 
   Returns:
   The SHA1 digest of the JSON representation of 'obj' after removing the
@@ -161,23 +175,38 @@ def object_to_hex_id(obj):
   The short  ID is the contents of the "CONTAINER ID" column in the
   output of the "docker ps" command or the contents of the "IMAGE ID"
   column in the output of the "docker images" command.
+
+  Args:
+    obj: a dictionary containing the 'Id' attribute.
+
+  Returns:
+  The short object ID (12 hexadecimal digits) of 'obj', which is the first
+  12 characters of the obj['Id'] value.
   """
   assert isinstance(obj, types.DictType)
   assert isinstance(obj.get('Id'), types.StringTypes)
-  id = obj['Id']
-  assert re.match('^[0-9a-f]+$', id) and (len(id) > 12)
+  id_value = obj['Id']
+  assert re.match('^[0-9a-f]+$', id_value) and (len(id_value) > 12)
 
-  return id[:12]
+  return id_value[:12]
 
 
 def _node_id_helper(node_id, id_field):
-  """Returns the given field in the given node ID.
+  """Returns the given period-separated field in the given node ID.
 
-  It assumes that the node's ID has the format:split
+  It assumes that the node's ID has the format:
   <host_name>.c.<project_name>.internal
 
   For example, the node ID of the first slave node in a cluster is:
   "k8s-guestbook-node-1.c.rising-apricot-840.internal"
+
+  Args:
+    node_id: node identifier. Must not be empty.
+    id_field: the position of the required field in 'node_id' after splitting
+      by '.' characters.
+
+  Returns:
+  The value of the requested field in the node ID.
   """
   assert valid_string(node_id)
   assert isinstance(id_field, types.IntType)
@@ -190,6 +219,7 @@ def _node_id_helper(node_id, id_field):
 
   return elements[id_field]
 
+
 def node_id_to_project_name(node_id):
   """Returns the project ID of the node ID.
 
@@ -198,6 +228,12 @@ def node_id_to_project_name(node_id):
 
   For example, the node ID of the first slave node in a cluster is:
   "k8s-guestbook-node-1.c.rising-apricot-840.internal"
+
+  Args:
+    node_id: node identifier. Must not be empty.
+
+  Returns:
+  The project name.
   """
   return _node_id_helper(node_id, 2)
 
@@ -210,5 +246,11 @@ def node_id_to_host_name(node_id):
 
   For example, the node ID of the first slave node in a cluster is:
   "k8s-guestbook-node-1.c.rising-apricot-840.internal"
+
+  Args:
+    node_id: node identifier. Must not be empty.
+
+  Returns:
+    The host name.
   """
   return _node_id_helper(node_id, 0)

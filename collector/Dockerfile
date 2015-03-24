@@ -53,7 +53,7 @@
 #   sudo docker rm -f cluster-insight
 
 # To remove the google/cluster-insight image:
-#   sudo docker rmi castanet/collector
+#   sudo docker rmi google/cluster-insight
 
 
 FROM python:2-onbuild
