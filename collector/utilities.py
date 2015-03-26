@@ -210,9 +210,8 @@ def _node_id_helper(node_id, id_field):
   """
   assert valid_string(node_id)
   assert isinstance(id_field, types.IntType)
-  assert (id_field >= 0) and (id_field <= 3)
   elements = node_id.split('.')
-  assert len(elements) == 4
+  assert (id_field >= 0) and (id_field < len(elements))
   assert elements[1] == 'c'
   assert elements[-1] == 'internal'
   assert elements[id_field]
