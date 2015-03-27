@@ -219,7 +219,7 @@ def get_containers(docker_host, pod_id=None):
 
     container_label = utilities.object_to_hex_id(container)
     wrapped_container = utilities.wrap_object(
-        container, 'Container', container_id, ts, container_label)
+        container, 'Container', container_id, ts, label=container_label)
     if pod_id:
       # container['Config']['Hostname'] is the name of the pod (not the host).
       if pod_id == container['Config']['Hostname']:
@@ -269,6 +269,9 @@ def invalid_processes(url):
 
   Args:
     url: the source of the invalid data is this URL.
+
+  Raises:
+    CollectorError: always raises this exception.
   """
   msg = 'process information from URL %s is invalid' % url
   current_app.logger.exception(msg)
@@ -361,7 +364,7 @@ def get_processes(docker_host, container_id):
     # Prefix with container Id to ensure uniqueness across the whole graph.
     process_id = '%s/%s' % (container_label, process['PID'])
     processes.append(utilities.wrap_object(
-        process, 'Process', process_id, now, process['PID']))
+        process, 'Process', process_id, now, label=process['PID']))
 
   ret_value = current_app.context_graph_processes_cache.update(
       processes_label, processes, now)
@@ -432,7 +435,7 @@ def get_image(docker_host, image_id):
 
   wrapped_image = utilities.wrap_object(
       image, 'Image', '%s/%s' % (docker_host, image_hex_label), now,
-      image_hex_label, image_name_label)
+      label=image_hex_label, alt_label=image_name_label)
 
   ret_value = current_app.context_graph_images_cache.update(
       cache_key, wrapped_image, now)
@@ -469,6 +472,12 @@ def get_images(docker_host):
     # Containers in a Pod
     for container in get_containers(docker_host, pod_id):
       # Image from which this Container was created
+      if (('properties' not in container) or
+          ('Config' not in container['properties']) or
+          ('Image' not in container['properties']['Config'])):
+        # Image ID not found
+        continue
+
       image_id = container['properties']['Config']['Image']
       image = get_image(docker_host, image_id)
       if image is not None:

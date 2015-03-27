@@ -1,6 +1,9 @@
 {
   "resources": [
     {
+      "annotations": {
+        "label": "guestbook"
+      }, 
       "id": "guestbook", 
       "properties": {
         "containerPort": "http-server", 
@@ -29,6 +32,9 @@
       "type": "Service"
     }, 
     {
+      "annotations": {
+        "label": "kubernetes"
+      }, 
       "id": "kubernetes", 
       "properties": {
         "containerPort": 0, 
@@ -52,6 +58,9 @@
       "type": "Service"
     }, 
     {
+      "annotations": {
+        "label": "kubernetes-ro"
+      }, 
       "id": "kubernetes-ro", 
       "properties": {
         "containerPort": 0, 
@@ -75,6 +84,9 @@
       "type": "Service"
     }, 
     {
+      "annotations": {
+        "label": "redis-master"
+      }, 
       "id": "redis-master", 
       "properties": {
         "containerPort": "redis-server", 
@@ -101,6 +113,9 @@
       "type": "Service"
     }, 
     {
+      "annotations": {
+        "label": "redis-worker"
+      }, 
       "id": "redis-worker", 
       "properties": {
         "containerPort": "redis-server", 
@@ -127,6 +142,9 @@
       "type": "Service"
     }, 
     {
+      "annotations": {
+        "label": "skydns"
+      }, 
       "id": "skydns", 
       "properties": {
         "containerPort": 53, 

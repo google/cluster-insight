@@ -1,6 +1,9 @@
 {
   "resources": [
     {
+      "annotations": {
+        "label": "guestbook-controller"
+      }, 
       "id": "guestbook-controller", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:46:49Z", 
@@ -77,6 +80,9 @@
       "type": "ReplicationController"
     }, 
     {
+      "annotations": {
+        "label": "redis-worker-controller"
+      }, 
       "id": "redis-worker-controller", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:45:09Z", 
@@ -155,6 +161,9 @@
       "type": "ReplicationController"
     }, 
     {
+      "annotations": {
+        "label": "skydns"
+      }, 
       "id": "skydns", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:39:42Z", 

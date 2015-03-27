@@ -109,7 +109,7 @@ def get_nodes():
   for node in result['items']:
     nodes.append(utilities.wrap_object(
         node, 'Node', node['id'], now,
-        utilities.node_id_to_host_name(node['id'])))
+        label=utilities.node_id_to_host_name(node['id'])))
 
   ret_value = current_app.context_graph_nodes_cache.update('', nodes, now)
   current_app.logger.info('get_nodes() returns %d nodes', len(nodes))
@@ -180,7 +180,7 @@ def matching_labels(pod, selector):
   """
   assert utilities.is_wrapped_object(pod, 'Pod')
   if not (('labels' in pod['properties']) and
-      isinstance(pod['properties']['labels'], types.DictType)):
+          isinstance(pod['properties']['labels'], types.DictType)):
     return False
   selector_view = selector.viewitems()
   pod_labels_view = pod['properties']['labels'].viewitems()
