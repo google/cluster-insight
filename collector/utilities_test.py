@@ -27,6 +27,44 @@ import utilities
 
 class TestUtilities(unittest.TestCase):
 
+  def test_node_id_to_project_name(self):
+    """Tests node_id_to_host_name()."""
+    self.assertEqual(
+        'k8s-guestbook-node-1',
+        utilities.node_id_to_host_name(
+            'k8s-guestbook-node-1.c.rising-apricot-840.internal')) 
+    self.assertEqual(
+        'k8s-guestbook-node-1',
+        utilities.node_id_to_host_name(
+            'k8s-guestbook-node-1.c.bamboo-clone-862.internal'))
+    self.assertEqual(
+        'kubernetes-minion-dlc9',
+        utilities.node_id_to_host_name(
+            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
+            'internal'))
+
+    with self.assertRaises(AssertionError):
+        utilities.node_id_to_host_name('x.y.z.w')
+
+  def test_node_id_to_project_name(self):
+    """Tests node_id_to_project_name()."""
+    self.assertEqual(
+        'rising-apricot-840',
+        utilities.node_id_to_project_name(
+            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
+    self.assertEqual(
+        'bamboo-clone-862',
+        utilities.node_id_to_project_name(
+            'k8s-guestbook-node-1.c.bamboo-clone-862.internal'))
+    self.assertEqual(
+        'spartan-alcove-89517',
+        utilities.node_id_to_project_name(
+            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
+            'internal'))
+
+    with self.assertRaises(AssertionError):
+        utilities.node_id_to_project_name('x.y.z.w')
+
   def test_timeless_json_hash(self):
     """Tests timeless_json_hash() with multiple similar and dissimilar objects.
     """
