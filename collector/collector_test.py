@@ -67,7 +67,18 @@ class TestCollector(unittest.TestCase):
     # Remove all timestamps from golden data and returned value.
     sanitized_golden_data = re.sub(TIMESTAMP_REGEXP, '', golden_data)
     sanitized_ret_value = re.sub(TIMESTAMP_REGEXP, '', ret_value)
-    self.assertEqual(sanitized_golden_data, sanitized_ret_value)
+
+    # Find the index of the first discrepancy between 'sanitized_golden_data'
+    # and 'sanitized_ret_value'. If they are equal, the index will point at
+    # the position after the last character in both strings.
+    i = 0
+    while (i < len(sanitized_golden_data)) and (i < len(sanitized_ret_value)):
+      if sanitized_golden_data[i] != sanitized_ret_value[i]:
+        break
+      i += 1
+
+    self.assertEqual(sanitized_golden_data[i:], sanitized_ret_value[i:])
+
 
   def test_regexp(self):
     """Tests the TIMESTAMP_REGEXP against various timestamp formats."""
@@ -167,8 +178,8 @@ class TestCollector(unittest.TestCase):
 
     self.assertEqual(28, self.count_relations(result, 'contains'))
     self.assertEqual(2, self.count_relations(result, 'createdFrom'))
-    self.assertEqual(7, self.count_relations(result, 'loadBalances'))
-    self.assertEqual(6, self.count_relations(result, 'monitors'))
+    self.assertEqual(6, self.count_relations(result, 'loadBalances'))
+    self.assertEqual(5, self.count_relations(result, 'monitors'))
 
   def test_debug(self):
     ret_value = self.app.get('/debug')

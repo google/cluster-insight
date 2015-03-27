@@ -476,10 +476,6 @@
         }, 
         "generateName": "redis-worker-controller-", 
         "id": "redis-worker-controller-gziey", 
-        "labels": {
-          "name": "redis", 
-          "role": "worker"
-        }, 
         "namespace": "default", 
         "resourceVersion": 200, 
         "selfLink": "/api/v1beta1/pods/redis-worker-controller-gziey?namespace=default", 
