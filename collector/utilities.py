@@ -23,6 +23,18 @@ import re
 import types
 
 
+# The format of node ID is:
+# <host name>.c.<project_name>.internal
+# The <project_name> may contain internal periods.
+# If <project_name> contains periods, then we are interested only in the
+# first component of the <project_name> up to the first period.
+# For example:
+# "k8s-guestbook-node-1.c.rising-apricot-840.internal"
+# or
+# "kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.internal".
+NODE_ID_PATTERN = '^([^.]+)[.]c[.]([^.]+).*[.]internal$'
+
+
 def valid_string(x):
   """Returns True iff 'x' is a non-empty string."""
   return isinstance(x, types.StringTypes) and x
@@ -191,43 +203,11 @@ def object_to_hex_id(obj):
   return id_value[:12]
 
 
-def _node_id_helper(node_id, id_field):
-  """Returns the given period-separated field in the given node ID.
-
-  It assumes that the node's ID has the format:
-  <host_name>.c.<project_name>.internal
-
-  For example, the node ID of the first slave node in a cluster is:
-  "k8s-guestbook-node-1.c.rising-apricot-840.internal"
-
-  Args:
-    node_id: node identifier. Must not be empty.
-    id_field: the position of the required field in 'node_id' after splitting
-      by '.' characters.
-
-  Returns:
-  The value of the requested field in the node ID.
-  """
-  assert valid_string(node_id)
-  assert isinstance(id_field, types.IntType)
-  assert (id_field >= 0) and (id_field <= 3)
-  elements = node_id.split('.')
-  assert len(elements) == 4
-  assert elements[1] == 'c'
-  assert elements[-1] == 'internal'
-  assert elements[id_field]
-
-  return elements[id_field]
-
-
 def node_id_to_project_name(node_id):
   """Returns the project ID of the node ID.
 
-  It assumes that the node's ID has the format:
-  <host_name>.c.<project_name>.internal
-
-  For example, the node ID of the first slave node in a cluster is:
-  "k8s-guestbook-node-1.c.rising-apricot-840.internal"
+  It assumes that the node's ID matches the pattern NODE_ID_PATTERN.
+  See the comment describing NODE_ID_PATTERN for details and examples.
 
   Args:
     node_id: node identifier. Must not be empty.
@@ -235,17 +215,16 @@ def node_id_to_project_name(node_id):
   Returns:
   The project name.
   """
-  return _node_id_helper(node_id, 2)
+  m = re.match(NODE_ID_PATTERN, node_id)
+  assert m
+  return m.group(2)
 
 
 def node_id_to_host_name(node_id):
   """Returns the host name part of the given node ID.
 
-  It assumes that the node's ID has the format:
-  <host_name>.c.<project_name>.internal
-
-  For example, the node ID of the first slave node in a cluster is:
-  "k8s-guestbook-node-1.c.rising-apricot-840.internal"
+  It assumes that the node's ID matches the pattern NODE_ID_PATTERN.
+  See the comment describing NODE_ID_PATTERN for details and examples.
 
   Args:
     node_id: node identifier. Must not be empty.
@@ -253,4 +232,6 @@ def node_id_to_host_name(node_id):
   Returns:
     The host name.
   """
-  return _node_id_helper(node_id, 0)
+  m = re.match(NODE_ID_PATTERN, node_id)
+  assert m
+  return m.group(1)

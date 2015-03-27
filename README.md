@@ -59,6 +59,13 @@ To install and activate this service, follow these instructions:
      API requests on port 5555 in the Kubernetes master. Check this by typing:
      `sudo docker ps` - you should see a running container with the name
      cluster-insight.
+   * To start the Cluster-Insight service in debug mode, add the `-d` or
+     `--debug` flags to the command line like this:
+     `sudo docker run -d --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight python ./collector.py --debug`.
+     Please excercise caution when enabling the debug mode, because it enables
+     a significant security hole. Any user who triggers a failure in the
+     Cluster-Insight service will have unrestricted access to the debugger
+     and will be able to issue arbitrary commands.
 
 * If you plan to access this service externally over HTTP, you must create a
   firewall rule on your platform to enable HTTP access to port 5555 on the

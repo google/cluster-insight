@@ -41,7 +41,8 @@
 
 # To run a container from this image in dev/test mode
 # (Ctrl-C will stop and remove the container):
-#   sudo docker run --rm --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight 
+#   sudo docker run --rm --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight python ./collector.py --debug
+#
 # To run a container from this image in detached production mode:
 #   sudo docker run -d --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight
 # (this assumes that the Web Server port specified in collector.py is 5555)

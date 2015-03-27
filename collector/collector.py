@@ -18,6 +18,7 @@
 """Collects context metadata from multiple places and computes a graph from it.
 """
 
+import argparse
 import datetime
 import logging
 import sys
@@ -340,12 +341,16 @@ def init_caching():
 # Starts the web server on port DATA_COLLECTOR_PORT and listen on all external
 # IPs associated with this host.
 if __name__ == '__main__':
-  try:
-    port = int(sys.argv[1])
-  except:
-    port = constants.DATA_COLLECTOR_PORT
+  parser = argparse.ArgumentParser(description='Cluster-Insight data collector')
+  parser.add_argument('-d', '--debug', action='store_true',
+                      help='enable debug mode')
+  parser.add_argument('-p', '--port', action='store', type=int,
+                      default=constants.DATA_COLLECTOR_PORT,
+                      help=('data collector port number [default=%d]' %
+                            constants.DATA_COLLECTOR_PORT))
+  args = parser.parse_args()
 
-  app.logger.setLevel(logging.DEBUG)
+  app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
   init_caching()
 
-  app.run(host='0.0.0.0', port=port, debug=False)
+  app.run(host='0.0.0.0', port=args.port, debug=args.debug)
