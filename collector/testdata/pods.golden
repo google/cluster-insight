@@ -1,6 +1,9 @@
 {
   "resources": [
     {
+      "annotations": {
+        "label": "guestbook-controller-0133o"
+      }, 
       "id": "guestbook-controller-0133o", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:46:49Z", 
@@ -99,6 +102,9 @@
       "type": "Pod"
     }, 
     {
+      "annotations": {
+        "label": "guestbook-controller-hh2gd"
+      }, 
       "id": "guestbook-controller-hh2gd", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:46:49Z", 
@@ -197,6 +203,9 @@
       "type": "Pod"
     }, 
     {
+      "annotations": {
+        "label": "guestbook-controller-ls6k1"
+      }, 
       "id": "guestbook-controller-ls6k1", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:46:49Z", 
@@ -295,6 +304,9 @@
       "type": "Pod"
     }, 
     {
+      "annotations": {
+        "label": "redis-master"
+      }, 
       "id": "redis-master", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:41:16Z", 
@@ -391,6 +403,9 @@
       "type": "Pod"
     }, 
     {
+      "annotations": {
+        "label": "redis-worker-controller-gziey"
+      }, 
       "id": "redis-worker-controller-gziey", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:45:09Z", 
@@ -485,6 +500,9 @@
       "type": "Pod"
     }, 
     {
+      "annotations": {
+        "label": "redis-worker-controller-oh43e"
+      }, 
       "id": "redis-worker-controller-oh43e", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:45:09Z", 
@@ -583,6 +601,9 @@
       "type": "Pod"
     }, 
     {
+      "annotations": {
+        "label": "skydns-fplln"
+      }, 
       "id": "skydns-fplln", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:39:46Z", 

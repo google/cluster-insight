@@ -27,12 +27,12 @@ import utilities
 
 class TestUtilities(unittest.TestCase):
 
-  def test_node_id_to_project_name(self):
+  def test_node_id_to_host_name(self):
     """Tests node_id_to_host_name()."""
     self.assertEqual(
         'k8s-guestbook-node-1',
         utilities.node_id_to_host_name(
-            'k8s-guestbook-node-1.c.rising-apricot-840.internal')) 
+            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
     self.assertEqual(
         'k8s-guestbook-node-1',
         utilities.node_id_to_host_name(
@@ -44,7 +44,7 @@ class TestUtilities(unittest.TestCase):
             'internal'))
 
     with self.assertRaises(AssertionError):
-        utilities.node_id_to_host_name('x.y.z.w')
+      utilities.node_id_to_host_name('x.y.z.w')
 
   def test_node_id_to_project_name(self):
     """Tests node_id_to_project_name()."""
@@ -63,7 +63,7 @@ class TestUtilities(unittest.TestCase):
             'internal'))
 
     with self.assertRaises(AssertionError):
-        utilities.node_id_to_project_name('x.y.z.w')
+      utilities.node_id_to_project_name('x.y.z.w')
 
   def test_timeless_json_hash(self):
     """Tests timeless_json_hash() with multiple similar and dissimilar objects.

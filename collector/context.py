@@ -42,8 +42,6 @@ class ContextGraph(object):
   """Maintains the context graph and outputs it."""
 
   def __init__(self):
-    self._graph_resources = []
-    self._graph_relations = []
     self._graph_metadata = None
     self._graph_title = None
     # Set the color lookup table of various resources.
@@ -60,34 +58,23 @@ class ContextGraph(object):
     self._context_resources = []
     self._context_relations = []
 
-  def add_resource(self, rid, rlabel, rtype, timestamp, obj=None):
+  def add_resource(self, rid, annotations, rtype, timestamp, obj=None):
     """Adds a resource to the context graph."""
-    assert utilities.valid_string(rid) and utilities.valid_string(rlabel)
+    assert utilities.valid_string(rid)
+    assert isinstance(annotations, types.DictType)
+    assert annotations and ('label' in annotations)
     assert utilities.valid_string(rtype)
     assert utilities.valid_string(timestamp)
-
-    # Add the resource to the JSON-graph data structure.
-    resource = {
-        'id': rid,
-        'label': rlabel,
-        'type': rtype,
-    }
-
-    # Do not add a 'metadata' attribute if its value is None.
-    if obj is not None:
-      resource['metadata'] = obj
-
-    self._graph_resources.append(resource)
 
     # Add the resource to the context graph data structure.
     resource = {
         'id': rid,
         'type': rtype,
         'timestamp': timestamp,
+        'annotations': annotations
     }
 
     # Do not add a 'metadata' attribute if its value is None.
-    resource['annotations'] = {'label': rlabel}
     if obj is not None:
       resource['properties'] = obj
 
@@ -99,19 +86,6 @@ class ContextGraph(object):
     assert utilities.valid_string(kind)
     assert utilities.valid_optional_string(label)
     assert (metadata is None) or isinstance(metadata, types.DictType)
-
-    # Add the relation to the JSON-graph data structure.
-    relation = {
-        'source': source,
-        'target': target,
-        'relation': kind,
-        'label': label if label is not None else kind,
-    }
-
-    # Do not add a 'metadata' attribute if its value is None.
-    if metadata is not None:
-      relation['metadata'] = metadata
-    self._graph_relations.append(relation)
 
     # Add the relation to the context graph data structure.
     relation = {
@@ -136,19 +110,6 @@ class ContextGraph(object):
   def set_metadata(self, metadata):
     """Sets the metadata of the context graph."""
     self._graph_metadata = metadata
-
-  def to_json_graph(self):
-    """Returns the context graph in JSON-graph format."""
-    json_graph = {
-        'graph': {
-            'directed': True,
-            'label': self._graph_title,
-            'metadata': self._graph_metadata,
-            'nodes': self._graph_resources,
-            'edges': self._graph_relations
-        }
-    }
-    return json_graph
 
   def to_context_graph(self):
     """Returns the context graph in cluster-insight context graph format."""
@@ -195,9 +156,7 @@ class ContextGraph(object):
 
   def dump(self, output_format):
     """Returns the context graph in the specified format."""
-    if output_format == 'graph':
-      return self.to_json_graph()
-    elif output_format == 'dot':
+    if output_format == 'dot':
       return self.to_dot_graph()
     elif output_format == 'context_graph':
       return self.to_context_graph()
@@ -249,14 +208,13 @@ def _do_compute_graph(output_format):
   cluster_id = project_id
   cluster_guid = 'Cluster:' + cluster_id
   g.set_title(cluster_id)
-  g.add_resource(cluster_guid, cluster_id, 'Cluster',
+  g.add_resource(cluster_guid, {'label': cluster_id}, 'Cluster',
                  nodes_list[0]['timestamp'])
 
   for node in nodes_list:
     node_id = node['id']
-    node_label = node['annotations']['label']
     node_guid = 'Node:' + node_id
-    g.add_resource(node_guid, node_label, 'Node', node['timestamp'],
+    g.add_resource(node_guid, node['annotations'], 'Node', node['timestamp'],
                    node['properties'])
     g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
     # Pods in a Node
@@ -264,7 +222,7 @@ def _do_compute_graph(output_format):
       pod_id = pod['id']
       pod_guid = 'Pod:' + pod_id
       docker_host = pod['properties']['currentState']['host']
-      g.add_resource(pod_guid, pod_id, 'Pod', pod['timestamp'],
+      g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                      pod['properties'])
       g.add_relation(node_guid, pod_guid, 'contains')  # Node contains Pod
       # Containers in a Pod
@@ -272,7 +230,7 @@ def _do_compute_graph(output_format):
         container_id = container['id']
         container_guid = 'Container:' + container_id
         # TODO(vasbala): container_id is too verbose?
-        g.add_resource(container_guid, container['annotations']['label'],
+        g.add_resource(container_guid, container['annotations'],
                        'Container', container['timestamp'],
                        container['properties'])
         # Pod contains Container
@@ -281,18 +239,23 @@ def _do_compute_graph(output_format):
         for process in docker.get_processes(docker_host, container_id):
           process_id = process['id']
           process_guid = 'Process:' + process_id
-          g.add_resource(process_guid, process['annotations']['label'],
+          g.add_resource(process_guid, process['annotations'],
                          'Process', process['timestamp'], process['properties'])
           # Container contains Process
           g.add_relation(container_guid, process_guid, 'contains')
         # Image from which this Container was created
+        if (('properties' not in container) or
+            ('Config' not in container['properties']) or
+            ('Image' not in container['properties']['Config'])):
+          # Image ID not found
+          continue
         image_id = container['properties']['Config']['Image']
         image = docker.get_image(docker_host, image_id)
         if image is None:
           # image not found
           continue
         image_guid = 'Image:' + image['id']
-        g.add_resource(image_guid, image['annotations']['label'], 'Image',
+        g.add_resource(image_guid, image['annotations'], 'Image',
                        image['timestamp'], image['properties'])
         # Container createdFrom Image
         g.add_relation(container_guid, image_guid, 'createdFrom')
@@ -301,7 +264,7 @@ def _do_compute_graph(output_format):
   for service in kubernetes.get_services():
     service_id = service['id']
     service_guid = 'Service:' + service_id
-    g.add_resource(service_guid, service_id, 'Service',
+    g.add_resource(service_guid, service['annotations'], 'Service',
                    service['timestamp'], service['properties'])
     # Cluster contains Service.
     g.add_relation(cluster_guid, service_guid, 'contains')
@@ -321,7 +284,8 @@ def _do_compute_graph(output_format):
   for rcontroller in rcontrollers_list:
     rcontroller_id = rcontroller['id']
     rcontroller_guid = 'ReplicationController:' + rcontroller_id
-    g.add_resource(rcontroller_guid, rcontroller_id, 'ReplicationController',
+    g.add_resource(rcontroller_guid, rcontroller['annotations'],
+                   'ReplicationController',
                    rcontroller['timestamp'], rcontroller['properties'])
     # Cluster contains Rcontroller
     g.add_relation(cluster_guid, rcontroller_guid, 'contains')

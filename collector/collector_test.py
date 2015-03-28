@@ -79,7 +79,6 @@ class TestCollector(unittest.TestCase):
 
     self.assertEqual(sanitized_golden_data[i:], sanitized_ret_value[i:])
 
-
   def test_regexp(self):
     """Tests the TIMESTAMP_REGEXP against various timestamp formats."""
     self.assertEqual(
@@ -160,6 +159,9 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(7, self.count_resources(result, 'Process'))
     self.assertEqual(2, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
+
+    json_output = json.dumps(result, sort_keys=True)
+    self.assertTrue('"alternateLabel": ' in json_output)
 
   def test_resources(self):
     ret_value = self.app.get('/cluster/resources')

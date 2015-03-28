@@ -123,12 +123,11 @@ def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
       'timestamp':
           datetime.datetime.fromtimestamp(timestamp_seconds).isoformat(),
       'properties': obj}
-  if (label is not None) or (alt_label is not None):
-    wrapped_obj['annotations'] = {}
-    if label is not None:
-      wrapped_obj['annotations']['label'] = label
-    if alt_label is not None:
-      wrapped_obj['annotations']['alternateLabel'] = alt_label
+
+  wrapped_obj['annotations'] = {}
+  wrapped_obj['annotations']['label'] = label if label is not None else obj_id
+  if alt_label is not None:
+    wrapped_obj['annotations']['alternateLabel'] = alt_label
 
   return wrapped_obj
 
