@@ -172,16 +172,18 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(0, self.count_relations(result, 'createdFrom'))
     self.assertEqual(0, self.count_relations(result, 'loadBalances'))
     self.assertEqual(0, self.count_relations(result, 'monitors'))
+    self.assertEqual(0, self.count_relations(result, 'runs'))
 
   def test_cluster(self):
     ret_value = self.app.get('/cluster')
     result = json.loads(ret_value.data)
     self.verify_resources(result)
 
-    self.assertEqual(28, self.count_relations(result, 'contains'))
+    self.assertEqual(21, self.count_relations(result, 'contains'))
     self.assertEqual(2, self.count_relations(result, 'createdFrom'))
     self.assertEqual(6, self.count_relations(result, 'loadBalances'))
     self.assertEqual(5, self.count_relations(result, 'monitors'))
+    self.assertEqual(7, self.count_relations(result, 'runs'))
 
   def test_debug(self):
     ret_value = self.app.get('/debug')

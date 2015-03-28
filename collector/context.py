@@ -224,7 +224,7 @@ def _do_compute_graph(output_format):
       docker_host = pod['properties']['currentState']['host']
       g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                      pod['properties'])
-      g.add_relation(node_guid, pod_guid, 'contains')  # Node contains Pod
+      g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
       # Containers in a Pod
       for container in docker.get_containers(docker_host, pod_id):
         container_id = container['id']

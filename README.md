@@ -5,7 +5,7 @@ about resources in a Kubernetes managed cluster, and infers relationships
 between those resources to create a *context graph*. The nodes of the context
 graph are cluster resources (e.g. nodes, pods, services,
 replication-controllers, containers, processes, and images), and the edges are
-inferred relationships between those resources (e.g. contains, monitors,
+inferred relationships between those resources (e.g. contains, runs, monitors,
 loadBalances, createdFrom).
 
 The context graph represents a point-in-time snapshot of the cluster’s state.
