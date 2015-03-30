@@ -178,7 +178,6 @@ def matching_labels(pod, selector):
   Returns:
     True iff the pod's label matches the key/value pairs in 'selector'.
   """
-  assert utilities.is_wrapped_object(pod, 'Pod')
   pod_labels = utilities.get_attribute(pod, ['properties', 'labels'])
   if not isinstance(pod_labels, types.DictType):
     return False
