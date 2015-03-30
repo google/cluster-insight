@@ -132,9 +132,8 @@ def _inspect_container(docker_host, container_id):
 
   # Sort the "Env" attribute because it tends to contain elements in
   # a different order each time you fetch the container information.
-  if (isinstance(result, types.DictType) and
-      isinstance(result.get('Config'), types.DictType) and
-      isinstance(result['Config'].get('Env'), types.ListType)):
+  if isinstance(utilities.get_attribute(result, ['Config', 'Env']),
+                types.ListType):
     # Sort the contents of the 'Env' list in place.
     result['Config']['Env'].sort()
 
@@ -342,11 +341,11 @@ def get_processes(docker_host, container_id):
     current_app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
-  if not isinstance(result, types.DictType):
+  if not isinstance(utilities.get_attribute(result, ['Titles']),
+                    types.ListType):
     invalid_processes(url)
-  if not isinstance(result.get('Titles'), types.ListType):
-    invalid_processes(url)
-  if not isinstance(result.get('Processes'), types.ListType):
+  if not isinstance(utilities.get_attribute(result, ['Processes']),
+                    types.ListType):
     invalid_processes(url)
 
   pstats = result['Titles']
@@ -380,7 +379,8 @@ def get_image(docker_host, image_id):
 
   Args:
     docker_host: Docker host name. Must not be empty.
-    image_id: Image ID. Must not be empty.
+    image_id: Image ID. Must not be empty. Must be a symbolic name of the image
+      (not a long hexadecimal string).
 
   Returns:
     If image was found, returns the wrapped image object, which is the result of
@@ -392,7 +392,7 @@ def get_image(docker_host, image_id):
     Other exceptions may be raised due to exectution errors.
   """
   # 'image_id' should be a symbolic name and not a very long hexadecimal string.
-  assert not (len(image_id) >= 32 and re.match('^[0-9a-fA-F]+$', image_id))
+  assert not utilities.valid_hex_id(image_id)
   cache_key = '%s|%s' % (docker_host, image_id)
   image, timestamp_secs = current_app.context_graph_images_cache.lookup(
       cache_key)
@@ -486,3 +486,75 @@ def get_images(docker_host):
   current_app.logger.info('get_images(docker_host=%s) returns %d images',
                           docker_host, len(images))
   return images
+
+
+def get_running_image_info():
+  """Returns a human-readable information of the currently running image.
+
+  Returns:
+  A string of the form:
+  <symbolic container name> <container hex ID> <creation date and time>
+
+  Raises:
+    CollectorError: in case of any error to compute the running image information.
+  """
+  if current_app.config.get('TESTING'):
+    fname = 'testdata/proc-self-cgroup.txt'
+  else:
+    fname = '/proc/self/cgroup'
+
+  try:
+    f = open(fname, 'r')
+    cgroup = f.read()
+    f.close()
+  except IOError:
+    # file not found
+    msg = 'failed to open or read %s' % fname
+    current_app.logger.exception(msg)
+    raise collector_error.CollectorError(msg)
+  except:
+    msg = 'reading %s failed with exception %s' % (fname, sys.exc_info()[0])
+    current_app.logger.exception(msg)
+    raise collector_error.CollectorError(msg)
+
+  # The file must contain an entry for 'cpu:/docker/...'.
+  m = re.search(r'\b[0-9]+:cpu:/docker/([0-9a-fA-F]+)\b', cgroup)
+  if not m:
+    msg = 'could not find an entry for "cpu:/docker/..." in %s' % fname
+    current_app.logger.error(msg)
+    raise collector_error.CollectorError(msg)
+
+  hex_container_id = m.group(1)
+  # inspect the running container.
+  url = 'http://localhost:4243/containers/' + hex_container_id + '/json'
+  container = fetch_data(url, 'container-' + hex_container_id[:12])
+
+  # Fetch the image symbolic name and hex ID from the container information.
+  symbolic_image_id = utilities.get_attribute(container, ['Config', 'Image'])
+  hex_image_id = utilities.get_attribute(container, ['Image'])
+
+  # Verify the image symbolic name and the image hex ID.
+  if not (utilities.valid_string(symbolic_image_id) and
+          not utilities.valid_hex_id(symbolic_image_id) and
+          utilities.valid_hex_id(hex_image_id)):
+    msg = 'could not find or invalid image information in container %s' % url
+    current_app.logger.error(msg)
+    raise collector_error.CollectorError(msg)
+
+  # Fetch image information.
+  url = 'http://localhost:4243/images/' + hex_image_id + '/json'
+  image = fetch_data(url, 'image-' + hex_image_id[:12])
+
+  # Fetch the image creation timestamp.
+  created = utilities.get_attribute(image, ['Created'])
+  if not utilities.valid_string(created):
+    msg = 'could not find image creation timestamp in %s' % url
+    current_app.logger.error(msg)
+    raise collector_error.CollectorError(msg)
+
+  # Remove the trailing subsecond part of the creation timestamp.
+  created = re.sub(r'\.[0-9]+Z$', '', created)
+
+  ret_val = '%s %s %s' % (symbolic_image_id, hex_image_id[:12], created)
+  current_app.logger.info('get_running_image_info() returns: %s', ret_val)
+  return ret_val

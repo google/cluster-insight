@@ -179,11 +179,11 @@ def matching_labels(pod, selector):
     True iff the pod's label matches the key/value pairs in 'selector'.
   """
   assert utilities.is_wrapped_object(pod, 'Pod')
-  if not (('labels' in pod['properties']) and
-          isinstance(pod['properties']['labels'], types.DictType)):
+  pod_labels = utilities.get_attribute(pod, ['properties', 'labels'])
+  if not isinstance(pod_labels, types.DictType):
     return False
   selector_view = selector.viewitems()
-  pod_labels_view = pod['properties']['labels'].viewitems()
+  pod_labels_view = pod_labels.viewitems()
   return len(selector_view & pod_labels_view) == len(selector_view)
 
 

@@ -24,6 +24,7 @@ import unittest
 
 # local imports
 import collector
+import utilities
 
 
 # A regular expression that matches the 'timestamp' attribute and value
@@ -78,6 +79,22 @@ class TestCollector(unittest.TestCase):
       i += 1
 
     self.assertEqual(sanitized_golden_data[i:], sanitized_ret_value[i:])
+
+  def count_substring(self, sub, s):
+    """Counts the number of occurances of 'sub' in 's'."""
+    assert utilities.valid_string(sub)
+    assert utilities.valid_string(s)
+
+    count = 0
+    pos = 0
+    while pos >= 0:
+      i = s.find(sub, pos)
+      if i < 0:
+        break
+      pos = i + len(sub)
+      count += 1
+
+    return count
 
   def test_regexp(self):
     """Tests the TIMESTAMP_REGEXP against various timestamp formats."""
@@ -160,9 +177,6 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(2, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
-    json_output = json.dumps(result, sort_keys=True)
-    self.assertTrue('"alternateLabel": ' in json_output)
-
   def test_resources(self):
     ret_value = self.app.get('/cluster/resources')
     result = json.loads(ret_value.data)
@@ -173,6 +187,10 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(0, self.count_relations(result, 'loadBalances'))
     self.assertEqual(0, self.count_relations(result, 'monitors'))
     self.assertEqual(0, self.count_relations(result, 'runs'))
+
+    json_output = json.dumps(result, sort_keys=True)
+    self.assertEqual(2, self.count_substring('"alternateLabel": ', json_output))
+    self.assertEqual(31, self.count_substring('"createdBy": ', json_output))
 
   def test_cluster(self):
     ret_value = self.app.get('/cluster')
@@ -185,9 +203,24 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(5, self.count_relations(result, 'monitors'))
     self.assertEqual(7, self.count_relations(result, 'runs'))
 
+    json_output = json.dumps(result, sort_keys=True)
+    self.assertEqual(2, self.count_substring('"alternateLabel": ', json_output))
+    self.assertEqual(72, self.count_substring('"createdBy": ', json_output))
+
   def test_debug(self):
     ret_value = self.app.get('/debug')
     self.compare_to_golden(ret_value.data, 'debug')
+
+  def test_image_info(self):
+    ret_value = self.app.get('/image_info')
+    result = json.loads(ret_value.data)
+    self.assertTrue(result.get('success'))
+    image_info = result.get('imageInfo')
+    self.assertTrue(isinstance(image_info, types.StringTypes))
+    self.assertEqual(
+        'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41',
+        image_info)
+
 
 if __name__ == '__main__':
   unittest.main()

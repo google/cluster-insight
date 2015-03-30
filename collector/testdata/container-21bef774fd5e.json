@@ -1,0 +1,107 @@
+{
+    "AppArmorProfile": "",
+    "Args": [
+        "./collector.py",
+        "--debug"
+    ],
+    "Config": {
+        "AttachStderr": true,
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "Cmd": [
+            "python",
+            "./collector.py",
+            "--debug"
+        ],
+        "CpuShares": 0,
+        "Cpuset": "",
+        "Domainname": "",
+        "Entrypoint": null,
+        "Env": [
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "LANG=C.UTF-8",
+            "PYTHON_VERSION=2.7.9"
+        ],
+        "ExposedPorts": {
+            "5555/tcp": {}
+        },
+        "Hostname": "k8s-guestbook-master",
+        "Image": "kubernetes/cluster-insight",
+        "MacAddress": "",
+        "Memory": 0,
+        "MemorySwap": 0,
+        "NetworkDisabled": false,
+        "OnBuild": null,
+        "OpenStdin": false,
+        "PortSpecs": null,
+        "StdinOnce": false,
+        "Tty": false,
+        "User": "",
+        "Volumes": null,
+        "WorkingDir": "/usr/src/app"
+    },
+    "Created": "2015-03-28T17:28:59.203715429Z",
+    "Driver": "aufs",
+    "ExecDriver": "native-0.2",
+    "HostConfig": {
+        "Binds": null,
+        "CapAdd": null,
+        "CapDrop": null,
+        "ContainerIDFile": "",
+        "Devices": [],
+        "Dns": null,
+        "DnsSearch": null,
+        "ExtraHosts": null,
+        "IpcMode": "",
+        "Links": null,
+        "LxcConf": [],
+        "NetworkMode": "host",
+        "PortBindings": {
+            "5555/tcp": [
+                {
+                    "HostIp": "",
+                    "HostPort": "5555"
+                }
+            ]
+        },
+        "Privileged": false,
+        "PublishAllPorts": false,
+        "RestartPolicy": {
+            "MaximumRetryCount": 0,
+            "Name": ""
+        },
+        "SecurityOpt": null,
+        "VolumesFrom": null
+    },
+    "HostnamePath": "/var/lib/docker/containers/21bef774fd5e952dc07d9b81b96fd0b5d2b0b0cfdeb68e6262eb8f74c3555a00/hostname",
+    "HostsPath": "/var/lib/docker/containers/21bef774fd5e952dc07d9b81b96fd0b5d2b0b0cfdeb68e6262eb8f74c3555a00/hosts",
+    "Id": "21bef774fd5e952dc07d9b81b96fd0b5d2b0b0cfdeb68e6262eb8f74c3555a00",
+    "Image": "ac933439ec5a4afe6f3472a2605de93d8a6b21d7e608f8f1f21e05621ab8bcf8",
+    "MountLabel": "",
+    "Name": "/cluster-insight",
+    "NetworkSettings": {
+        "Bridge": "",
+        "Gateway": "",
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "MacAddress": "",
+        "PortMapping": null,
+        "Ports": null
+    },
+    "Path": "python",
+    "ProcessLabel": "",
+    "ResolvConfPath": "/var/lib/docker/containers/21bef774fd5e952dc07d9b81b96fd0b5d2b0b0cfdeb68e6262eb8f74c3555a00/resolv.conf",
+    "State": {
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 7780,
+        "Restarting": false,
+        "Running": true,
+        "StartedAt": "2015-03-28T17:28:59.253906946Z"
+    },
+    "Volumes": {},
+    "VolumesRW": {}
+}
