@@ -89,22 +89,6 @@ class TestCollector(unittest.TestCase):
     # return value.
     self.assertEqual(sanitized_golden_data[i:], sanitized_ret_value[i:])
 
-  def count_substring(self, sub, s):
-    """Counts the number of occurances of 'sub' in 's'."""
-    assert utilities.valid_string(sub)
-    assert utilities.valid_string(s)
-
-    count = 0
-    pos = 0
-    while pos >= 0:
-      i = s.find(sub, pos)
-      if i < 0:
-        break
-      pos = i + len(sub)
-      count += 1
-
-    return count
-
   def test_regexp(self):
     """Tests the TIMESTAMP_REGEXP against various timestamp formats."""
     self.assertEqual(
@@ -198,8 +182,8 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(0, self.count_relations(result, 'runs'))
 
     json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(2, self.count_substring('"alternateLabel": ', json_output))
-    self.assertEqual(31, self.count_substring('"createdBy": ', json_output))
+    self.assertEqual(2, json_output.count('"alternateLabel": '))
+    self.assertEqual(31, json_output.count('"createdBy": '))
 
   def test_cluster(self):
     ret_value = self.app.get('/cluster')
@@ -213,8 +197,8 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(7, self.count_relations(result, 'runs'))
 
     json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(2, self.count_substring('"alternateLabel": ', json_output))
-    self.assertEqual(72, self.count_substring('"createdBy": ', json_output))
+    self.assertEqual(2, json_output.count('"alternateLabel": '))
+    self.assertEqual(72, json_output.count('"createdBy": '))
 
   def test_debug(self):
     ret_value = self.app.get('/debug')

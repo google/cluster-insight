@@ -74,7 +74,7 @@ class ContextGraph(object):
         'id': rid,
         'type': rtype,
         'timestamp': timestamp,
-        'annotations': copy.copy(annotations)
+        'annotations': copy.deepcopy(annotations)
     }
 
     if self._version is not None:
