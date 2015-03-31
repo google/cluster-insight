@@ -263,7 +263,7 @@ def get_one_container(docker_host, container_id):
   return None
 
 
-@utilities.two_string_args
+@utilities.one_string_arg
 def invalid_processes(url):
   """Raise the CollectorError exception because the response is invalid.
 
