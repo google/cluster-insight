@@ -28,6 +28,7 @@ context.compute_graph(format)
 
 import copy
 import datetime
+import re
 import types
 
 from flask import current_app
@@ -142,13 +143,43 @@ class ContextGraph(object):
     }
     return resources
 
+  def best_label(self, obj):
+    """Returns the best human-readable label of the given object.
+
+    We perfer the "alternateLabel" over "label" and a string not composed
+    of only hexadecimal digits over hexadecimal digits.
+
+    Args:
+      obj: a dictionary containing an "annotations" attribute. The value
+        of this attribute should be a dictionary, which may contain
+        "alternateLabel" and "Label" attributes.
+
+    Returns:
+    The best human-readable label.
+    """
+    alt_label = utilities.get_attribute(obj, ['annotations', 'alternateLabel'])
+    label = utilities.get_attribute(obj, ['annotations', 'label'])
+    if (utilities.valid_string(alt_label) and
+        re.search('[^0-9a-fA-F]', alt_label)):
+      return alt_label
+    elif utilities.valid_string(label) and re.search('[^0-9a-fA-F]', label):
+      return label
+    elif utilities.valid_string(alt_label):
+      return alt_label
+    elif utilities.valid_string(label):
+      return label
+    else:
+      # should not arrive here.
+      return "<unknown>"
+
+
   def to_dot_graph(self, show_node_labels=True):
     """Returns the context graph in DOT graph format."""
     if show_node_labels:
       resource_list = [
           '"{0}"[label="{1}",color={2}]'.format(
               res['id'],
-              res['type'] + ':' + res['annotations']['label'],
+              res['type'] + ':' + self.best_label(res),
               self._graph_color.get(res['type']) or 'black')
           for res in self._context_resources]
     else:
@@ -159,7 +190,7 @@ class ContextGraph(object):
           for res in self._context_resources]
     relation_list = [
         '"{0}"->"{1}"[label="{2}"]'.format(
-            rel['source'], rel['target'], rel['annotations']['label'])
+            rel['source'], rel['target'], self.best_label(rel))
         for rel in self._context_relations]
     graph_items = resource_list + relation_list
     graph_data = 'digraph{' + ';'.join(graph_items) + '}'

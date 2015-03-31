@@ -78,6 +78,15 @@ class TestCollector(unittest.TestCase):
         break
       i += 1
 
+    # The sanitized golden data and the sanitized return value may differ
+    # in the training newline. This is fine.
+    if (sanitized_golden_data[i:] == '\n') and (sanitized_ret_value[i:] == ''):
+      return
+    if (sanitized_golden_data[i:] == '') and (sanitized_ret_value[i:] == '\n'):
+      return
+
+    # In all other cases, the sanitized golden data must equal the sanitized
+    # return value.
     self.assertEqual(sanitized_golden_data[i:], sanitized_ret_value[i:])
 
   def count_substring(self, sub, s):
