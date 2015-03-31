@@ -356,8 +356,8 @@ def init_caching():
       constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
 
 
-# Starts the web server on port DATA_COLLECTOR_PORT and listen on all external
-# IPs associated with this host.
+# Starts the web server and listen on all external IPs associated with this
+# host.
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Cluster-Insight data collector')
   parser.add_argument('-d', '--debug', action='store_true',
@@ -366,9 +366,14 @@ if __name__ == '__main__':
                       default=constants.DATA_COLLECTOR_PORT,
                       help=('data collector port number [default=%d]' %
                             constants.DATA_COLLECTOR_PORT))
+  parser.add_argument('--docker_port', action='store', type=int,
+                      default=constants.DOCKER_PORT,
+                      help=('Docker port number [default=%d]' %
+                            constants.DOCKER_PORT))
   args = parser.parse_args()
 
   app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
   init_caching()
+  app.context_graph_docker_port = args.docker_port
 
   app.run(host='0.0.0.0', port=args.port, debug=args.debug)

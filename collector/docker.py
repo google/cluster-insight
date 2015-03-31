@@ -17,8 +17,8 @@
 
 """Collects context metadata from Docker.
 
-Assumes the Docker daemon's remote API is enabled on port 4243 on the Docker
-host.
+Assumes the Docker daemon's remote API is enabled on port docker_port() on the
+Docker host in the master and minion nodes.
 """
 
 import json
@@ -32,10 +32,23 @@ import requests
 
 # local imports
 import collector_error
+import constants
 import kubernetes
 import utilities
 
 ## Docker APIs
+
+def docker_port():
+  """Returns the Docker port, which is set by a command-line flag."""
+  if current_app.config.get('TESTING'):
+    # The 'context_graph_docker_port' attribute is not availabe in debug mode.
+    return constants.DOCKER_PORT
+
+  port = current_app.context_graph_docker_port
+  if isinstance(port, types.IntType):
+    return port
+  else:
+    return constants.DOCKER_PORT
 
 
 # No decorator for this function signature.
@@ -108,8 +121,8 @@ def _inspect_container(docker_host, container_id):
     CollectorError in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  url = 'http://{docker_host}:4243/containers/{container_id}/json'.format(
-      docker_host=docker_host, container_id=container_id)
+  url = 'http://{docker_host}:{port}/containers/{container_id}/json'.format(
+      docker_host=docker_host, port=docker_port(), container_id=container_id)
   # A typical value of 'docker_host' is:
   # k8s-guestbook-node-3.c.rising-apricot-840.internal
   # Use only the first period-seperated element for the test file name.
@@ -175,8 +188,8 @@ def get_containers(docker_host, pod_id=None):
         '%d containers', docker_host, pod_id, len(containers))
     return containers
 
-  url = 'http://{docker_host}:4243/containers/json'.format(
-      docker_host=docker_host)
+  url = 'http://{docker_host}:{port}/containers/json'.format(
+      docker_host=docker_host, port=docker_port())
   # A typical value of 'docker_host' is:
   # k8s-guestbook-node-3.c.rising-apricot-840.internal
   # Use only the first period-seperated element for the test file name.
@@ -316,8 +329,8 @@ def get_processes(docker_host, container_id):
 
   # NOTE: there is no trailing /json in this URL - this looks like a bug in the
   # Docker API
-  url = ('http://{docker_host}:4243/containers/{container_id}/top?'
-         'ps_args=aux'.format(docker_host=docker_host,
+  url = ('http://{docker_host}:{port}/containers/{container_id}/top?'
+         'ps_args=aux'.format(docker_host=docker_host, port=docker_port(),
                               container_id=container_id))
   # A typical value of 'docker_host' is:
   # k8s-guestbook-node-3.c.rising-apricot-840.internal
@@ -409,8 +422,8 @@ def get_image(docker_host, image_id):
   # brendanburns/php-redis
   # We convert embedded '/' and ':' characters to '-' to avoid interference with
   # the directory structure or file system.
-  url = 'http://{docker_host}:4243/images/{image_id}/json'.format(
-      docker_host=docker_host, image_id=image_id)
+  url = 'http://{docker_host}:{port}/images/{image_id}/json'.format(
+      docker_host=docker_host, port=docker_port(), image_id=image_id)
   fname = '{host}-image-{id}'.format(
       host=docker_host.split('.')[0],
       id=image_id.replace('/', '-').replace(':', '-'))
@@ -527,7 +540,8 @@ def get_version():
 
   hex_container_id = m.group(1)
   # inspect the running container.
-  url = 'http://localhost:4243/containers/' + hex_container_id + '/json'
+  url = 'http://localhost:{port}/containers/{container_id}/json'.format(
+      port=docker_port(), container_id=hex_container_id)
   container = fetch_data(url, 'container-' + hex_container_id[:12])
 
   # Fetch the image symbolic name and hex ID from the container information.
@@ -543,7 +557,8 @@ def get_version():
     raise collector_error.CollectorError(msg)
 
   # Fetch image information.
-  url = 'http://localhost:4243/images/' + hex_image_id + '/json'
+  url = 'http://localhost:{port}/images/{image_id}/json'.format(
+      port=docker_port(), image_id=hex_image_id)
   image = fetch_data(url, 'image-' + hex_image_id[:12])
 
   # Fetch the image creation timestamp.
