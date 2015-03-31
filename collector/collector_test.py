@@ -44,7 +44,7 @@ class TestCollector(unittest.TestCase):
     """Compares the returned value to the golden (expected) value.
 
     The golden value is read from the file
-    'testdata/<last element of fname>.golden'.
+    'testdata/<last element of fname>.output.json'.
     All timestamp attributes and their values are removed from the returned
     value and the golden value prior to comparing them.
 
@@ -60,7 +60,7 @@ class TestCollector(unittest.TestCase):
     assert isinstance(fname, types.StringTypes)
 
     # Read the golden data (expected value).
-    golden_fname = 'testdata/' + fname + '.golden'
+    golden_fname = 'testdata/' + fname + '.output.json'
     f = open(golden_fname, 'r')
     golden_data = f.read()
     f.close()

@@ -50,7 +50,8 @@ def fetch_data(url, base_name, expect_missing=False):
 
   Args:
     url: the URL to fetch the data from when running in production.
-    base_name: fetch the data from the file 'testdata/' + base_name + '.json'
+    base_name: fetch the data from the file
+      'testdata/' + base_name + '.input.json'
       when running in test mode.
     expect_missing: if True, then do not die in test mode when the test file
       is missing. Just raise ValueError. If False and the test file is not
@@ -68,7 +69,7 @@ def fetch_data(url, base_name, expect_missing=False):
   assert isinstance(base_name, types.StringTypes)
   if current_app.config.get('TESTING'):
     # Read the data from a file.
-    fname = 'testdata/' + base_name + '.json'
+    fname = 'testdata/' + base_name + '.input.json'
     try:
       f = open(fname, 'r')
       v = json.loads(f.read())
