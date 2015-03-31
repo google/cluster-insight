@@ -58,7 +58,7 @@ class ContextGraph(object):
     }
     self._context_resources = []
     self._context_relations = []
-    self._running_image_info = None
+    self._version = None
 
   def add_resource(self, rid, annotations, rtype, timestamp, obj=None):
     """Adds a resource to the context graph."""
@@ -76,8 +76,8 @@ class ContextGraph(object):
         'annotations': copy.copy(annotations)
     }
 
-    if self._running_image_info is not None:
-      resource['annotations']['createdBy'] = self._running_image_info
+    if self._version is not None:
+      resource['annotations']['createdBy'] = self._version
 
     # Do not add a 'metadata' attribute if its value is None.
     if obj is not None:
@@ -105,14 +105,14 @@ class ContextGraph(object):
       relation['annotations']['metadata'] = metadata
 
     relation['annotations']['label'] = label if label is not None else kind
-    if self._running_image_info is not None:
-      relation['annotations']['createdBy'] = self._running_image_info
+    if self._version is not None:
+      relation['annotations']['createdBy'] = self._version
 
     self._context_relations.append(relation)
 
-  def set_running_image_info(self, image_info):
-    assert utilities.valid_string(image_info)
-    self._running_image_info = image_info
+  def set_version(self, version):
+    assert utilities.valid_string(version)
+    self._version = version
 
   def set_title(self, title):
     """Sets the title of the context graph."""
@@ -205,7 +205,7 @@ def _do_compute_graph(output_format):
   """
 
   g = ContextGraph()
-  g.set_running_image_info(docker.get_running_image_info())
+  g.set_version(docker.get_version())
   g.set_metadata({'timestamp': datetime.datetime.now().isoformat()})
 
   # Nodes

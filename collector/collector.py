@@ -309,21 +309,20 @@ def get_cluster():
     return flask.jsonify(make_error(msg))
 
 
-@app.route('/image_info', methods=['GET'])
-def get_image_info():
+@app.route('/version', methods=['GET'])
+def get_version():
   """Computes the response of accessing the '/image_info' URI.
 
   Returns:
     The value of the docker.get_running_image_info() or an error message.
   """
   try:
-    image_info = docker.get_running_image_info()
-    return flask.jsonify(make_response(image_info, 'imageInfo'))
+    version = docker.get_version()
+    return flask.jsonify(make_response(version, 'version'))
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
-    msg = ('get_running_image_info() failed with exception %s' %
-           sys.exc_info()[0])
+    msg = ('get_version() failed with exception %s' % sys.exc_info()[0])
     app.logger.exception(msg)
     return flask.jsonify(make_error(msg))
 

@@ -211,15 +211,14 @@ class TestCollector(unittest.TestCase):
     ret_value = self.app.get('/debug')
     self.compare_to_golden(ret_value.data, 'debug')
 
-  def test_image_info(self):
-    ret_value = self.app.get('/image_info')
+  def test_version(self):
+    ret_value = self.app.get('/version')
     result = json.loads(ret_value.data)
     self.assertTrue(result.get('success'))
-    image_info = result.get('imageInfo')
-    self.assertTrue(isinstance(image_info, types.StringTypes))
+    version = result.get('version')
+    self.assertTrue(isinstance(version, types.StringTypes))
     self.assertEqual(
-        'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41',
-        image_info)
+        'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
 
 
 if __name__ == '__main__':

@@ -488,7 +488,7 @@ def get_images(docker_host):
   return images
 
 
-def get_running_image_info():
+def get_version():
   """Returns a human-readable information of the currently running image.
 
   Returns:
@@ -556,5 +556,5 @@ def get_running_image_info():
   created = re.sub(r'\.[0-9]+Z$', '', created)
 
   ret_val = '%s %s %s' % (symbolic_image_id, hex_image_id[:12], created)
-  current_app.logger.info('get_running_image_info() returns: %s', ret_val)
+  current_app.logger.info('get_version() returns: %s', ret_val)
   return ret_val
