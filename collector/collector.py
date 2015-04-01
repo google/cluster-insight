@@ -311,10 +311,10 @@ def get_cluster():
 
 @app.route('/version', methods=['GET'])
 def get_version():
-  """Computes the response of accessing the '/image_info' URI.
+  """Computes the response of accessing the '/version' URI.
 
   Returns:
-    The value of the docker.get_running_image_info() or an error message.
+    The value of the docker.get_version() or an error message.
   """
   try:
     version = docker.get_version()

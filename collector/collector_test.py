@@ -24,7 +24,6 @@ import unittest
 
 # local imports
 import collector
-import utilities
 
 
 # A regular expression that matches the 'timestamp' attribute and value
@@ -80,9 +79,9 @@ class TestCollector(unittest.TestCase):
 
     # The sanitized golden data and the sanitized return value may differ
     # in the training newline. This is fine.
-    if (sanitized_golden_data[i:] == '\n') and (sanitized_ret_value[i:] == ''):
+    if (sanitized_golden_data[i:] == '\n') and (not sanitized_ret_value[i:]):
       return
-    if (sanitized_golden_data[i:] == '') and (sanitized_ret_value[i:] == '\n'):
+    if (not sanitized_golden_data[i:]) and (sanitized_ret_value[i:] == '\n'):
       return
 
     # In all other cases, the sanitized golden data must equal the sanitized

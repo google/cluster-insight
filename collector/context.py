@@ -170,8 +170,7 @@ class ContextGraph(object):
       return label
     else:
       # should not arrive here.
-      return "<unknown>"
-
+      return '<unknown>'
 
   def to_dot_graph(self, show_node_labels=True):
     """Returns the context graph in DOT graph format."""

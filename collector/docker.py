@@ -38,6 +38,7 @@ import utilities
 
 ## Docker APIs
 
+
 def docker_port():
   """Returns the Docker port, which is set by a command-line flag."""
   if current_app.config.get('TESTING'):
