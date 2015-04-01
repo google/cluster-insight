@@ -43,7 +43,7 @@ class TestCollector(unittest.TestCase):
     """Compares the returned value to the golden (expected) value.
 
     The golden value is read from the file
-    'testdata/<last element of fname>.golden'.
+    'testdata/<last element of fname>.output.json'.
     All timestamp attributes and their values are removed from the returned
     value and the golden value prior to comparing them.
 
@@ -59,7 +59,7 @@ class TestCollector(unittest.TestCase):
     assert isinstance(fname, types.StringTypes)
 
     # Read the golden data (expected value).
-    golden_fname = 'testdata/' + fname + '.golden'
+    golden_fname = 'testdata/' + fname + '.output.json'
     f = open(golden_fname, 'r')
     golden_data = f.read()
     f.close()
@@ -68,15 +68,26 @@ class TestCollector(unittest.TestCase):
     sanitized_golden_data = re.sub(TIMESTAMP_REGEXP, '', golden_data)
     sanitized_ret_value = re.sub(TIMESTAMP_REGEXP, '', ret_value)
 
+    # Strip whitespaces of the sanitized strings, and replace multiple
+    # whitespaces by a single space
+    sanitized_golden_data = re.sub(r'\s+', ' ', sanitized_golden_data.strip())
+    sanitized_ret_value = re.sub(r'\s+', ' ', sanitized_ret_value.strip())
+
     # Find the index of the first discrepancy between 'sanitized_golden_data'
     # and 'sanitized_ret_value'. If they are equal, the index will point at
     # the position after the last character in both strings.
+    # DO NOT replace this code with:
+    # self.assertEqual(sanitized_golden_data, sanitized_ret_value)
+    # The current code prints the tail of the mismatched data, which helps
+    # the human developer identify and comprehend the discrepancies.
     i = 0
     while (i < len(sanitized_golden_data)) and (i < len(sanitized_ret_value)):
       if sanitized_golden_data[i] != sanitized_ret_value[i]:
         break
       i += 1
 
+    # The sanitized golden data must equal the sanitized
+    # return value.
     self.assertEqual(sanitized_golden_data[i:], sanitized_ret_value[i:])
 
   def test_regexp(self):
@@ -160,9 +171,6 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(2, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
-    json_output = json.dumps(result, sort_keys=True)
-    self.assertTrue('"alternateLabel": ' in json_output)
-
   def test_resources(self):
     ret_value = self.app.get('/cluster/resources')
     result = json.loads(ret_value.data)
@@ -172,20 +180,40 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(0, self.count_relations(result, 'createdFrom'))
     self.assertEqual(0, self.count_relations(result, 'loadBalances'))
     self.assertEqual(0, self.count_relations(result, 'monitors'))
+    self.assertEqual(0, self.count_relations(result, 'runs'))
+
+    json_output = json.dumps(result, sort_keys=True)
+    self.assertEqual(2, json_output.count('"alternateLabel": '))
+    self.assertEqual(31, json_output.count('"createdBy": '))
 
   def test_cluster(self):
     ret_value = self.app.get('/cluster')
     result = json.loads(ret_value.data)
     self.verify_resources(result)
 
-    self.assertEqual(28, self.count_relations(result, 'contains'))
+    self.assertEqual(21, self.count_relations(result, 'contains'))
     self.assertEqual(2, self.count_relations(result, 'createdFrom'))
     self.assertEqual(6, self.count_relations(result, 'loadBalances'))
     self.assertEqual(5, self.count_relations(result, 'monitors'))
+    self.assertEqual(7, self.count_relations(result, 'runs'))
+
+    json_output = json.dumps(result, sort_keys=True)
+    self.assertEqual(2, json_output.count('"alternateLabel": '))
+    self.assertEqual(72, json_output.count('"createdBy": '))
 
   def test_debug(self):
     ret_value = self.app.get('/debug')
     self.compare_to_golden(ret_value.data, 'debug')
+
+  def test_version(self):
+    ret_value = self.app.get('/version')
+    result = json.loads(ret_value.data)
+    self.assertTrue(result.get('success'))
+    version = result.get('version')
+    self.assertTrue(isinstance(version, types.StringTypes))
+    self.assertEqual(
+        'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
+
 
 if __name__ == '__main__':
   unittest.main()

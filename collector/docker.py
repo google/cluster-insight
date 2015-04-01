@@ -17,8 +17,8 @@
 
 """Collects context metadata from Docker.
 
-Assumes the Docker daemon's remote API is enabled on port 4243 on the Docker
-host.
+Assumes the Docker daemon's remote API is enabled on port docker_port() on the
+Docker host in the master and minion nodes.
 """
 
 import json
@@ -32,10 +32,24 @@ import requests
 
 # local imports
 import collector_error
+import constants
 import kubernetes
 import utilities
 
 ## Docker APIs
+
+
+def docker_port():
+  """Returns the Docker port, which is set by a command-line flag."""
+  if current_app.config.get('TESTING'):
+    # The 'context_graph_docker_port' attribute is not availabe in debug mode.
+    return constants.DOCKER_PORT
+
+  port = current_app.context_graph_docker_port
+  if isinstance(port, types.IntType):
+    return port
+  else:
+    return constants.DOCKER_PORT
 
 
 # No decorator for this function signature.
@@ -50,7 +64,8 @@ def fetch_data(url, base_name, expect_missing=False):
 
   Args:
     url: the URL to fetch the data from when running in production.
-    base_name: fetch the data from the file 'testdata/' + base_name + '.json'
+    base_name: fetch the data from the file
+      'testdata/' + base_name + '.input.json'
       when running in test mode.
     expect_missing: if True, then do not die in test mode when the test file
       is missing. Just raise ValueError. If False and the test file is not
@@ -68,7 +83,7 @@ def fetch_data(url, base_name, expect_missing=False):
   assert isinstance(base_name, types.StringTypes)
   if current_app.config.get('TESTING'):
     # Read the data from a file.
-    fname = 'testdata/' + base_name + '.json'
+    fname = 'testdata/' + base_name + '.input.json'
     try:
       f = open(fname, 'r')
       v = json.loads(f.read())
@@ -107,8 +122,8 @@ def _inspect_container(docker_host, container_id):
     CollectorError in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  url = 'http://{docker_host}:4243/containers/{container_id}/json'.format(
-      docker_host=docker_host, container_id=container_id)
+  url = 'http://{docker_host}:{port}/containers/{container_id}/json'.format(
+      docker_host=docker_host, port=docker_port(), container_id=container_id)
   # A typical value of 'docker_host' is:
   # k8s-guestbook-node-3.c.rising-apricot-840.internal
   # Use only the first period-seperated element for the test file name.
@@ -132,9 +147,8 @@ def _inspect_container(docker_host, container_id):
 
   # Sort the "Env" attribute because it tends to contain elements in
   # a different order each time you fetch the container information.
-  if (isinstance(result, types.DictType) and
-      isinstance(result.get('Config'), types.DictType) and
-      isinstance(result['Config'].get('Env'), types.ListType)):
+  if isinstance(utilities.get_attribute(result, ['Config', 'Env']),
+                types.ListType):
     # Sort the contents of the 'Env' list in place.
     result['Config']['Env'].sort()
 
@@ -175,8 +189,8 @@ def get_containers(docker_host, pod_id=None):
         '%d containers', docker_host, pod_id, len(containers))
     return containers
 
-  url = 'http://{docker_host}:4243/containers/json'.format(
-      docker_host=docker_host)
+  url = 'http://{docker_host}:{port}/containers/json'.format(
+      docker_host=docker_host, port=docker_port())
   # A typical value of 'docker_host' is:
   # k8s-guestbook-node-3.c.rising-apricot-840.internal
   # Use only the first period-seperated element for the test file name.
@@ -263,7 +277,7 @@ def get_one_container(docker_host, container_id):
   return None
 
 
-@utilities.two_string_args
+@utilities.one_string_arg
 def invalid_processes(url):
   """Raise the CollectorError exception because the response is invalid.
 
@@ -316,8 +330,8 @@ def get_processes(docker_host, container_id):
 
   # NOTE: there is no trailing /json in this URL - this looks like a bug in the
   # Docker API
-  url = ('http://{docker_host}:4243/containers/{container_id}/top?'
-         'ps_args=aux'.format(docker_host=docker_host,
+  url = ('http://{docker_host}:{port}/containers/{container_id}/top?'
+         'ps_args=aux'.format(docker_host=docker_host, port=docker_port(),
                               container_id=container_id))
   # A typical value of 'docker_host' is:
   # k8s-guestbook-node-3.c.rising-apricot-840.internal
@@ -342,11 +356,11 @@ def get_processes(docker_host, container_id):
     current_app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
-  if not isinstance(result, types.DictType):
+  if not isinstance(utilities.get_attribute(result, ['Titles']),
+                    types.ListType):
     invalid_processes(url)
-  if not isinstance(result.get('Titles'), types.ListType):
-    invalid_processes(url)
-  if not isinstance(result.get('Processes'), types.ListType):
+  if not isinstance(utilities.get_attribute(result, ['Processes']),
+                    types.ListType):
     invalid_processes(url)
 
   pstats = result['Titles']
@@ -380,7 +394,8 @@ def get_image(docker_host, image_id):
 
   Args:
     docker_host: Docker host name. Must not be empty.
-    image_id: Image ID. Must not be empty.
+    image_id: Image ID. Must not be empty. Must be a symbolic name of the image
+      (not a long hexadecimal string).
 
   Returns:
     If image was found, returns the wrapped image object, which is the result of
@@ -392,7 +407,7 @@ def get_image(docker_host, image_id):
     Other exceptions may be raised due to exectution errors.
   """
   # 'image_id' should be a symbolic name and not a very long hexadecimal string.
-  assert not (len(image_id) >= 32 and re.match('^[0-9a-fA-F]+$', image_id))
+  assert not utilities.valid_hex_id(image_id)
   cache_key = '%s|%s' % (docker_host, image_id)
   image, timestamp_secs = current_app.context_graph_images_cache.lookup(
       cache_key)
@@ -408,8 +423,8 @@ def get_image(docker_host, image_id):
   # brendanburns/php-redis
   # We convert embedded '/' and ':' characters to '-' to avoid interference with
   # the directory structure or file system.
-  url = 'http://{docker_host}:4243/images/{image_id}/json'.format(
-      docker_host=docker_host, image_id=image_id)
+  url = 'http://{docker_host}:{port}/images/{image_id}/json'.format(
+      docker_host=docker_host, port=docker_port(), image_id=image_id)
   fname = '{host}-image-{id}'.format(
       host=docker_host.split('.')[0],
       id=image_id.replace('/', '-').replace(':', '-'))
@@ -486,3 +501,77 @@ def get_images(docker_host):
   current_app.logger.info('get_images(docker_host=%s) returns %d images',
                           docker_host, len(images))
   return images
+
+
+def get_version():
+  """Returns a human-readable information of the currently running image.
+
+  Returns:
+  A string of the form:
+  <symbolic container name> <container hex ID> <creation date and time>
+
+  Raises:
+    CollectorError: in case of any error to compute the running image information.
+  """
+  if current_app.config.get('TESTING'):
+    fname = 'testdata/proc-self-cgroup.txt'
+  else:
+    fname = '/proc/self/cgroup'
+
+  try:
+    f = open(fname, 'r')
+    cgroup = f.read()
+    f.close()
+  except IOError:
+    # file not found
+    msg = 'failed to open or read %s' % fname
+    current_app.logger.exception(msg)
+    raise collector_error.CollectorError(msg)
+  except:
+    msg = 'reading %s failed with exception %s' % (fname, sys.exc_info()[0])
+    current_app.logger.exception(msg)
+    raise collector_error.CollectorError(msg)
+
+  # The file must contain an entry for 'cpu:/docker/...'.
+  m = re.search(r'\b[0-9]+:cpu:/docker/([0-9a-fA-F]+)\b', cgroup)
+  if not m:
+    msg = 'could not find an entry for "cpu:/docker/..." in %s' % fname
+    current_app.logger.error(msg)
+    raise collector_error.CollectorError(msg)
+
+  hex_container_id = m.group(1)
+  # inspect the running container.
+  url = 'http://localhost:{port}/containers/{container_id}/json'.format(
+      port=docker_port(), container_id=hex_container_id)
+  container = fetch_data(url, 'container-' + hex_container_id[:12])
+
+  # Fetch the image symbolic name and hex ID from the container information.
+  symbolic_image_id = utilities.get_attribute(container, ['Config', 'Image'])
+  hex_image_id = utilities.get_attribute(container, ['Image'])
+
+  # Verify the image symbolic name and the image hex ID.
+  if not (utilities.valid_string(symbolic_image_id) and
+          not utilities.valid_hex_id(symbolic_image_id) and
+          utilities.valid_hex_id(hex_image_id)):
+    msg = 'could not find or invalid image information in container %s' % url
+    current_app.logger.error(msg)
+    raise collector_error.CollectorError(msg)
+
+  # Fetch image information.
+  url = 'http://localhost:{port}/images/{image_id}/json'.format(
+      port=docker_port(), image_id=hex_image_id)
+  image = fetch_data(url, 'image-' + hex_image_id[:12])
+
+  # Fetch the image creation timestamp.
+  created = utilities.get_attribute(image, ['Created'])
+  if not utilities.valid_string(created):
+    msg = 'could not find image creation timestamp in %s' % url
+    current_app.logger.error(msg)
+    raise collector_error.CollectorError(msg)
+
+  # Remove the trailing subsecond part of the creation timestamp.
+  created = re.sub(r'\.[0-9]+Z$', '', created)
+
+  ret_val = '%s %s %s' % (symbolic_image_id, hex_image_id[:12], created)
+  current_app.logger.info('get_version() returns: %s', ret_val)
+  return ret_val

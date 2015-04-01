@@ -45,6 +45,11 @@ def valid_optional_string(x):
   return (x is None) or valid_string(x)
 
 
+def valid_hex_id(x):
+  """Returns True iff 'x' is a valid full-length hexadecimal ID."""
+  return valid_string(x) and (len(x) >= 32) and re.match('^[0-9a-fA-F]+$', x)
+
+
 def one_string_arg(func):
   """A decorator for a function that should be given exactly one valid string.
   """
@@ -150,11 +155,11 @@ def is_wrapped_object(obj, expected_type):
   True iff 'obj' is a wrapped object of the expected type.
   """
   assert valid_string(expected_type)
-  return (isinstance(obj, types.DictType) and
-          ('id' in obj) and valid_string(obj['id']) and
-          ('type' in obj) and (obj['type'] == expected_type) and
-          ('timestamp' in obj) and valid_string(obj['timestamp']) and
-          ('properties' in obj))
+  return (valid_string(get_attribute(obj, ['id'])) and
+          valid_string(get_attribute(obj, ['type'])) and
+          (obj['type'] == expected_type) and
+          valid_string(get_attribute(obj, ['timestamp'])) and
+          isinstance(get_attribute(obj, ['properties']), types.DictType))
 
 
 def timeless_json_hash(obj):
@@ -194,10 +199,9 @@ def object_to_hex_id(obj):
   The short object ID (12 hexadecimal digits) of 'obj', which is the first
   12 characters of the obj['Id'] value.
   """
-  assert isinstance(obj, types.DictType)
-  assert isinstance(obj.get('Id'), types.StringTypes)
-  id_value = obj['Id']
-  assert re.match('^[0-9a-f]+$', id_value) and (len(id_value) > 12)
+  id_value = get_attribute(obj, ['Id'])
+  assert valid_string(id_value)
+  assert re.match('^[0-9a-fA-F]+$', id_value) and (len(id_value) > 12)
 
   return id_value[:12]
 
@@ -234,3 +238,31 @@ def node_id_to_host_name(node_id):
   m = re.match(NODE_ID_PATTERN, node_id)
   assert m
   return m.group(1)
+
+
+def get_attribute(obj, names_list):
+  """Applies the attribute names in 'names_list' on 'obj' to get a value.
+
+  get_attribute() is an extension of the get() function.
+  If applies get() successively on a given initial object.
+  If any of the intermediate attributes is missing or the object is no
+  longer a dictionary, this function returns None.
+
+  For example, calling get_attributes(container, ['Config', 'Image'])
+  will attempt to fetch container['Config']['Image'] and return None
+  if this attribute or any of its parents is not found.
+
+  Returns:
+  The attribute value or None if any of the intermediate values is not a
+  dictionary of any of the attributes in 'names_list' was not found.
+  """
+  assert isinstance(names_list, types.ListType)
+  v = obj
+  for name in names_list:
+    assert isinstance(name, types.StringTypes)
+    if isinstance(v, types.DictType) and (name in v):
+      v = v[name]
+    else:
+      return None
+
+  return v

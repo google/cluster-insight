@@ -47,10 +47,10 @@ def fetch_data(url):
   attribute 'TESTING' in 'current_app.config'.
 
   The file name is derived from the URL in the following way:
-  The file name is 'testdata/' + last element of the URL + '.json'.
+  The file name is 'testdata/' + last element of the URL + '.input.json'.
 
   For example, if the URL is 'http://ab/cd/ef', then the file name is
-  'testdata/ef.json'.
+  'testdata/ef.input.json'.
 
   The input is always JSON. It is converted to an internal representation
   by this routine.
@@ -71,7 +71,7 @@ def fetch_data(url):
   if current_app.config.get('TESTING'):
     # Read the data from a file.
     url_elements = url.split('/')
-    fname = 'testdata/' + url_elements[-1] + '.json'
+    fname = 'testdata/' + url_elements[-1] + '.input.json'
     return json.loads(open(fname, 'r').read())
   else:
     # Send the request to Kubernetes
@@ -178,12 +178,11 @@ def matching_labels(pod, selector):
   Returns:
     True iff the pod's label matches the key/value pairs in 'selector'.
   """
-  assert utilities.is_wrapped_object(pod, 'Pod')
-  if not (('labels' in pod['properties']) and
-          isinstance(pod['properties']['labels'], types.DictType)):
+  pod_labels = utilities.get_attribute(pod, ['properties', 'labels'])
+  if not isinstance(pod_labels, types.DictType):
     return False
   selector_view = selector.viewitems()
-  pod_labels_view = pod['properties']['labels'].viewitems()
+  pod_labels_view = pod_labels.viewitems()
   return len(selector_view & pod_labels_view) == len(selector_view)
 
 

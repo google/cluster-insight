@@ -20,6 +20,9 @@
 # The Cluster-Insight data collector listens on this port for requests.
 DATA_COLLECTOR_PORT = 5555
 
+# The Docker controller listens on this port in the master and minion nodes.
+DOCKER_PORT = 4243
+
 # The cache will keep data for at most this many seconds.
 MAX_CACHED_DATA_AGE_SECONDS = 10
 

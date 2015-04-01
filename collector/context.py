@@ -26,7 +26,9 @@ import context
 context.compute_graph(format)
 """
 
+import copy
 import datetime
+import re
 import types
 
 from flask import current_app
@@ -57,12 +59,13 @@ class ContextGraph(object):
     }
     self._context_resources = []
     self._context_relations = []
+    self._version = None
 
   def add_resource(self, rid, annotations, rtype, timestamp, obj=None):
     """Adds a resource to the context graph."""
     assert utilities.valid_string(rid)
-    assert isinstance(annotations, types.DictType)
-    assert annotations and ('label' in annotations)
+    assert utilities.valid_string(utilities.get_attribute(
+        annotations, ['label']))
     assert utilities.valid_string(rtype)
     assert utilities.valid_string(timestamp)
 
@@ -71,8 +74,11 @@ class ContextGraph(object):
         'id': rid,
         'type': rtype,
         'timestamp': timestamp,
-        'annotations': annotations
+        'annotations': copy.deepcopy(annotations)
     }
+
+    if self._version is not None:
+      resource['annotations']['createdBy'] = self._version
 
     # Do not add a 'metadata' attribute if its value is None.
     if obj is not None:
@@ -100,8 +106,14 @@ class ContextGraph(object):
       relation['annotations']['metadata'] = metadata
 
     relation['annotations']['label'] = label if label is not None else kind
+    if self._version is not None:
+      relation['annotations']['createdBy'] = self._version
 
     self._context_relations.append(relation)
+
+  def set_version(self, version):
+    assert utilities.valid_string(version)
+    self._version = version
 
   def set_title(self, title):
     """Sets the title of the context graph."""
@@ -131,13 +143,42 @@ class ContextGraph(object):
     }
     return resources
 
+  def best_label(self, obj):
+    """Returns the best human-readable label of the given object.
+
+    We perfer the "alternateLabel" over "label" and a string not composed
+    of only hexadecimal digits over hexadecimal digits.
+
+    Args:
+      obj: a dictionary containing an "annotations" attribute. The value
+        of this attribute should be a dictionary, which may contain
+        "alternateLabel" and "Label" attributes.
+
+    Returns:
+    The best human-readable label.
+    """
+    alt_label = utilities.get_attribute(obj, ['annotations', 'alternateLabel'])
+    label = utilities.get_attribute(obj, ['annotations', 'label'])
+    if (utilities.valid_string(alt_label) and
+        re.search('[^0-9a-fA-F]', alt_label)):
+      return alt_label
+    elif utilities.valid_string(label) and re.search('[^0-9a-fA-F]', label):
+      return label
+    elif utilities.valid_string(alt_label):
+      return alt_label
+    elif utilities.valid_string(label):
+      return label
+    else:
+      # should not arrive here.
+      return '<unknown>'
+
   def to_dot_graph(self, show_node_labels=True):
     """Returns the context graph in DOT graph format."""
     if show_node_labels:
       resource_list = [
           '"{0}"[label="{1}",color={2}]'.format(
               res['id'],
-              res['type'] + ':' + res['annotations']['label'],
+              res['type'] + ':' + self.best_label(res),
               self._graph_color.get(res['type']) or 'black')
           for res in self._context_resources]
     else:
@@ -148,7 +189,7 @@ class ContextGraph(object):
           for res in self._context_resources]
     relation_list = [
         '"{0}"->"{1}"[label="{2}"]'.format(
-            rel['source'], rel['target'], rel['annotations']['label'])
+            rel['source'], rel['target'], self.best_label(rel))
         for rel in self._context_relations]
     graph_items = resource_list + relation_list
     graph_data = 'digraph{' + ';'.join(graph_items) + '}'
@@ -194,6 +235,7 @@ def _do_compute_graph(output_format):
   """
 
   g = ContextGraph()
+  g.set_version(docker.get_version())
   g.set_metadata({'timestamp': datetime.datetime.now().isoformat()})
 
   # Nodes
@@ -224,7 +266,7 @@ def _do_compute_graph(output_format):
       docker_host = pod['properties']['currentState']['host']
       g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                      pod['properties'])
-      g.add_relation(node_guid, pod_guid, 'contains')  # Node contains Pod
+      g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
       # Containers in a Pod
       for container in docker.get_containers(docker_host, pod_id):
         container_id = container['id']

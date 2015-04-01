@@ -34,7 +34,7 @@ import types
 class CollectorError(Exception):
 
   def __init__(self, message):
-    Exception.__init__()
+    Exception.__init__(self)
     assert isinstance(message, types.StringTypes)
     self._message = message
 
