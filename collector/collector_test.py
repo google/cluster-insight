@@ -68,23 +68,25 @@ class TestCollector(unittest.TestCase):
     sanitized_golden_data = re.sub(TIMESTAMP_REGEXP, '', golden_data)
     sanitized_ret_value = re.sub(TIMESTAMP_REGEXP, '', ret_value)
 
+    # Strip whitespaces of the sanitized strings, and replace multiple
+    # whitespaces by a single space
+    sanitized_golden_data = re.sub(r'\s+', ' ', sanitized_golden_data.strip())
+    sanitized_ret_value = re.sub(r'\s+', ' ', sanitized_ret_value.strip())
+
     # Find the index of the first discrepancy between 'sanitized_golden_data'
     # and 'sanitized_ret_value'. If they are equal, the index will point at
     # the position after the last character in both strings.
+    # DO NOT replace this code with:
+    # self.assertEqual(sanitized_golden_data, sanitized_ret_value)
+    # The current code prints the tail of the mismatched data, which helps
+    # the human developer identify and comprehend the discrepancies.
     i = 0
     while (i < len(sanitized_golden_data)) and (i < len(sanitized_ret_value)):
       if sanitized_golden_data[i] != sanitized_ret_value[i]:
         break
       i += 1
 
-    # The sanitized golden data and the sanitized return value may differ
-    # in the training newline. This is fine.
-    if (sanitized_golden_data[i:] == '\n') and (not sanitized_ret_value[i:]):
-      return
-    if (not sanitized_golden_data[i:]) and (sanitized_ret_value[i:] == '\n'):
-      return
-
-    # In all other cases, the sanitized golden data must equal the sanitized
+    # The sanitized golden data must equal the sanitized
     # return value.
     self.assertEqual(sanitized_golden_data[i:], sanitized_ret_value[i:])
 
