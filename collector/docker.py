@@ -220,7 +220,7 @@ def get_containers(docker_host, pod_id=None):
             utilities.valid_string(container_info['Names'][0]) and
             container_info['Names'][0][0] == '/'):
       msg = 'invalid containers data format. docker_host=%s' % docker_host
-      current_app.logger.exception(msg)
+      current_app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     container_id = container_info['Names'][0][1:]
@@ -230,13 +230,13 @@ def get_containers(docker_host, pod_id=None):
     if not utilities.valid_string(container.get('Name')):
       msg = ('missing or invalid Name attribute in container %s' %
              container_id)
-      current_app.logger.exception(msg)
+      current_app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     if container['Name'] != ('/' + container_id):
       msg = ('container %s\'s Name attribute is "%s"; expecting "%s"' %
              (container_id, container['Name'], '/' + container_id))
-      current_app.logger.exception(msg)
+      current_app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     container_label = utilities.object_to_hex_id(container)
@@ -250,7 +250,7 @@ def get_containers(docker_host, pod_id=None):
     if not utilities.valid_string(container_pod_name):
       msg = ('missing or invalid container["Config"]["Hostname"] '
              'in container %s' % container_id)
-      current_app.logger.exception(msg)
+      current_app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     if pod_id:
@@ -306,7 +306,7 @@ def invalid_processes(url):
     CollectorError: always raises this exception.
   """
   msg = 'process information from URL %s is invalid' % url
-  current_app.logger.exception(msg)
+  current_app.logger.error(msg)
   raise collector_error.CollectorError(msg)
 
 
