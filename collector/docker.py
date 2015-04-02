@@ -215,18 +215,26 @@ def get_containers(docker_host, pod_id=None):
     # The container Name is the only element of the array 'Names' -
     # why is Names an array here?
     # skip the leading / in the Name
-    if not isinstance(container_info.get('Names'), types.ListType):
+    if not (isinstance(container_info.get('Names'), types.ListType) and
+            container_info['Names'] and
+            utilities.valid_string(container_info['Names'][0]) and
+            container_info['Names'][0][0] == '/'):
       msg = 'invalid containers data format. docker_host=%s' % docker_host
       current_app.logger.exception(msg)
       raise collector_error.CollectorError(msg)
 
-    assert container_info['Names'][0][0] == '/'
     container_id = container_info['Names'][0][1:]
     container, ts = _inspect_container(docker_host, container_id)
     if container is None:
       continue
+    if not utilities.valid_string(container.get('Name')):
+      msg = ('missing or invalid Name attribute in container %s' %
+             container_id)
+      current_app.logger.exception(msg)
+      raise collector_error.CollectorError(msg)
+
     if container['Name'] != ('/' + container_id):
-      msg = ('container %s\'s Name attribute is %s; expecting %s' %
+      msg = ('container %s\'s Name attribute is "%s"; expecting "%s"' %
              (container_id, container['Name'], '/' + container_id))
       current_app.logger.exception(msg)
       raise collector_error.CollectorError(msg)
@@ -234,9 +242,19 @@ def get_containers(docker_host, pod_id=None):
     container_label = utilities.object_to_hex_id(container)
     wrapped_container = utilities.wrap_object(
         container, 'Container', container_id, ts, label=container_label)
+
+    # container['Config']['Hostname'] is the name of the enclosing pod
+    # (not the host).
+    container_pod_name = utilities.get_attribute(
+        container, ['Config', 'Hostname'])
+    if not utilities.valid_string(container_pod_name):
+      msg = ('missing or invalid container["Config"]["Hostname"] '
+             'in container %s' % container_id)
+      current_app.logger.exception(msg)
+      raise collector_error.CollectorError(msg)
+
     if pod_id:
-      # container['Config']['Hostname'] is the name of the pod (not the host).
-      if pod_id == container['Config']['Hostname']:
+      if pod_id == container_pod_name:
         containers.append(wrapped_container)
         timestamps.append(ts)
     else:
@@ -480,6 +498,7 @@ def get_images(docker_host):
 
   # docker_host is the same as node_id
   images = []
+  image_id_set = set()
   for pod in kubernetes.get_pods(docker_host):
     pod_id = pod['id']
     assert pod['properties']['currentState']['host'] == docker_host
@@ -487,16 +506,22 @@ def get_images(docker_host):
     # Containers in a Pod
     for container in get_containers(docker_host, pod_id):
       # Image from which this Container was created
-      if (('properties' not in container) or
-          ('Config' not in container['properties']) or
-          ('Image' not in container['properties']['Config'])):
+      image_id = utilities.get_attribute(
+          container, ['properties', 'Config', 'Image'])
+      if not utilities.valid_string(image_id):
         # Image ID not found
         continue
 
-      image_id = container['properties']['Config']['Image']
+      if image_id in image_id_set:
+        # We already read this image_id.
+        # It is common that different containers in the same docker_host
+        # run the same image. We should list every image only once.
+        continue
+
       image = get_image(docker_host, image_id)
       if image is not None:
         images.append(image)
+        image_id_set.add(image_id)
 
   current_app.logger.info('get_images(docker_host=%s) returns %d images',
                           docker_host, len(images))

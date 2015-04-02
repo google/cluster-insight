@@ -60,6 +60,7 @@ class ContextGraph(object):
     self._context_resources = []
     self._context_relations = []
     self._version = None
+    self._id_set = set()
 
   def add_resource(self, rid, annotations, rtype, timestamp, obj=None):
     """Adds a resource to the context graph."""
@@ -68,6 +69,11 @@ class ContextGraph(object):
         annotations, ['label']))
     assert utilities.valid_string(rtype)
     assert utilities.valid_string(timestamp)
+
+    # It is possible that the same resource is referenced by more than one
+    # parent. In this case the resource is added only once.
+    if rid in self._id_set:
+      return
 
     # Add the resource to the context graph data structure.
     resource = {
@@ -85,6 +91,7 @@ class ContextGraph(object):
       resource['properties'] = obj
 
     self._context_resources.append(resource)
+    self._id_set.add(rid)
 
   def add_relation(self, source, target, kind, label=None, metadata=None):
     """Adds a relation to the context graph."""
@@ -205,7 +212,7 @@ class ContextGraph(object):
       return self.to_context_resources()
     else:
       msg = 'invalid dump() output_format: %s' % output_format
-      current_app.logger.exception(msg)
+      current_app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
 
@@ -232,6 +239,9 @@ def _do_compute_graph(output_format):
 
   Returns:
     A successful response in the specified format.
+
+  Raises:
+    CollectorError: inconsistent or invalid graph data.
   """
 
   g = ContextGraph()
@@ -263,7 +273,14 @@ def _do_compute_graph(output_format):
     for pod in kubernetes.get_pods(node_id):
       pod_id = pod['id']
       pod_guid = 'Pod:' + pod_id
-      docker_host = pod['properties']['currentState']['host']
+      docker_host = utilities.get_attribute(
+          pod, ['properties', 'currentState', 'host'])
+      if not utilities.valid_string(docker_host):
+        msg = ('Docker host (pod["properties"]["currentState"]["host"]) '
+               'not found in pod ID %s' % pod_id)
+        current_app.logger.error(msg)
+        raise collector_error.CollectorError(msg)
+
       g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                      pod['properties'])
       g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
@@ -286,12 +303,11 @@ def _do_compute_graph(output_format):
           # Container contains Process
           g.add_relation(container_guid, process_guid, 'contains')
         # Image from which this Container was created
-        if (('properties' not in container) or
-            ('Config' not in container['properties']) or
-            ('Image' not in container['properties']['Config'])):
+        image_id = utilities.get_attribute(
+            container, ['properties', 'Config', 'Image'])
+        if not utilities.valid_string(image_id):
           # Image ID not found
           continue
-        image_id = container['properties']['Config']['Image']
         image = docker.get_image(docker_host, image_id)
         if image is None:
           # image not found

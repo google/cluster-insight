@@ -166,9 +166,9 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(3, self.count_resources(result, 'Node'))
     self.assertEqual(6, self.count_resources(result, 'Service'))
     self.assertEqual(7, self.count_resources(result, 'Pod'))
-    self.assertEqual(2, self.count_resources(result, 'Container'))
+    self.assertEqual(4, self.count_resources(result, 'Container'))
     self.assertEqual(7, self.count_resources(result, 'Process'))
-    self.assertEqual(2, self.count_resources(result, 'Image'))
+    self.assertEqual(3, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
   def test_resources(self):
@@ -183,23 +183,23 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(0, self.count_relations(result, 'runs'))
 
     json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(31, json_output.count('"createdBy": '))
+    self.assertEqual(3, json_output.count('"alternateLabel": '))
+    self.assertEqual(34, json_output.count('"createdBy": '))
 
   def test_cluster(self):
     ret_value = self.app.get('/cluster')
     result = json.loads(ret_value.data)
     self.verify_resources(result)
 
-    self.assertEqual(21, self.count_relations(result, 'contains'))
-    self.assertEqual(2, self.count_relations(result, 'createdFrom'))
+    self.assertEqual(23, self.count_relations(result, 'contains'))
+    self.assertEqual(4, self.count_relations(result, 'createdFrom'))
     self.assertEqual(6, self.count_relations(result, 'loadBalances'))
     self.assertEqual(5, self.count_relations(result, 'monitors'))
     self.assertEqual(7, self.count_relations(result, 'runs'))
 
     json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(72, json_output.count('"createdBy": '))
+    self.assertEqual(3, json_output.count('"alternateLabel": '))
+    self.assertEqual(79, json_output.count('"createdBy": '))
 
   def test_debug(self):
     ret_value = self.app.get('/debug')
