@@ -1,0 +1,81 @@
+      {
+        "Architecture": "amd64", 
+        "Author": "", 
+        "Checksum": "tarsum.dev+sha256:1b755912c77197c6a43539f2a708ef89d5849b8ce02642cb702e47afaa8195c3", 
+        "Comment": "", 
+        "Config": {
+          "AttachStderr": false, 
+          "AttachStdin": false, 
+          "AttachStdout": false, 
+          "Cmd": null, 
+          "CpuShares": 0, 
+          "Cpuset": "", 
+          "Domainname": "", 
+          "Entrypoint": [
+            "/pause"
+          ], 
+          "Env": [
+            "HOME=/", 
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+          ], 
+          "ExposedPorts": null, 
+          "Hostname": "e931342f8fec", 
+          "Image": "e244e638e26e77a8b08da462b1cb92811ed6d3d2874286368afcef7717ed9475", 
+          "MacAddress": "", 
+          "Memory": 0, 
+          "MemorySwap": 0, 
+          "NetworkDisabled": false, 
+          "OnBuild": [], 
+          "OpenStdin": false, 
+          "PortSpecs": null, 
+          "StdinOnce": false, 
+          "Tty": false, 
+          "User": "", 
+          "Volumes": null, 
+          "WorkingDir": ""
+        }, 
+        "Container": "c2bc28b48b5c5543f3589c02eb9e7fa898a733cd850cb4cc350d9353f6ae9bcd", 
+        "ContainerConfig": {
+          "AttachStderr": false, 
+          "AttachStdin": false, 
+          "AttachStdout": false, 
+          "Cmd": [
+            "/bin/sh", 
+            "-c", 
+            "#(nop) ENTRYPOINT [/pause]"
+          ], 
+          "CpuShares": 0, 
+          "Cpuset": "", 
+          "Domainname": "", 
+          "Entrypoint": [
+            "/pause"
+          ], 
+          "Env": [
+            "HOME=/", 
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+          ], 
+          "ExposedPorts": null, 
+          "Hostname": "e931342f8fec", 
+          "Image": "e244e638e26e77a8b08da462b1cb92811ed6d3d2874286368afcef7717ed9475", 
+          "MacAddress": "", 
+          "Memory": 0, 
+          "MemorySwap": 0, 
+          "NetworkDisabled": false, 
+          "OnBuild": [], 
+          "OpenStdin": false, 
+          "PortSpecs": null, 
+          "StdinOnce": false, 
+          "Tty": false, 
+          "User": "", 
+          "Volumes": null, 
+          "WorkingDir": ""
+        }, 
+        "Created": "2014-07-19T07:02:32.267701596Z", 
+        "DockerVersion": "1.0.0", 
+        "Id": "6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
+        "Os": "linux", 
+        "Parent": "e244e638e26e77a8b08da462b1cb92811ed6d3d2874286368afcef7717ed9475", 
+        "Size": 0, 
+        "VirtualSize": 239840
+      }
+

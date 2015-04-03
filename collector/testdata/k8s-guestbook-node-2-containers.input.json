@@ -1,29 +1,32 @@
-[{"Command":"/bin/sh -c /run.sh","Created":1426602633,
-"Id":"1735192d84379e9ee43a552a8b28491f6ce16395c8bfc955442aa2f6b68aa00d",
+[{"Command":"/bin/sh -c /run.sh","Created":1427997583,
+"Id":"80f949ba76d39fe9489ecd2d9ddee11b6b7f00a01f36311e0f1d630f702431c0",
 "Image":"brendanburns/php-redis:latest",
-"Names":["/k8s_php-redis.b317029a_guestbook-controller-0133o.default.api_f9914838-b949-11e4-8246-42010af0c3dd_ecccdd2b"],
-"Ports":[],"Status":"Up About a minute"}
-,{"Command":"/pause","Created":1426602631,"Id":"ae763cfcd7559a1f60a67c3b67c4bf97dc4a0f507ae4c179703f9b106a90c166",
+"Names":["/k8s_php-redis.b317029a_guestbook-controller-0133o.default.api_f9914838-b949-11e4-8246-42010af0c3dd_90af8e71"],
+"Ports":[],"Status":"Up 3 minutes"}
+,{"Command":"/pause","Created":1427997581,
+"Id":"8dfb95adb4c6724716ffb23ea1f90aeeddc65935c4294e5f7bceb8f75365cb72",
 "Image":"kubernetes/pause:go",
-"Names":["/k8s_POD.e614ed9a_guestbook-controller-0133o.default.api_f9914838-b949-11e4-8246-42010af0c3dd_a97206fb"],
-"Ports":[],"Status":"Up About a minute"}
+"Names":["/k8s_POD.e614ed9a_guestbook-controller-0133o.default.api_f9914838-b949-11e4-8246-42010af0c3dd_4f351e85"],
+"Ports":[],"Status":"Up 3 minutes"}
 ,{"Command":"/usr/bin/cadvisor","Created":1424472924,
 "Id":"2d36e2431a1be455c29ba6e0fd3afb58a1c4772e616742840ad572a4690fba96",
 "Image":"google/cadvisor:0.8.0",
 "Names":["/k8s_cadvisor.8d424740_cadvisor-agent.file-6bb810db-k8s-guestbook-node-2.file_f13fa2cce5fed5e7d2eff05bff4008be_d2214df0"],
-"Ports":[],"Status":"Up 3 weeks"}
+"Ports":[],"Status":"Up 5 weeks"}
 ,{"Command":"redis-server /etc/redis/redis.conf","Created":1424472924,
 "Id":"93475404a11774b9dfe74be20c689a07a481e98e365793a505f5a2355dd7ec69",
 "Image":"dockerfile/redis:latest",
 "Names":["/k8s_master.5278fc4d_redis-master.default.api_32a27c5a-b949-11e4-8246-42010af0c3dd_35ba6803"],
-"Ports":[],"Status":"Up 3 weeks"}
-,{"Command":"/pause","Created":1424472923,"Id":"f15272658bbd7be306d9ee14a06602bf1530866edc8724f843beeb3efdad0088",
+"Ports":[],"Status":"Up 5 weeks"}
+,{"Command":"/pause","Created":1424472923,
+"Id":"f15272658bbd7be306d9ee14a06602bf1530866edc8724f843beeb3efdad0088",
 "Image":"kubernetes/pause:go",
 "Names":["/k8s_POD.23ebee62_redis-master.default.api_32a27c5a-b949-11e4-8246-42010af0c3dd_0e0f9003"],
-"Ports":[],"Status":"Up 3 weeks"}
-,{"Command":"/pause","Created":1424472922,"Id":"64238c129c3ffad68fc25f66278d2ac8777722ff5f52d65a88e368ea4ec9f2c6",
+"Ports":[],"Status":"Up 5 weeks"}
+,{"Command":"/pause","Created":1424472922,
+"Id":"64238c129c3ffad68fc25f66278d2ac8777722ff5f52d65a88e368ea4ec9f2c6",
 "Image":"kubernetes/pause:go",
 "Names":["/k8s_POD.252debe0_cadvisor-agent.file-6bb810db-k8s-guestbook-node-2.file_f13fa2cce5fed5e7d2eff05bff4008be_1f178b9d"],
-"Ports":[{"IP":"0.0.0.0","PrivatePort":8080,"PublicPort":4194,"Type":"tcp"
-}],"Status":"Up 3 weeks"}
+"Ports":[{"IP":"0.0.0.0","PrivatePort":8080,"PublicPort":4194,"Type":"tcp"}],
+"Status":"Up 5 weeks"}
 ]
