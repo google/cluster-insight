@@ -24,6 +24,7 @@ import unittest
 
 # local imports
 import collector
+import global_state
 
 
 # A regular expression that matches the 'timestamp' attribute and value
@@ -35,8 +36,11 @@ class TestCollector(unittest.TestCase):
   """Test harness."""
 
   def setUp(self):
-    collector.app.config['TESTING'] = True
-    collector.init_caching()
+    gs = global_state.GlobalState()
+    gs.init_caches()
+    gs.set_testing(True)
+    gs.set_logger(collector.app.logger)
+    collector.app.context_graph_global_state = gs
     self.app = collector.app.test_client()
 
   def compare_to_golden(self, ret_value, fname):

@@ -31,11 +31,10 @@ import datetime
 import re
 import types
 
-from flask import current_app
-
 # local imports
 import collector_error
 import docker
+import global_state
 import kubernetes
 import utilities
 
@@ -202,8 +201,11 @@ class ContextGraph(object):
     graph_data = 'digraph{' + ';'.join(graph_items) + '}'
     return graph_data
 
-  def dump(self, output_format):
+  def dump(self, gs, output_format):
     """Returns the context graph in the specified format."""
+    assert isinstance(gs, global_state.GlobalState)
+    assert isinstance(output_format, types.StringTypes)
+
     if output_format == 'dot':
       return self.to_dot_graph()
     elif output_format == 'context_graph':
@@ -212,7 +214,7 @@ class ContextGraph(object):
       return self.to_context_resources()
     else:
       msg = 'invalid dump() output_format: %s' % output_format
-      current_app.logger.error(msg)
+      gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
 
 
@@ -231,10 +233,12 @@ def _make_error(error_message):
           '_error_message': error_message}
 
 
-def _do_compute_graph(output_format):
+@utilities.global_state_string_args
+def _do_compute_graph(gs, output_format):
   """Returns the context graph in the specified format.
 
   Args:
+    gs: the global state.
     output_format: one of 'graph', 'dot', 'context_graph', or 'resources'.
 
   Returns:
@@ -243,15 +247,14 @@ def _do_compute_graph(output_format):
   Raises:
     CollectorError: inconsistent or invalid graph data.
   """
-
   g = ContextGraph()
-  g.set_version(docker.get_version())
+  g.set_version(docker.get_version(gs))
   g.set_metadata({'timestamp': datetime.datetime.now().isoformat()})
 
   # Nodes
-  nodes_list = kubernetes.get_nodes()
+  nodes_list = kubernetes.get_nodes(gs)
   if not nodes_list:
-    return g.dump(output_format)
+    return g.dump(gs, output_format)
 
   # Get the project name from the first node.
   project_id = utilities.node_id_to_project_name(nodes_list[0]['id'])
@@ -270,7 +273,7 @@ def _do_compute_graph(output_format):
                    node['properties'])
     g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
     # Pods in a Node
-    for pod in kubernetes.get_pods(node_id):
+    for pod in kubernetes.get_pods(gs, node_id):
       pod_id = pod['id']
       pod_guid = 'Pod:' + pod_id
       docker_host = utilities.get_attribute(
@@ -278,14 +281,14 @@ def _do_compute_graph(output_format):
       if not utilities.valid_string(docker_host):
         msg = ('Docker host (pod["properties"]["currentState"]["host"]) '
                'not found in pod ID %s' % pod_id)
-        current_app.logger.error(msg)
+        gs.logger_error(msg)
         raise collector_error.CollectorError(msg)
 
       g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                      pod['properties'])
       g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
       # Containers in a Pod
-      for container in docker.get_containers(docker_host, pod_id):
+      for container in docker.get_containers(gs, docker_host, pod_id):
         container_id = container['id']
         container_guid = 'Container:' + container_id
         # TODO(vasbala): container_id is too verbose?
@@ -295,7 +298,7 @@ def _do_compute_graph(output_format):
         # Pod contains Container
         g.add_relation(pod_guid, container_guid, 'contains')
         # Processes in a Container
-        for process in docker.get_processes(docker_host, container_id):
+        for process in docker.get_processes(gs, docker_host, container_id):
           process_id = process['id']
           process_guid = 'Process:' + process_id
           g.add_resource(process_guid, process['annotations'],
@@ -308,7 +311,7 @@ def _do_compute_graph(output_format):
         if not utilities.valid_string(image_id):
           # Image ID not found
           continue
-        image = docker.get_image(docker_host, image_id)
+        image = docker.get_image(gs, docker_host, image_id)
         if image is None:
           # image not found
           continue
@@ -319,7 +322,7 @@ def _do_compute_graph(output_format):
         g.add_relation(container_guid, image_guid, 'createdFrom')
 
   # Services
-  for service in kubernetes.get_services():
+  for service in kubernetes.get_services(gs):
     service_id = service['id']
     service_guid = 'Service:' + service_id
     g.add_resource(service_guid, service['annotations'], 'Service',
@@ -330,15 +333,15 @@ def _do_compute_graph(output_format):
     # key/value pairs to find matching Pods)
     selector = service['properties'].get('labels')
     if selector:
-      for pod in kubernetes.get_selected_pods(selector):
+      for pod in kubernetes.get_selected_pods(gs, selector):
         pod_guid = 'Pod:' + pod['id']
         # Service loadBalances Pod
         g.add_relation(service_guid, pod_guid, 'loadBalances')
     else:
-      current_app.logger.error('Service id=%s has no "labels" key', service_id)
+      gs.logger_error('Service id=%s has no "labels" key', service_id)
 
   # ReplicationControllers
-  rcontrollers_list = kubernetes.get_rcontrollers()
+  rcontrollers_list = kubernetes.get_rcontrollers(gs)
   for rcontroller in rcontrollers_list:
     rcontroller_id = rcontroller['id']
     rcontroller_guid = 'ReplicationController:' + rcontroller_id
@@ -351,25 +354,26 @@ def _do_compute_graph(output_format):
     # key/value pairs to find matching pods)
     selector = rcontroller['properties'].get('labels')
     if selector:
-      for pod in kubernetes.get_selected_pods(selector):
+      for pod in kubernetes.get_selected_pods(gs, selector):
         pod_guid = 'Pod:' + pod['id']
         # Rcontroller monitors Pod
         g.add_relation(rcontroller_guid, pod_guid, 'monitors')
     else:
-      current_app.logger.error('Rcontroller id=%s has no "labels" key',
-                               rcontroller_id)
+      gs.logger_error('Rcontroller id=%s has no "labels" key', rcontroller_id)
 
   # Dump the resulting graph
-  return g.dump(output_format)
+  return g.dump(gs, output_format)
 
 
-def compute_graph(output_format):
+@utilities.global_state_string_args
+def compute_graph(gs, output_format):
   """Collects raw information and computes the context graph.
 
   Args:
+    gs: global state.
     output_format: one of 'graph', 'dot', 'context_graph', or 'resources'.
 
   Returns:
   The context graph in the specified format.
   """
-  return _do_compute_graph(output_format)
+  return _do_compute_graph(gs, output_format)

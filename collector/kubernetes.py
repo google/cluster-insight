@@ -26,7 +26,6 @@ import sys
 import time
 import types
 
-from flask import current_app
 import requests
 
 # local imports
@@ -39,12 +38,9 @@ import utilities
 KUBERNETES_API = 'http://127.0.0.1:8080/api/v1beta1'
 
 
-@utilities.one_string_arg
-def fetch_data(url):
+@utilities.global_state_string_args
+def fetch_data(gs, url):
   """Fetches a URL from Kubernetes (production) or reads it from a file (test).
-
-  The production/test mode is determined by the existence of the
-  attribute 'TESTING' in 'current_app.config'.
 
   The file name is derived from the URL in the following way:
   The file name is 'testdata/' + last element of the URL + '.input.json'.
@@ -56,6 +52,7 @@ def fetch_data(url):
   by this routine.
 
   Args:
+   gs: global state.
    url: the URL to fetch from Kubernetes in production.
 
   Returns:
@@ -68,7 +65,7 @@ def fetch_data(url):
     Other exceptions may be raised as the result of attempting to
     fetch the URL.
   """
-  if current_app.config.get('TESTING'):
+  if gs.get_testing():
     # Read the data from a file.
     url_elements = url.split('/')
     fname = 'testdata/' + url_elements[-1] + '.input.json'
@@ -78,8 +75,12 @@ def fetch_data(url):
     return requests.get(url).json()
 
 
-def get_nodes():
+@utilities.global_state_arg
+def get_nodes(gs):
   """Gets the list of all nodes in the current cluster.
+
+  Args:
+    gs: global state.
 
   Returns:
     list of wrapped node objects.
@@ -90,19 +91,18 @@ def get_nodes():
     CollectorError in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  nodes, timestamp_secs = current_app.context_graph_nodes_cache.lookup('')
+  nodes, timestamp_secs = gs.get_nodes_cache().lookup('')
   if timestamp_secs is not None:
-    current_app.logger.info('get_nodes() cache hit returns %d nodes',
-                            len(nodes))
+    gs.logger_info('get_nodes() cache hit returns %d nodes', len(nodes))
     return nodes
 
   nodes = []
   url = '{kubernetes}/nodes'.format(kubernetes=KUBERNETES_API)
   try:
-    result = fetch_data(url)
+    result = fetch_data(gs, url)
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    current_app.logger.exception(msg)
+    gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
@@ -111,13 +111,13 @@ def get_nodes():
         node, 'Node', node['id'], now,
         label=utilities.node_id_to_host_name(node['id'])))
 
-  ret_value = current_app.context_graph_nodes_cache.update('', nodes, now)
-  current_app.logger.info('get_nodes() returns %d nodes', len(nodes))
+  ret_value = gs.get_nodes_cache().update('', nodes, now)
+  gs.logger_info('get_nodes() returns %d nodes', len(nodes))
   return ret_value
 
 
-@utilities.one_optional_string_arg
-def get_pods(node_id=None):
+@utilities.global_state_optional_string_args
+def get_pods(gs, node_id=None):
   """Gets the list of all pods in the given node or in the cluster.
 
   When 'node_id' is None, it returns the list of pods in the cluster.
@@ -125,6 +125,7 @@ def get_pods(node_id=None):
   node.
 
   Args:
+    gs: global state.
     node_id: the parent node of the pods or None.
 
   Returns:
@@ -137,19 +138,19 @@ def get_pods(node_id=None):
     Other exceptions may be raised due to exectution errors.
   """
   pods_label = '' if node_id is None else node_id
-  pods, timestamp_secs = current_app.context_graph_pods_cache.lookup(pods_label)
+  pods, timestamp_secs = gs.get_pods_cache().lookup(pods_label)
   if timestamp_secs is not None:
-    current_app.logger.info('get_pods(pods_label=%s) cache hit returns %d pods',
-                            pods_label, len(pods))
+    gs.logger_info('get_pods(pods_label=%s) cache hit returns %d pods',
+                   pods_label, len(pods))
     return pods
 
   pods = []
   url = '{kubernetes}/pods'.format(kubernetes=KUBERNETES_API)
   try:
-    result = fetch_data(url)
+    result = fetch_data(gs, url)
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    current_app.logger.exception(msg)
+    gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
@@ -161,9 +162,8 @@ def get_pods(node_id=None):
     else:
       pods.append(wrapped_pod)
 
-  ret_value = current_app.context_graph_pods_cache.update(pods_label, pods, now)
-  current_app.logger.info('get_pods(node_id=%s) returns %d pods',
-                          pods_label, len(pods))
+  ret_value = gs.get_pods_cache().update(pods_label, pods, now)
+  gs.logger_info('get_pods(node_id=%s) returns %d pods', pods_label, len(pods))
   return ret_value
 
 
@@ -186,11 +186,12 @@ def matching_labels(pod, selector):
   return len(selector_view & pod_labels_view) == len(selector_view)
 
 
-@utilities.one_dictionary_arg
-def get_selected_pods(selector):
+@utilities.global_state_dictionary_args
+def get_selected_pods(gs, selector):
   """Gets the list of pods in the current cluster matching 'selector'.
 
   Args:
+    gs: global state.
     selector: a dictionary of key/value pairs describing the labels of
       the matching pods.
 
@@ -204,12 +205,12 @@ def get_selected_pods(selector):
     Other exceptions may be raised due to exectution errors.
   """
   try:
-    all_pods = get_pods()
+    all_pods = get_pods(gs)
   except collector_error.CollectorError:
     raise
   except:
     msg = 'get_pods() failed with exception %s' % sys.exc_info()[0]
-    current_app.logger.exception(msg)
+    gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
   pods = []
@@ -218,16 +219,17 @@ def get_selected_pods(selector):
     if matching_labels(pod, selector):
       pods.append(pod)
 
-  current_app.logger.info('get_selected_pods(labels=%s) returns %d pods',
-                          str(selector), len(pods))
+  gs.logger_info('get_selected_pods(labels=%s) returns %d pods',
+                 str(selector), len(pods))
   return pods
 
 
-@utilities.one_string_arg
-def get_pod_host(pod_id):
+@utilities.global_state_string_args
+def get_pod_host(gs, pod_id):
   """Gets the host name associated with the given pod.
 
   Args:
+    gs: global state.
     pod_id: the pod name.
 
   Returns:
@@ -238,8 +240,8 @@ def get_pod_host(pod_id):
     CollectorError in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  current_app.logger.info('calling get_pod_host(pod_id=%s)', pod_id)
-  for pod in get_pods():
+  gs.logger_info('calling get_pod_host(pod_id=%s)', pod_id)
+  for pod in get_pods(gs):
     if pod['id'] == pod_id:
       return pod['properties']['currentState']['host']
 
@@ -247,8 +249,12 @@ def get_pod_host(pod_id):
   return ''
 
 
-def get_services():
+@utilities.global_state_arg
+def get_services(gs):
   """Gets the list of services in the current cluster.
+
+  Args:
+    gs: global state.
 
   Returns:
     list of wrapped service objects.
@@ -261,19 +267,19 @@ def get_services():
     CollectorError in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  services, timestamp_secs = current_app.context_graph_services_cache.lookup('')
+  services, timestamp_secs = gs.get_services_cache().lookup('')
   if timestamp_secs is not None:
-    current_app.logger.info('get_services() cache hit returns %d services',
-                            len(services))
+    gs.logger_info('get_services() cache hit returns %d services',
+                   len(services))
     return services
 
   services = []
   url = '{kubernetes}/services'.format(kubernetes=KUBERNETES_API)
   try:
-    result = fetch_data(url)
+    result = fetch_data(gs, url)
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    current_app.logger.exception(msg)
+    gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
@@ -281,13 +287,17 @@ def get_services():
     services.append(
         utilities.wrap_object(service, 'Service', service['id'], now))
 
-  ret_value = current_app.context_graph_services_cache.update('', services, now)
-  current_app.logger.info('get_services() returns %d services', len(services))
+  ret_value = gs.get_services_cache().update('', services, now)
+  gs.logger_info('get_services() returns %d services', len(services))
   return ret_value
 
 
-def get_rcontrollers():
+@utilities.global_state_arg
+def get_rcontrollers(gs):
   """Gets the list of replication controllers in the current cluster.
+
+  Args:
+    gs: global state.
 
   Returns:
     list of wrapped replication controller objects.
@@ -298,9 +308,9 @@ def get_rcontrollers():
     CollectorError in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  rcontrollers, ts = current_app.context_graph_rcontrollers_cache.lookup('')
+  rcontrollers, ts = gs.get_rcontrollers_cache().lookup('')
   if ts is not None:
-    current_app.logger.info(
+    gs.logger_info(
         'get_rcontrollers() cache hit returns %d rcontrollers',
         len(rcontrollers))
     return rcontrollers
@@ -308,10 +318,10 @@ def get_rcontrollers():
   rcontrollers = []
   url = '{kubernetes}/replicationControllers'.format(kubernetes=KUBERNETES_API)
   try:
-    result = fetch_data(url)
+    result = fetch_data(gs, url)
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    current_app.logger.exception(msg)
+    gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
@@ -319,8 +329,7 @@ def get_rcontrollers():
     rcontrollers.append(utilities.wrap_object(
         rcontroller, 'ReplicationController', rcontroller['id'], now))
 
-  ret_value = current_app.context_graph_rcontrollers_cache.update(
-      '', rcontrollers, now)
-  current_app.logger.info(
+  ret_value = gs.get_rcontrollers_cache().update('', rcontrollers, now)
+  gs.logger_info(
       'get_rcontrollers() returns %d rcontrollers', len(rcontrollers))
   return ret_value

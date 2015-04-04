@@ -31,8 +31,8 @@ import collector_error
 import constants
 import context
 import docker
+import global_state
 import kubernetes
-import simple_cache
 import utilities
 
 app = flask.Flask(__name__)
@@ -107,8 +107,9 @@ def get_nodes():
   Returns:
     The nodes of the context graph.
   """
+  gs = app.context_graph_global_state
   try:
-    nodes_list = kubernetes.get_nodes()
+    nodes_list = kubernetes.get_nodes(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
@@ -126,8 +127,9 @@ def get_services():
   Returns:
     The services of the context graph.
   """
+  gs = app.context_graph_global_state
   try:
-    services_list = kubernetes.get_services()
+    services_list = kubernetes.get_services(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
@@ -146,8 +148,9 @@ def get_rcontrollers():
   Returns:
     The replication controllers of the context graph.
   """
+  gs = app.context_graph_global_state
   try:
-    rcontrollers_list = kubernetes.get_rcontrollers()
+    rcontrollers_list = kubernetes.get_rcontrollers(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
@@ -166,8 +169,9 @@ def get_pods():
   Returns:
     The pods of the context graph.
   """
+  gs = app.context_graph_global_state
   try:
-    pods_list = kubernetes.get_pods(None)
+    pods_list = kubernetes.get_pods(gs, None)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
@@ -187,11 +191,12 @@ def get_containers():
   """
   containers = []
 
+  gs = app.context_graph_global_state
   try:
-    for node in kubernetes.get_nodes():
+    for node in kubernetes.get_nodes(gs):
       # The node_id is the Docker host name.
       docker_host = node['id']
-      containers.extend(docker.get_containers(docker_host))
+      containers.extend(docker.get_containers(gs, docker_host))
 
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -212,13 +217,14 @@ def get_processes():
   """
   processes = []
 
+  gs = app.context_graph_global_state
   try:
-    for node in kubernetes.get_nodes():
+    for node in kubernetes.get_nodes(gs):
       node_id = node['id']
       docker_host = node_id
-      for container in docker.get_containers(docker_host):
+      for container in docker.get_containers(gs, docker_host):
         container_id = container['id']
-        processes.extend(docker.get_processes(docker_host, container_id))
+        processes.extend(docker.get_processes(gs, docker_host, container_id))
 
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -238,10 +244,11 @@ def get_images():
     The images of the context graph.
   """
   images_list = []
+  gs = app.context_graph_global_state
 
   try:
-    for node in kubernetes.get_nodes():
-      images_list.extend(docker.get_images(node['id']))
+    for node in kubernetes.get_nodes(gs):
+      images_list.extend(docker.get_images(gs, node['id']))
 
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -260,8 +267,9 @@ def get_debug():
   Returns:
     The DOT graph depicting the context graph.
   """
+  gs = app.context_graph_global_state
   try:
-    return context.compute_graph('dot')
+    return context.compute_graph(gs, 'dot')
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
@@ -278,8 +286,9 @@ def get_resources():
   Returns:
     The 'resources' section of the context graph.
   """
+  gs = app.context_graph_global_state
   try:
-    response = context.compute_graph('resources')
+    response = context.compute_graph(gs, 'resources')
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -297,8 +306,9 @@ def get_cluster():
   Returns:
     The entire context graph.
   """
+  gs = app.context_graph_global_state
   try:
-    response = context.compute_graph('context_graph')
+    response = context.compute_graph(gs, 'context_graph')
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -316,8 +326,9 @@ def get_version():
   Returns:
     The value of the docker.get_version() or an error message.
   """
+  gs = app.context_graph_global_state
   try:
-    version = docker.get_version()
+    version = docker.get_version(gs)
     return flask.jsonify(make_response(version, 'version'))
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -325,35 +336,6 @@ def get_version():
     msg = ('get_version() failed with exception %s' % sys.exc_info()[0])
     app.logger.exception(msg)
     return flask.jsonify(make_error(msg))
-
-
-def init_caching():
-  """Initializes all caches.
-
-  Keeps global caches in the 'app' object because Flask allocates all other
-  objects in thread-local memory.
-  """
-  app.context_graph_nodes_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS,
-      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app.context_graph_pods_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS,
-      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app.context_graph_services_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS,
-      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app.context_graph_rcontrollers_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS,
-      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app.context_graph_containers_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS,
-      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app.context_graph_images_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS,
-      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-  app.context_graph_processes_cache = simple_cache.SimpleCache(
-      constants.MAX_CACHED_DATA_AGE_SECONDS,
-      constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
 
 
 # Starts the web server and listen on all external IPs associated with this
@@ -373,7 +355,10 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
-  init_caching()
   app.context_graph_docker_port = args.docker_port
+  g_state = global_state.GlobalState()
+  g_state.init_caches()
+  g_state.set_logger(app.logger)
+  app.context_graph_global_state = g_state
 
   app.run(host='0.0.0.0', port=args.port, debug=args.debug)
