@@ -17,6 +17,7 @@
 """Keeps global system state to be used by concurrent threads.
 """
 import threading
+import types
 
 # local imports
 import constants
@@ -46,6 +47,7 @@ class GlobalState(object):
   def __init__(self):
     """Initialize internal state."""
     self._testing = False
+    self._docker_port = None
 
     # '_logger_lock' protects concurrent logging operations.
     self._logger_lock = threading.Lock()
@@ -110,6 +112,13 @@ class GlobalState(object):
 
   def get_testing(self):
     return self._testing
+
+  def set_docker_port(self, port):
+    assert isinstance(port, types.IntType) and port > 0
+    self._docker_port = port
+
+  def get_docker_port(self):
+    return self._docker_port
 
   def set_logger(self, logger):
     with self._logger_lock:

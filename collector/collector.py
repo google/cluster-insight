@@ -355,10 +355,10 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
-  app.context_graph_docker_port = args.docker_port
   g_state = global_state.GlobalState()
   g_state.init_caches()
   g_state.set_logger(app.logger)
+  g_state.set_docker_port(args.docker_port)
   app.context_graph_global_state = g_state
 
   app.run(host='0.0.0.0', port=args.port, debug=args.debug)
