@@ -196,6 +196,12 @@ def get_containers(gs, docker_host, pod_id=None):
   containers = []
   timestamps = []
   for container_info in containers_list:
+    if not utilities.valid_string(container_info.get('Id')):
+      # an invalid container without a valid container ID.
+      msg = 'container has no valid ID. docker_host=%s' % docker_host
+      gs.logger_error(msg)
+      continue
+
     # NOTE: container 'Name' is stable across container re-starts whereas
     # container 'Id' is not.
     # This may be because Kubernertes assigns the Name while Docker assigns
@@ -215,6 +221,7 @@ def get_containers(gs, docker_host, pod_id=None):
     container, ts = _inspect_container(gs, docker_host, container_id)
     if container is None:
       continue
+
     if not utilities.valid_string(container.get('Name')):
       msg = ('missing or invalid Name attribute in container %s' %
              container_id)
@@ -331,6 +338,8 @@ def get_processes(gs, docker_host, container_id):
 
   container = get_one_container(gs, docker_host, container_id)
   if container is not None:
+    assert utilities.valid_string(
+        utilities.get_attribute(container, ['annotations', 'label']))
     container_label = container['annotations']['label']
   else:
     # Parent container not found. Container might have crashed while we were
@@ -492,7 +501,15 @@ def get_images(gs, docker_host):
   images = []
   image_id_set = set()
   for pod in kubernetes.get_pods(gs, docker_host):
+    if not utilities.valid_string(pod.get('id')):
+      # an invalid pod without a valid pod ID.
+      continue
+
     pod_id = pod['id']
+    # pod['properties']['currentState']['host'] must exist because we got
+    # this pod from kubernetes.get_pods() with an explicit docker_host.
+    assert utilities.valid_string(
+        utilities.get_attribute(pod, ['properties', 'currentState', 'host']))
     assert pod['properties']['currentState']['host'] == docker_host
 
     # Containers in a Pod

@@ -71,7 +71,7 @@ class GlobalState(object):
     self._processes_cache = None
 
     # pointers to synchronization constructs.
-    self._bounded_seamphore = None
+    self._bounded_semaphore = None
 
   def init_caches_and_synchronization(self):
     """Initializes all caches."""

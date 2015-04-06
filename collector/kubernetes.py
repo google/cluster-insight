@@ -107,6 +107,9 @@ def get_nodes(gs):
 
   now = time.time()
   for node in result['items']:
+    if not utilities.valid_string(node.get('id')):
+      # an invalid node without a valid node ID value.
+      continue
     nodes.append(utilities.wrap_object(
         node, 'Node', node['id'], now,
         label=utilities.node_id_to_host_name(node['id'])))
@@ -155,9 +158,14 @@ def get_pods(gs, node_id=None):
 
   now = time.time()
   for pod in result['items']:
+    if not utilities.valid_string(pod.get('id')):
+      # an invalid pod without a valid pod ID value.
+      continue
     wrapped_pod = utilities.wrap_object(pod, 'Pod', pod['id'], now)
     if node_id:
-      if pod['currentState']['host'] == node_id:
+      # pod['currentState']['host'] may be missing if the pod is in "Waiting"
+      # status.
+      if utilities.get_attribute(pod, ['currentState', 'host']) == node_id:
         pods.append(wrapped_pod)
     else:
       pods.append(wrapped_pod)
@@ -242,7 +250,14 @@ def get_pod_host(gs, pod_id):
   """
   gs.logger_info('calling get_pod_host(pod_id=%s)', pod_id)
   for pod in get_pods(gs):
-    if pod['id'] == pod_id:
+    if not utilities.valid_string(pod.get('id')):
+      # Found an invalid pod without a pod ID.
+      continue
+
+    if pod['id'] == pod_id and utilities.valid_string(
+        utilities.get_attribute(pod, ['properties', 'currentState', 'host'])):
+      # pod['properties']['currentState']['host'] may be missing if the pod
+      # is in "Waiting" state.
       return pod['properties']['currentState']['host']
 
   # Could not find pod.
@@ -284,6 +299,9 @@ def get_services(gs):
 
   now = time.time()
   for service in result['items']:
+    if not utilities.valid_string(service.get('id')):
+      # an invalid service without a valid service ID.
+      continue
     services.append(
         utilities.wrap_object(service, 'Service', service['id'], now))
 
@@ -326,6 +344,10 @@ def get_rcontrollers(gs):
 
   now = time.time()
   for rcontroller in result['items']:
+    if not utilities.valid_string(rcontroller.get('id')):
+      # an invalid replication controller without a valid rcontroller ID.
+      continue
+
     rcontrollers.append(utilities.wrap_object(
         rcontroller, 'ReplicationController', rcontroller['id'], now))
 
