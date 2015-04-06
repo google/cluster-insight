@@ -22,6 +22,9 @@ import json
 import re
 import types
 
+# local imports
+import global_state
+
 
 # The format of node ID is:
 # <host name>.c.<project_name>.internal
@@ -50,12 +53,34 @@ def valid_hex_id(x):
   return valid_string(x) and (len(x) >= 32) and re.match('^[0-9a-fA-F]+$', x)
 
 
+def global_state_arg(func):
+  """A decorator for a function that should be given a global state argument.
+  """
+  def inner(arg1):
+    assert isinstance(arg1, global_state.GlobalState)
+    return func(arg1)
+
+  return inner
+
+
 def one_string_arg(func):
   """A decorator for a function that should be given exactly one valid string.
   """
   def inner(arg1):
     assert valid_string(arg1)
     return func(arg1)
+
+  return inner
+
+
+def global_state_string_args(func):
+  """A decorator for a function that should be given a glonal state and one
+  valid string argumensts.
+  """
+  def inner(arg1, arg2):
+    assert isinstance(arg1, global_state.GlobalState)
+    assert valid_string(arg2)
+    return func(arg1, arg2)
 
   return inner
 
@@ -70,6 +95,18 @@ def one_optional_string_arg(func):
   return inner
 
 
+def global_state_optional_string_args(func):
+  """A decorator for a function that should be given a global state and an
+  optional valid string.
+  """
+  def inner(arg1, arg2=None):
+    assert isinstance(arg1, global_state.GlobalState)
+    assert valid_optional_string(arg2)
+    return func(arg1, arg2)
+
+  return inner
+
+
 def one_dictionary_arg(func):
   """A decorator for a function that should be given a dictionary argument.
   """
@@ -80,12 +117,36 @@ def one_dictionary_arg(func):
   return inner
 
 
+def global_state_dictionary_args(func):
+  """A decorator for a function that should be given a global state and
+  a dictionary argument.
+  """
+  def inner(arg1, arg2):
+    assert isinstance(arg1, global_state.GlobalState)
+    assert isinstance(arg2, types.DictType)
+    return func(arg1, arg2)
+
+  return inner
+
+
 def two_string_args(func):
   """A decorator for a function that should be given exactly two valid strings.
   """
   def inner(arg1, arg2):
     assert valid_string(arg1) and valid_string(arg2)
     return func(arg1, arg2)
+
+  return inner
+
+
+def global_state_string_string_args(func):
+  """A decorator for a function that should be given a global state and two
+  valid string arguments.
+  """
+  def inner(arg1, arg2, arg3):
+    assert isinstance(arg1, global_state.GlobalState)
+    assert valid_string(arg2) and valid_string(arg3)
+    return func(arg1, arg2, arg3)
 
   return inner
 
@@ -104,12 +165,39 @@ def one_string_one_optional_string_args(func):
   return inner
 
 
+def global_state_string_optional_string_args(func):
+  """A decorator for a function that should be given two string arguments.
+
+  The first argument must be a valid string (see valid_string() above).
+  The second argument must be an optional string (see valid_optional_string()
+  above).
+  """
+  def inner(arg1, arg2, arg3=None):
+    assert isinstance(arg1, global_state.GlobalState)
+    assert valid_string(arg2) and valid_optional_string(arg3)
+    return func(arg1, arg2, arg3)
+
+  return inner
+
+
 def two_dict_args(func):
   """A decorator for a function that should be given two dictionary arguments.
   """
   def inner(arg1, arg2):
     assert isinstance(arg1, types.DictType) and isinstance(arg2, types.DictType)
     return func(arg1, arg2)
+
+  return inner
+
+
+def global_state_dict_dict_args(func):
+  """A decorator for a function that should be given a global state and two
+  dictionary arguments.
+  """
+  def inner(arg1, arg2, arg3):
+    assert isinstance(arg1, global_state.GlobalState)
+    assert isinstance(arg2, types.DictType) and isinstance(arg3, types.DictType)
+    return func(arg1, arg2, arg3)
 
   return inner
 
