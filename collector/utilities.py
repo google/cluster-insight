@@ -202,6 +202,29 @@ def global_state_dict_dict_args(func):
   return inner
 
 
+def range_limit(x, low, high):
+  """Limits the input value 'x' to the range [low, high].
+
+  Args:
+    x: the input value. should be compatible with the values of 'low' and
+      'high'.
+    low: low limit on the output value.
+    high: high limit on the output value.
+
+  Returns:
+  If 'x' is less than 'low', returns 'low'.
+  If 'x' is greater than 'high', returns 'high'.
+  Otherwise, returns 'x'.
+  """
+  assert low <= high
+  if x < low:
+    return low
+  elif x > high:
+    return high
+  else:
+    return x
+
+
 def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
                 alt_label=None):
   """Returns a dictionary containing the standard wrapper around 'obj'.

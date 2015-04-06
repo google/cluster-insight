@@ -352,13 +352,19 @@ if __name__ == '__main__':
                       default=constants.DOCKER_PORT,
                       help=('Docker port number [default=%d]' %
                             constants.DOCKER_PORT))
+  parser.add_argument('-w', '--workers', action='store', type=int,
+                      default=0,
+                      help=('number of concurrent workers. A zero or a '
+                            'negative value denotes an automatic calculation '
+                            'of this number. [default=0]'))
   args = parser.parse_args()
 
   app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
   g_state = global_state.GlobalState()
-  g_state.init_caches()
+  g_state.init_caches_and_synchronization()
   g_state.set_logger(app.logger)
   g_state.set_docker_port(args.docker_port)
+  g_state.set_num_workers(args.workers)
   app.context_graph_global_state = g_state
 
   app.run(host='0.0.0.0', port=args.port, debug=args.debug)
