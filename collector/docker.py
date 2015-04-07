@@ -196,12 +196,6 @@ def get_containers(gs, docker_host, pod_id=None):
   containers = []
   timestamps = []
   for container_info in containers_list:
-    if not utilities.valid_string(container_info.get('Id')):
-      # an invalid container without a valid container ID.
-      msg = 'container has no valid ID. docker_host=%s' % docker_host
-      gs.logger_error(msg)
-      continue
-
     # NOTE: container 'Name' is stable across container re-starts whereas
     # container 'Id' is not.
     # This may be because Kubernertes assigns the Name while Docker assigns

@@ -29,6 +29,14 @@ work queue in order to prevent long trains of accessess to the same
 system component (such as the Kubernetes master or a Docker controller
 on a minion node).
 
+There is no need to verify the existence of attributes in all wrapped
+objects (the output of utilities.wrap_object()), because we assume that
+the object was already verified by the corresponding get_xxx() routine
+in kubernetes.py or docker.py.
+
+The get_xxx() routine should have skipped any invalid object and not
+return it to the caller.
+
 Usage:
 
 import context
