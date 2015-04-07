@@ -690,6 +690,93 @@
         "resourceVersion": 42, 
         "selfLink": "/api/v1beta1/pods/skydns-fplln?namespace=default", 
         "uid": "fd673cff-b948-11e4-8246-42010af0c3dd"
+      },
+      {
+        "creationTimestamp": "2015-04-06T15:45:47Z", 
+        "currentState": {
+          "manifest": {
+            "containers": null, 
+            "id": "", 
+            "restartPolicy": {}, 
+            "version": "", 
+            "volumes": null
+          }, 
+          "status": "Waiting"
+        }, 
+        "desiredState": {
+          "manifest": {
+            "containers": [
+              {
+                "capabilities": {}, 
+                "command": [
+                  "/run.sh"
+                ], 
+                "cpu": 1000, 
+                "env": [
+                  {
+                    "key": "MAX_HEAP_SIZE", 
+                    "name": "MAX_HEAP_SIZE", 
+                    "value": "512M"
+                  }, 
+                  {
+                    "key": "HEAP_NEWSIZE", 
+                    "name": "HEAP_NEWSIZE", 
+                    "value": "100M"
+                  }
+                ], 
+                "image": "kubernetes/cassandra:v2", 
+                "imagePullPolicy": "PullIfNotPresent", 
+                "name": "cassandra", 
+                "ports": [
+                  {
+                    "containerPort": 9042, 
+                    "name": "cql", 
+                    "protocol": "TCP"
+                  }, 
+                  {
+                    "containerPort": 9160, 
+                    "name": "thrift", 
+                    "protocol": "TCP"
+                  }
+                ], 
+                "resources": {
+                  "limits": {
+                    "cpu": "1"
+                  }
+                }, 
+                "terminationMessagePath": "/dev/termination-log", 
+                "volumeMounts": [
+                  {
+                    "mountPath": "/cassandra_data", 
+                    "name": "data", 
+                    "path": "/cassandra_data"
+                  }
+                ]
+              }
+            ], 
+            "dnsPolicy": "ClusterFirst", 
+            "id": "", 
+            "restartPolicy": {
+              "always": {}
+            }, 
+            "version": "v1beta2", 
+            "volumes": [
+              {
+                "name": "data", 
+                "source": {
+                  "emptyDir": {
+                    "medium": ""
+                  }, 
+                  "gitRepo": null, 
+                  "hostDir": null, 
+                  "nfs": null, 
+                  "persistentDisk": null, 
+                  "secret": null
+                }
+              }
+            ]
+          }
+        }
       }
   ]
 }

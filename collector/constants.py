@@ -29,3 +29,15 @@ MAX_CACHED_DATA_AGE_SECONDS = 10
 # Delete data that was last updated more than this many seconds ago from the
 # cache.
 CACHE_DATA_CLEANUP_AGE_SECONDS = 10 * MAX_CACHED_DATA_AGE_SECONDS
+
+# Low and high bounds of the number of concurrent worker threads that
+# fetch information from the backend.
+# The number of workers threads may either be set by a flag or set to be
+# the number of nodes in the cluster.
+MIN_CONCURRENT_WORKERS = 2
+MAX_CONCURRENT_WORKERS = 10
+
+# Maximum number of active context.compute_graph() calls.
+# These calls are executed by concurrent worker threads, so they may generate
+# heavy load on the backend.
+MAX_CONCURRENT_COMPUTE_GRAPH = 2
