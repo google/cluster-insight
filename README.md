@@ -44,7 +44,7 @@ To install and activate this service, follow these instructions:
 
 * Enable port 4243 of the Docker daemons running on the master and minion nodes.
   The easiest way to do so is by running the the installation script
-  `cluster-insight/install/project-setup.sh` by the following instructions:
+  `./cluster-insight/install/project-setup.sh` by the following instructions:
 * Clone the Cluster-Insight sources from Github into a local directory
   `./cluster-insight` with the command
   `git clone https://github.com/google/cluster-insight.git`
@@ -52,7 +52,8 @@ To install and activate this service, follow these instructions:
 * Change directory to `./cluster-insight/collector`. 
 * Run the script `./project-setup.sh PROJECT_NAME`.
 * If the script ends with the message `SCRIPT ALL DONE` then the one-time setup
-  of port 4243 is complete. You can skip the following two steps.
+  of port 4243 is complete. You can skip the following two steps. Resume
+  at the step marked "Continue here".
 * If the script ends with the message `SCRIPT FAILED` or with another error,
   you will have to perform the following operations by hand.
 * On each of the Kubernetes minion node and the Kubernetes master node
@@ -62,7 +63,7 @@ To install and activate this service, follow these instructions:
      with the line: `DOCKER_OPTS='-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock'`
    * Restart the Docker daemon: `sudo service docker restart`
 
-* On the Kubernetes master do the following:
+* Continue here: On the Kubernetes master do the following:
    * Login to the master host.
    * Check if the Docker service is running: `sudo docker ps`. If this gives
      an error, you must install and start the Docker service on this machine
