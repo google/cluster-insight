@@ -24,34 +24,61 @@ The Cluster Insight service expects to run on the Kubernetes master node, and
 can be deployed from a self-contained Docker image, built offline from the
 source code.
 
+You can either install a pre-built image or build a Docker image from the
+source code.
 To build a Docker image from the source code, follow these instructions:
 
-* Install and start the Docker service on the machine, if it not already present.
+* Login to the master host.
+* Check if the Docker service is running: `sudo docker ps`. If this gives
+  an error, you must install and start the Docker service on this machine
+  with the command: `sudo service docker start` .
 * Clone the Cluster-Insight sources from Github into a local directory
-  ./cluster-insight with the command `git clone https://github.com/google/cluster-insight.git`
-* Change directory to ./cluster-insight/collector
+  `./cluster-insight` with the command
+  `git clone https://github.com/google/cluster-insight.git` .
+* Change directory to `./cluster-insight/collector` .
 * Run: `sudo docker build -t kubernetes/cluster-insight . `
 * Check for the image: `sudo docker images`. You should see an image named
-  kubernetes/cluster-insight.
+  `kubernetes/cluster-insight`.
 
 To install and activate this service, follow these instructions:
 
-* On each of the Kubernetes minion nodes the following:
-   * Login to the minion host.
+* Enable port 4243 of the Docker daemons running on the master and minion nodes.
+  The easiest way to do so on Google Cloud Platform (GCP) is by running
+  the the installation script
+  `./cluster-insight/install/gcp-project-setup.sh` by the following
+  instructions:
+* Clone the Cluster-Insight sources from Github into a local directory
+  `./cluster-insight` with the command
+  `git clone https://github.com/google/cluster-insight.git`
+  if you have not done so already.
+* Change directory to `./cluster-insight/collector`. 
+* Run the script `./gcp-project-setup.sh PROJECT_NAME`.
+* If the script ends with the message `SCRIPT ALL DONE` then the one-time setup
+  of port 4243 is complete. You can skip the following two steps. Resume
+  at the step marked "Continue here".
+* If you are installing Cluster-Insight on a different platform than GCP,
+  the script endend with the message `SCRIPT FAILED` or with another error,
+  you will have to perform the following operations by hand.
+* On each of the Kubernetes minion node and the Kubernetes master node
+  do the following:
+   * Login to the minion/master host.
    * Edit the file /etc/default/docker, and replace the line `DOCKER_OPTS=`
      with the line: `DOCKER_OPTS='-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock'`
    * Restart the Docker daemon: `sudo service docker restart`
 
-* On the Kubernetes master do the following:
+* Continue here: On the Kubernetes master do the following:
    * Login to the master host.
    * Check if the Docker service is running: `sudo docker ps`. If this gives
-     an error, you must install and start the Docker service on this machine.
-   * Download the Docker image kubernetes/cluster-insight:
+     an error, you must install and start the Docker service on this machine
+     with the command: `sudo service docker start` .
+   * Download or build the Docker image `kubernetes/cluster-insight`:
        * If you want to use a pre-built image, use `sudo docker pull kubernetes/cluster-insight`
          to download it from Docker Hub.
-       * If you want to use the image you created from sources using the build
-         instructions above, then copy that kubernetes/cluster-insight image into
-         this machine.
+       * If you want to build the Docker image from the sources, please
+         follow the instructions above.
+       * In both cases, you should be able to see the
+         `kubernetes/cluster-insight` in the list of images reported by
+         `sudo docker images`.
 
    * Start the Cluster-Insight service like this:
      `sudo docker run -d --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight`.
@@ -59,8 +86,8 @@ To install and activate this service, follow these instructions:
      API requests on port 5555 in the Kubernetes master. Check this by typing:
      `sudo docker ps` - you should see a running container with the name
      cluster-insight.
-   * To start the Cluster-Insight service in debug mode, add the `-d` or
-     `--debug` flags to the command line like this:
+   * To start the Cluster-Insight service in debug mode, append the `-d` or
+     `--debug` flags to the end of the command line like this:
      `sudo docker run -d --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight python ./collector.py --debug`.
      Please excercise caution when enabling the debug mode, because it enables
      a significant security hole. Any user who triggers a failure in the
@@ -71,13 +98,16 @@ To install and activate this service, follow these instructions:
   firewall rule on your platform to enable HTTP access to port 5555 on the
   Kubernetes master host.
    * On the Google Cloud Platform, you can do this using the gcloud command
-     line tool: `gcloud compute firewall-rules create FIREWALL_RULE_NAME --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags KUBERNETES_MASTER_NAME`
+     line tool: `gcloud compute firewall-rules create FIREWALL_RULE_NAME --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags KUBERNETES_MASTER_NAME`.
+     For example: 
+     `gcloud compute firewall-rules create cluster-insight-collector --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags k8s-guestbook-master`.
 
 
 ## Data collection details
 
 The Cluster Insight service runs on the Kubernetes master node, and accesses
 the Docker daemons on all of the minion nodes via port 4243 on each minion node.
+It also accesses the Docker daemon on the master node via port 4243.
 In addition, it listens for external HTTP requests to its REST endpoint on port
 5555 of the master node, as shown in the figure below:
 
@@ -97,6 +127,8 @@ graph snapshot and raw resource-specific metadata:
   ReplicationController, Container, Image, Process}.
 * `/debug` - returns a rendering of the context graph in DOT format for
   debugging purposes.
+* `/version` - returns the name of the currently running Docker image,
+  the image identifier, and its compilation date.
 
 In order to minimize monitoring overhead on the Kubernetes cluster, the context
 graph is computed from cached metadata about the cluster resources. The cache
@@ -150,4 +182,3 @@ Each of the resources and relations has a `timestamp` field, indicating when
 it was observed or inferred, respectively. The entire context graph has a
 separate timestamp indiciating when the graph was computed from the resource
 metadata.
-
