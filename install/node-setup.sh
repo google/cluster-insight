@@ -15,16 +15,23 @@
 # limitations under the License.
 
 # This shell script sets up a node to run the Cluster-Insight data
-# collector. You need to run this script once after you set up your cluster.
+# collector. You need to run this script once after you set up your project.
 # Running this script again will cause no trouble (idempotent operation).
-# 
-# You should run this script from your workstation after you set up
-# your GCP project this way:
-#
-# cat master-setup.sh | gcloud compute ssh --project=PROJECT_NAME --zone=ZONE_NAME NODE_NAME
-#
 # This script recognizes the different configuration files in master and
 # minion nodes and updates them accordingly.
+#
+# This script should work on any VM running Linux, but it was tested only
+# on Google Cloud Platform (GCP).
+#
+# If you cluster is running is on GCP, you should set up your GCP support tools
+# (mainly the "gcloud" command) on your workstation, and then you can run
+# it this way:
+#
+# cat node-setup.sh | gcloud compute ssh --project=PROJECT_NAME --zone=ZONE_NAME NODE_NAME
+#
+# However, most users will run the gcp-project-setup.sh script in this
+# directory, which will call this script on all VMs (instances) of the
+# project.
 #
 # The script will print "ALL DONE" if it completed the setup successfully.
 # The script will print "NOTHING DONE" if the node was already set up.

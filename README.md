@@ -43,18 +43,21 @@ To build a Docker image from the source code, follow these instructions:
 To install and activate this service, follow these instructions:
 
 * Enable port 4243 of the Docker daemons running on the master and minion nodes.
-  The easiest way to do so is by running the the installation script
-  `./cluster-insight/install/project-setup.sh` by the following instructions:
+  The easiest way to do so on Google Cloud Platform (GCP) is by running
+  the the installation script
+  `./cluster-insight/install/gcp-project-setup.sh` by the following
+  instructions:
 * Clone the Cluster-Insight sources from Github into a local directory
   `./cluster-insight` with the command
   `git clone https://github.com/google/cluster-insight.git`
   if you have not done so already.
 * Change directory to `./cluster-insight/collector`. 
-* Run the script `./project-setup.sh PROJECT_NAME`.
+* Run the script `./gcp-project-setup.sh PROJECT_NAME`.
 * If the script ends with the message `SCRIPT ALL DONE` then the one-time setup
   of port 4243 is complete. You can skip the following two steps. Resume
   at the step marked "Continue here".
-* If the script ends with the message `SCRIPT FAILED` or with another error,
+* If you are installing Cluster-Insight on a different platform than GCP,
+  the script endend with the message `SCRIPT FAILED` or with another error,
   you will have to perform the following operations by hand.
 * On each of the Kubernetes minion node and the Kubernetes master node
   do the following:

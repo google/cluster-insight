@@ -14,11 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# Setup Cluster-Insight in a given project.
+# Setup Cluster-Insight in a given project running on Google Cloud Platform
+# (GCP).
 # You should run this script only once per project.
-# It will set up all instances (VMs) that belong to this project.
+# It will set up *all* instances (VMs) that belong to this project.
 # If you run this script more than once, it will do nothing (idempotent).
+#
+# If you wish to set up only a subset of the instances (VMs) in a given
+# project, you should should run node-setup.sh explictly on the appropriate
+# instances. See the comment at the beginning of the node-setup.sh script.
 #
 # The script will print "SCRIPT ALL DONE" if it configured all instances
 # successfully. This includes the case that nothing was done.
