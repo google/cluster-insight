@@ -119,13 +119,11 @@ def _inspect_container(gs, docker_host, container_id):
   # Use just the tail of the container ID after the last '_' sign.
   fname = '{host}-container-{id}'.format(
       host=docker_host.split('.')[0], id=container_id.split('_')[-1])
-  gs.logger_info('about to fetch container info from %s', url)  # DEBUG
   try:
     result = fetch_data(gs, url, fname, expect_missing=True)
   except ValueError:
     # TODO(vasbala): this container does not exist anymore.
     # What should we do here?
-    gs.logger_info('failed to fetch container info')  # DEBUG
     return (None, time.time())
   except collector_error.CollectorError:
     raise
@@ -134,7 +132,6 @@ def _inspect_container(gs, docker_host, container_id):
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
-  gs.logger_info('container info fetched successfully')  # DEBUG
   # Sort the "Env" attribute because it tends to contain elements in
   # a different order each time you fetch the container information.
   if isinstance(utilities.get_attribute(result, ['Config', 'Env']),
