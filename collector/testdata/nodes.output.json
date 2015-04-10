@@ -98,6 +98,54 @@
       }, 
       "timestamp": "2015-03-16T15:35:09.083547", 
       "type": "Node"
+    },
+    {
+      "annotations": {
+        "label": "kubernetes-minion-11cx"
+      }, 
+      "id": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
+      "properties": {
+        "creationTimestamp": "2015-04-06T23:02:04Z", 
+        "externalID": "2425115037103139076", 
+        "hostIP": "104.197.30.200", 
+        "id": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
+        "resourceVersion": 537475, 
+        "resources": {
+          "capacity": {
+            "cpu": "1", 
+            "memory": 3892043776
+          }
+        }, 
+        "selfLink": "/api/v1beta1/nodes/kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
+        "status": {
+          "addresses": [
+            {
+              "address": "23.251.158.160", 
+              "type": "ExternalIP"
+            }, 
+            {
+              "address": "104.197.30.200", 
+              "type": "LegacyHostIP"
+            }
+          ], 
+          "conditions": [
+            {
+              "kind": "Ready", 
+              "lastProbeTime": "2015-04-10T02:08:13Z", 
+              "lastTransitionTime": "2015-04-06T23:02:06Z", 
+              "reason": "kubelet is posting ready status", 
+              "status": "Full"
+            }
+          ], 
+          "nodeInfo": {
+            "machineID": "", 
+            "systemUUID": "DFFFF571-858B-0D34-6309-C309B5E0AF71"
+          }
+        }, 
+        "uid": "f0cae2fc-dcb0-11e4-b2b5-42010af052bc"
+      }, 
+      "timestamp": "2015-04-10T02:08:15.204977", 
+      "type": "Node"
     }
   ], 
   "success": true, 
