@@ -37,8 +37,8 @@ To build a Docker image from the source code, follow these instructions:
   `git clone https://github.com/google/cluster-insight.git` .
 * Change directory to `./cluster-insight/collector` .
 * Run: `sudo docker build -t kubernetes/cluster-insight . `
-* Check for the image: `sudo docker images`. You should see an image named
-  `kubernetes/cluster-insight`.
+* Check for the image by the command: `sudo docker images`.
+  You should see an image named `kubernetes/cluster-insight`.
 
 To install and activate this service, follow these instructions:
 
@@ -62,8 +62,8 @@ To install and activate this service, follow these instructions:
 * On each of the Kubernetes minion node and the Kubernetes master node
   do the following:
    * Login to the minion/master host.
-   * Edit the file /etc/default/docker, and replace the line `DOCKER_OPTS=`
-     with the line: `DOCKER_OPTS='-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock'`
+   * Edit the file /etc/default/docker, and replace the line `DOCKER_OPTS=""`
+     with the line: `DOCKER_OPTS="-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"`
    * Restart the Docker daemon: `sudo service docker restart`
 
 * Continue here: On the Kubernetes master do the following:

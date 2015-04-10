@@ -33,7 +33,6 @@ import requests
 # local imports
 import collector_error
 import global_state
-import kubernetes
 import utilities
 
 ## Docker APIs
@@ -117,9 +116,9 @@ def _inspect_container(gs, docker_host, container_id):
   # Use only the first period-seperated element for the test file name.
   # The typical value of 'container_id' is:
   # k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
-  # Use just the tail of the container ID after the last '-' sign.
+  # Use just the tail of the container ID after the last '_' sign.
   fname = '{host}-container-{id}'.format(
-      host=docker_host.split('.')[0], id=container_id.split('-')[-1])
+      host=docker_host.split('.')[0], id=container_id.split('_')[-1])
   try:
     result = fetch_data(gs, url, fname, expect_missing=True)
   except ValueError:
@@ -143,18 +142,13 @@ def _inspect_container(gs, docker_host, container_id):
   return (result, time.time())
 
 
-@utilities.global_state_string_optional_string_args
-def get_containers(gs, docker_host, pod_id=None):
-  """Gets the list of all containers in the 'docker_host' and 'pod_id'.
-
-  An undedined 'pod_id' indicates getting the containers in all pods of
-  this 'docker_host'.
+@utilities.global_state_string_args
+def get_containers(gs, docker_host):
+  """Gets the list of all containers in 'docker_host'.
 
   Args:
     gs: global state.
     docker_host: the Docker host running the containers.
-    pod_id: The pod running the containers. If None, then fetch pods from all
-      pods in thos Docker host.
 
   Returns:
     list of wrapped container objects.
@@ -165,16 +159,11 @@ def get_containers(gs, docker_host, pod_id=None):
     CollectorError: in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  if pod_id is None:
-    containers_label = docker_host
-  else:
-    containers_label = '%s/%s' % (docker_host, pod_id)
-
-  containers, timestamp = gs.get_containers_cache().lookup(containers_label)
+  containers, timestamp = gs.get_containers_cache().lookup(docker_host)
   if timestamp is not None:
     gs.logger_info(
-        'get_containers(docker_host=%s, pod_id=%s) cache hit returns '
-        '%d containers', docker_host, pod_id, len(containers))
+        'get_containers(docker_host=%s) cache hit returns '
+        '%d containers', docker_host, len(containers))
     return containers
 
   url = 'http://{docker_host}:{port}/containers/json'.format(
@@ -242,20 +231,15 @@ def get_containers(gs, docker_host, pod_id=None):
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
 
-    if pod_id:
-      if pod_id == container_pod_name:
-        containers.append(wrapped_container)
-        timestamps.append(ts)
-    else:
-      containers.append(wrapped_container)
-      timestamps.append(ts)
+    containers.append(wrapped_container)
+    timestamps.append(ts)
 
   ret_value = gs.get_containers_cache().update(
-      containers_label, containers,
+      docker_host, containers,
       min(timestamps) if timestamps else time.time())
   gs.logger_info(
-      'get_containers(docker_host=%s, pod_id=%s) returns %d containers',
-      docker_host, pod_id, len(containers))
+      'get_containers(docker_host=%s) returns %d containers',
+      docker_host, len(containers))
   return ret_value
 
 
@@ -263,10 +247,16 @@ def get_containers(gs, docker_host, pod_id=None):
 def get_one_container(gs, docker_host, container_id):
   """Gets the given container that runs in the given Docker host.
 
+  Note that the 'container_id' is the value in container['id'].
+  It is a symbolic name, such as:
+  k8s_POD.cc4afd21_kibana-logging-controller-fn98y_default_06b28f3f-dd5a-11e4-8a61-42010af0c46c_a1a2515e
+  This should not be confused with the Docker ID of the container, which
+  is a long hexadecimal string. It is stored in container['properties']['Id'].
+
   Args:
     gs: global state.
     docker_host: the Docker host running the container. Must not be empty.
-    container_id: the container ID. Must not be empty.
+    container_id: the container ID (in the wrapped object). Must not be empty.
 
   Returns:
   The wrapped container object if it was found.
@@ -351,9 +341,9 @@ def get_processes(gs, docker_host, container_id):
   # Use only the first period-seperated element for the test file name.
   # The typical value of 'container_id' is:
   # k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
-  # Use just the tail of the container ID after the last '-' sign.
+  # Use just the tail of the container ID after the last '_' sign.
   fname = '{host}-processes-{id}'.format(
-      host=docker_host.split('.')[0], id=container_id.split('-')[-1])
+      host=docker_host.split('.')[0], id=container_id.split('_')[-1])
 
   try:
     # TODO(vasbala): what should we do in cases where the container is gone
@@ -494,37 +484,26 @@ def get_images(gs, docker_host):
   # docker_host is the same as node_id
   images = []
   image_id_set = set()
-  for pod in kubernetes.get_pods(gs, docker_host):
-    if not utilities.valid_string(pod.get('id')):
-      # an invalid pod without a valid pod ID.
+
+  # All containers in this 'docker_host'.
+  for container in get_containers(gs, docker_host):
+    # Image from which this Container was created
+    image_id = utilities.get_attribute(
+        container, ['properties', 'Config', 'Image'])
+    if not utilities.valid_string(image_id):
+      # Image ID not found
       continue
 
-    pod_id = pod['id']
-    # pod['properties']['currentState']['host'] must exist because we got
-    # this pod from kubernetes.get_pods() with an explicit docker_host.
-    assert utilities.valid_string(
-        utilities.get_attribute(pod, ['properties', 'currentState', 'host']))
-    assert pod['properties']['currentState']['host'] == docker_host
+    if image_id in image_id_set:
+      # We already read this image_id.
+      # It is common that different containers in the same docker_host
+      # run the same image. We should list every image only once.
+      continue
 
-    # Containers in a Pod
-    for container in get_containers(gs, docker_host, pod_id):
-      # Image from which this Container was created
-      image_id = utilities.get_attribute(
-          container, ['properties', 'Config', 'Image'])
-      if not utilities.valid_string(image_id):
-        # Image ID not found
-        continue
-
-      if image_id in image_id_set:
-        # We already read this image_id.
-        # It is common that different containers in the same docker_host
-        # run the same image. We should list every image only once.
-        continue
-
-      image = get_image(gs, docker_host, image_id)
-      if image is not None:
-        images.append(image)
-        image_id_set.add(image_id)
+    image = get_image(gs, docker_host, image_id)
+    if image is not None:
+      images.append(image)
+      image_id_set.add(image_id)
 
   gs.logger_info('get_images(docker_host=%s) returns %d images',
                  docker_host, len(images))

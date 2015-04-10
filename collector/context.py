@@ -299,6 +299,63 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
            'pod': pod, 'g': g}))
 
 
+def _container_in_pod(gs, container, pod):
+  """Returns True when 'container' is a part of 'pod'.
+
+  In most cases, the attribute container['properties']['Config']['Hostname']
+  contains the pod ID. However, if the name is too long, it is truncated.
+
+  The current convention of container names is that the pod name appears
+  inside the container name before the "_default_" substring.
+  If the pod name extracted from the container name is longer than the pod
+  name in the 'Hostname' attribute, we use the longer name.
+
+  Typical pod names are:
+  monitoring-heapster-controller-hquxc
+  fluentd-to-elasticsearch-kubernetes-minion-a7lt.c.gce-monitoring.internal
+
+  Typical container names are:
+  k8s_heapster.59702a6a_monitoring-heapster-controller-hquxc_default_9cc2c9ac-dd5a-11e4-8a61-42010af0c46c_5193f65d
+  k8s_fluentd-es.2a803504_fluentd-to-elasticsearch-kubernetes-minion-a7lt.c.gce-monitoring.internal_default_c5973403e9c9de201f684c38aa8a7588_4dfe38b6
+
+  Args:
+    gs: global state.
+    container: a wrapped container object.
+    pod: a wrapped pod object.
+
+  Raises:
+    CollectorError: if the 'container' or the 'pod' are missing essential
+    attributes.
+
+  Returns:
+  True iff container 'container' is a part of 'pod'.
+  """
+  assert isinstance(gs, global_state.GlobalState)
+  assert utilities.is_wrapped_object(container, 'Container')
+  assert utilities.is_wrapped_object(pod, 'Pod')
+
+  pod_name = utilities.get_attribute(
+      container, ['properties', 'Config', 'Hostname'])
+  if not utilities.valid_string(pod_name):
+    msg = 'could not find Hostname in container %s' % container['id']
+    gs.logger_error(msg)
+    raise collector_error.CollectorError(msg)
+
+  if pod_name == pod['id']:
+    return True
+
+  # Try to extract a longer pod name from the container name.
+  start_index = container['id'].find('_' + pod_name)
+  if start_index < 0:
+    return False
+  end_index = container['id'].find('_default_', start_index + len(pod_name))
+  if end_index < 0:
+    return False
+  pod_name = container['id'][start_index + 1: end_index]
+
+  return pod_name == pod['id']
+
+
 def _do_compute_pod(gs, input_queue, node_guid, pod, g):
   assert isinstance(gs, global_state.GlobalState)
   assert isinstance(input_queue, Queue.PriorityQueue)
@@ -319,11 +376,15 @@ def _do_compute_pod(gs, input_queue, node_guid, pod, g):
   g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                  pod['properties'])
   g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
+
   # Containers in a Pod
-  # Do not compute the containers by worker threads in test mode because the
-  # order of the output will be different than the golden files due to the
-  # effects of queuing the work.
-  for container in docker.get_containers(gs, docker_host, pod_id):
+  for container in docker.get_containers(gs, docker_host):
+    if not _container_in_pod(gs, container, pod):
+      continue
+
+    # Do not compute the containers by worker threads in test mode because the
+    # order of the output will be different than the golden files due to the
+    # effects of queuing the work.
     if gs.get_testing():
       _do_compute_container(gs, docker_host, pod_guid, container, g)
     else:
