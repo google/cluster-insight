@@ -407,7 +407,7 @@ def get_image(gs, docker_host, image_id):
     If the image was not found, returns None.
 
   Raises:
-    CollectorError in case of failure to fetch data from Docker.
+    CollectorError: in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
   # 'image_id' should be a symbolic name and not a very long hexadecimal string.
@@ -448,12 +448,18 @@ def get_image(gs, docker_host, image_id):
   # compute the two labels of the image.
   # The first is a 12-digit hexadecimal number shown by "docker images".
   # The second is the symbolic name of the image.
-  image_hex_label = utilities.object_to_hex_id(image)
+  full_hex_label = image.get('Id')
+  if not (isinstance(full_hex_label, types.StringTypes) and full_hex_label):
+    msg = 'Image id=%s has an invalid "Id" attribute value' % image_id
+    gs.logger_error(msg)
+    raise collector_error.CollectorError(msg)
+
+  short_hex_label = utilities.object_to_hex_id(image)
   image_name_label = image_id
 
   wrapped_image = utilities.wrap_object(
-      image, 'Image', '%s/%s' % (docker_host, image_hex_label), now,
-      label=image_hex_label, alt_label=image_name_label)
+      image, 'Image', full_hex_label, now,
+      label=short_hex_label, alt_label=image_name_label)
 
   ret_value = gs.get_images_cache().update(cache_key, wrapped_image, now)
   gs.logger_info('get_image(docker_host=%s, image_id=%s)',
@@ -482,7 +488,7 @@ def get_images(gs, docker_host):
   # check the cache on entry to this method.
 
   # docker_host is the same as node_id
-  images = []
+  images_list = []
   image_id_set = set()
 
   # All containers in this 'docker_host'.
@@ -494,20 +500,14 @@ def get_images(gs, docker_host):
       # Image ID not found
       continue
 
-    if image_id in image_id_set:
-      # We already read this image_id.
-      # It is common that different containers in the same docker_host
-      # run the same image. We should list every image only once.
-      continue
-
     image = get_image(gs, docker_host, image_id)
-    if image is not None:
-      images.append(image)
-      image_id_set.add(image_id)
+    if (image is not None) and (image['id'] not in image_id_set):
+      images_list.append(image)
+      image_id_set.add(image['id'])
 
   gs.logger_info('get_images(docker_host=%s) returns %d images',
-                 docker_host, len(images))
-  return images
+                 docker_host, len(images_list))
+  return images_list
 
 
 @utilities.global_state_arg
