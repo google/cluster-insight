@@ -100,7 +100,7 @@ def one_optional_string_arg(func):
 
 
 def global_state_optional_string_args(func):
-  """A decorator for a function with a global state and an optional string args.
+  """A decorator for a function with a global state and an optional string arg.
 
   If the string argument is defined, it must be valid
   (see valid_optional_string() above).
