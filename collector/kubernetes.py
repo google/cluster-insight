@@ -179,6 +179,10 @@ def get_pods(gs, node_id=None):
 def matching_labels(pod, selector):
   """Compares the key/vale pairs in 'selector' with the pod's label.
 
+  The pod is considered to be matching the 'selector' iff
+  all of the key/value pairs in 'selector' appear in the pod's "labels"
+  value.
+
   Args:
     pod: the pod to be compared with 'selector'.
     selector: a dictionary of key/value pairs.
@@ -197,6 +201,8 @@ def matching_labels(pod, selector):
 @utilities.global_state_dictionary_args
 def get_selected_pods(gs, selector):
   """Gets the list of pods in the current cluster matching 'selector'.
+
+  The matching pods must contain all of the key/value pairs in 'selector'.
 
   Args:
     gs: global state.

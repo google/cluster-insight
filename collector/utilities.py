@@ -74,8 +74,9 @@ def one_string_arg(func):
 
 
 def global_state_string_args(func):
-  """A decorator for a function that should be given a glonal state and one
-  valid string argumensts.
+  """A decorator for a function with a global state and one string argument.
+
+  The string argument must be valid (see valid_string() above).
   """
   def inner(arg1, arg2):
     assert isinstance(arg1, global_state.GlobalState)
@@ -86,7 +87,10 @@ def global_state_string_args(func):
 
 
 def one_optional_string_arg(func):
-  """A decorator for a function that should be given an optional valid string.
+  """A decorator for a function with an optional string argument.
+
+  If the string argument is defined, it must be valid
+  (see valid_optional_string() above).
   """
   def inner(arg1=None):
     assert valid_optional_string(arg1)
@@ -96,8 +100,10 @@ def one_optional_string_arg(func):
 
 
 def global_state_optional_string_args(func):
-  """A decorator for a function that should be given a global state and an
-  optional valid string.
+  """A decorator for a function with a global state and an optional string arg.
+
+  If the string argument is defined, it must be valid
+  (see valid_optional_string() above).
   """
   def inner(arg1, arg2=None):
     assert isinstance(arg1, global_state.GlobalState)
@@ -107,30 +113,28 @@ def global_state_optional_string_args(func):
   return inner
 
 
-def one_dictionary_arg(func):
-  """A decorator for a function that should be given a dictionary argument.
-  """
-  def inner(arg1):
-    assert isinstance(arg1, types.DictType)
-    return func(arg1)
-
-  return inner
-
-
 def global_state_dictionary_args(func):
-  """A decorator for a function that should be given a global state and
-  a dictionary argument.
+  """A decorator for a function with a global state and a dictionary argument.
+
+  The dictionary argument must not be empty.
+
+  Raises:
+    AssertionError: if the run-time arguments are not a global state and
+    a non-empty dictionary.
+
+  Returns:
+  A decorated function.
   """
   def inner(arg1, arg2):
     assert isinstance(arg1, global_state.GlobalState)
-    assert isinstance(arg2, types.DictType)
+    assert isinstance(arg2, types.DictType) and arg2
     return func(arg1, arg2)
 
   return inner
 
 
 def two_string_args(func):
-  """A decorator for a function that should be given exactly two valid strings.
+  """A decorator for a function with exactly two valid string arguments.
   """
   def inner(arg1, arg2):
     assert valid_string(arg1) and valid_string(arg2)
@@ -140,8 +144,9 @@ def two_string_args(func):
 
 
 def global_state_string_string_args(func):
-  """A decorator for a function that should be given a global state and two
-  valid string arguments.
+  """A decorator for a function with a global state and two string arguments.
+
+  All string arguments must be valid strings (see valid_string() above).
   """
   def inner(arg1, arg2, arg3):
     assert isinstance(arg1, global_state.GlobalState)
@@ -182,22 +187,20 @@ def global_state_string_optional_string_args(func):
 
 def two_dict_args(func):
   """A decorator for a function that should be given two dictionary arguments.
+
+  Both dictionaries must be not empty.
+
+  Raises:
+    AssertionError: if the run-time arguments are not two non-empty
+    dictionaries.
+
+  Returns:
+  A decorated function.
   """
   def inner(arg1, arg2):
-    assert isinstance(arg1, types.DictType) and isinstance(arg2, types.DictType)
+    assert isinstance(arg1, types.DictType) and arg1
+    assert isinstance(arg2, types.DictType) and arg2
     return func(arg1, arg2)
-
-  return inner
-
-
-def global_state_dict_dict_args(func):
-  """A decorator for a function that should be given a global state and two
-  dictionary arguments.
-  """
-  def inner(arg1, arg2, arg3):
-    assert isinstance(arg1, global_state.GlobalState)
-    assert isinstance(arg2, types.DictType) and isinstance(arg3, types.DictType)
-    return func(arg1, arg2, arg3)
 
   return inner
 
