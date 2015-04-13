@@ -432,9 +432,12 @@ def _do_compute_container(gs, docker_host, pod_guid, container, g):
   if image is None:
     # image not found
     return
+
   image_guid = 'Image:' + image['id']
+  # Add the image to the graph only if we have not added it before.
   g.add_resource(image_guid, image['annotations'], 'Image',
                  image['timestamp'], image['properties'])
+
   # Container createdFrom Image
   g.add_relation(container_guid, image_guid, 'createdFrom')
 

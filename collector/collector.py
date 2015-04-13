@@ -243,12 +243,16 @@ def get_images():
   Returns:
     The images of the context graph.
   """
-  images_list = []
   gs = app.context_graph_global_state
+
+  # A dictionary from Image ID to wrapped image objects.
+  # If an image appears more than once, keep only its latest value.
+  images_dict = {}
 
   try:
     for node in kubernetes.get_nodes(gs):
-      images_list.extend(docker.get_images(gs, node['id']))
+      for image in docker.get_images(gs, node['id']):
+        images_dict[image['id']] = image
 
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
@@ -257,6 +261,8 @@ def get_images():
     app.logger.exception(msg)
     return flask.jsonify(make_error(msg))
 
+  # The images list is sorted by increasing identifiers.
+  images_list = [images_dict[key] for key in sorted(images_dict.keys())]
   return flask.jsonify(make_response(images_list, 'resources'))
 
 

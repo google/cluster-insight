@@ -173,7 +173,7 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(8, self.count_resources(result, 'Pod'))
     self.assertEqual(5, self.count_resources(result, 'Container'))
     self.assertEqual(7, self.count_resources(result, 'Process'))
-    self.assertEqual(3, self.count_resources(result, 'Image'))
+    self.assertEqual(2, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
   def test_resources(self):
@@ -188,8 +188,8 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(0, self.count_relations(result, 'runs'))
 
     json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(3, json_output.count('"alternateLabel": '))
-    self.assertEqual(37, json_output.count('"createdBy": '))
+    self.assertEqual(2, json_output.count('"alternateLabel": '))
+    self.assertEqual(36, json_output.count('"createdBy": '))
 
   def test_cluster(self):
     ret_value = self.app.get('/cluster')
@@ -203,8 +203,8 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(8, self.count_relations(result, 'runs'))
 
     json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(3, json_output.count('"alternateLabel": '))
-    self.assertEqual(85, json_output.count('"createdBy": '))
+    self.assertEqual(2, json_output.count('"alternateLabel": '))
+    self.assertEqual(84, json_output.count('"createdBy": '))
 
   def test_debug(self):
     ret_value = self.app.get('/debug')
