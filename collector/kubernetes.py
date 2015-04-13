@@ -179,7 +179,7 @@ def get_pods(gs, node_id=None):
 def matching_labels(pod, selector):
   """Compares the key/vale pairs in 'selector' with the pod's label.
 
-  The pod is consered to be matching the 'selector' iff
+  The pod is considered to be matching the 'selector' iff
   all of the key/value pairs in 'selector' appear in the pod's "labels"
   value.
 

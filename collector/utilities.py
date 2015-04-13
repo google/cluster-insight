@@ -74,7 +74,7 @@ def one_string_arg(func):
 
 
 def global_state_string_args(func):
-  """A decorator for a function with a glonal state and one string argumensts.
+  """A decorator for a function with a global state and one string argument.
 
   The string argument must be valid (see valid_string() above).
   """
@@ -87,7 +87,10 @@ def global_state_string_args(func):
 
 
 def one_optional_string_arg(func):
-  """A decorator for a function that should be given an optional valid string.
+  """A decorator for a function with an optional string argument.
+
+  If the string argument is defined, it must be valid
+  (see valid_optional_string() above).
   """
   def inner(arg1=None):
     assert valid_optional_string(arg1)
@@ -97,7 +100,7 @@ def one_optional_string_arg(func):
 
 
 def global_state_optional_string_args(func):
-  """A decorator for a function with a global state and an optional string.
+  """A decorator for a function with a global state and an optional string args.
 
   If the string argument is defined, it must be valid
   (see valid_optional_string() above).
@@ -111,7 +114,7 @@ def global_state_optional_string_args(func):
 
 
 def global_state_dictionary_args(func):
-  """A decorator for a function with a global state and a dictionary arguments.
+  """A decorator for a function with a global state and a dictionary argument.
 
   The dictionary argument must not be empty.
 
