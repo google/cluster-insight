@@ -455,14 +455,19 @@ def _do_compute_service(gs, cluster_guid, service, g):
 
   # Pods load balanced by this Service (use the service['labels']
   # key/value pairs to find matching Pods)
-  selector = service['properties'].get('labels')
+  selector = utilities.get_attribute(service, ['properties', 'selector'])
   if selector:
+    if not isinstance(selector, types.DictType):
+      msg = 'Service id=%s has an invalid "selector" value' % service_id
+      gs.logger_error(msg)
+      raise collector_error.CollectorError(msg)
+
     for pod in kubernetes.get_selected_pods(gs, selector):
       pod_guid = 'Pod:' + pod['id']
       # Service loadBalances Pod
       g.add_relation(service_guid, pod_guid, 'loadBalances')
   else:
-    gs.logger_error('Service id=%s has no "labels" key', service_id)
+    gs.logger_error('Service id=%s has no "selector" attribute', service_id)
 
 
 def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
@@ -482,14 +487,22 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
 
   # Pods that are monitored by this Rcontroller (use the rcontroller['labels']
   # key/value pairs to find matching pods)
-  selector = rcontroller['properties'].get('labels')
+  selector = utilities.get_attribute(
+      rcontroller, ['properties', 'desiredState', 'replicaSelector'])
   if selector:
+    if not isinstance(selector, types.DictType):
+      msg = ('Rcontroller id=%s has an invalid "replicaSelector" value' %
+             rcontroller_id)
+      gs.logger_error(msg)
+      raise collector_error.CollectorError(msg)
+
     for pod in kubernetes.get_selected_pods(gs, selector):
       pod_guid = 'Pod:' + pod['id']
       # Rcontroller monitors Pod
       g.add_relation(rcontroller_guid, pod_guid, 'monitors')
   else:
-    gs.logger_error('Rcontroller id=%s has no "labels" key', rcontroller_id)
+    gs.logger_error('Rcontroller id=%s has no "replicaSelector" attribute',
+                    rcontroller_id)
 
 
 def _do_compute_graph(gs, input_queue, output_queue, output_format):
