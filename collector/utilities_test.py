@@ -18,7 +18,9 @@
 
 # global imports
 import datetime
+import json
 import time
+import types
 import unittest
 
 # local imports
@@ -64,6 +66,27 @@ class TestUtilities(unittest.TestCase):
 
     with self.assertRaises(AssertionError):
       utilities.node_id_to_project_name('x.y.z.w')
+
+  def test_container_to_pod(self):
+    """Tests the operation of utilities.get_parent_pod_id()."""
+    f = open('testdata/containers.output.json')
+    containers_blob = json.loads(f.read())
+    f.close()
+
+    assert isinstance(containers_blob.get('resources'), types.ListType)
+    pod_ids_list = []
+    for container in containers_blob['resources']:
+      pod_id = utilities.get_parent_pod_id(container)
+      pod_ids_list.append(pod_id)
+
+    self.assertEqual(
+        ['guestbook-controller-hh2gd',
+         'guestbook-controller-0133o',
+         'redis-master',
+         'redis-worker-controller-gziey',
+         'fluentd-to-elasticsearch-kubernetes-minion-11cx.c.'
+         'the-pentameter-90318.internal'],
+        pod_ids_list)
 
   def test_timeless_json_hash(self):
     """Tests timeless_json_hash() with multiple similar and dissimilar objects.

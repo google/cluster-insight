@@ -33,6 +33,8 @@ import requests
 # local imports
 import collector_error
 import global_state
+import kubernetes
+import metrics
 import utilities
 
 ## Docker APIs
@@ -221,16 +223,6 @@ def get_containers(gs, docker_host):
     wrapped_container = utilities.wrap_object(
         container, 'Container', container_id, ts, label=container_label)
 
-    # container['Config']['Hostname'] is the name of the enclosing pod
-    # (not the host).
-    container_pod_name = utilities.get_attribute(
-        container, ['Config', 'Hostname'])
-    if not utilities.valid_string(container_pod_name):
-      msg = ('missing or invalid container["Config"]["Hostname"] '
-             'in container %s' % container_id)
-      gs.logger_error(msg)
-      raise collector_error.CollectorError(msg)
-
     containers.append(wrapped_container)
     timestamps.append(ts)
 
@@ -241,6 +233,80 @@ def get_containers(gs, docker_host):
       'get_containers(docker_host=%s) returns %d containers',
       docker_host, len(containers))
   return ret_value
+
+
+@utilities.global_state_string_args
+def get_containers_with_metrics(gs, docker_host):
+  """Gets the list of all containers in 'docker_host' with metric annotations.
+
+  Args:
+    gs: global state.
+    docker_host: the Docker host running the containers.
+
+  Returns:
+    list of wrapped container objects.
+    Each element in the list is the result of
+    utilities.wrap_object(container, 'Container', ...)
+
+  Raises:
+    CollectorError: in case of failure to fetch data from Docker.
+    Other exceptions may be raised due to exectution errors.
+  """
+  # Create a lookup table from pod IDs to pods.
+  # This lookup table is needed when annotating containers with
+  # metrics. Also compute the project's name.
+  containers_list = get_containers(gs, docker_host)
+  if not containers_list:
+    return []
+
+  pod_id_to_pod = {}
+  project_id = None
+  for pod in kubernetes.get_pods(gs, docker_host):
+    assert utilities.is_wrapped_object(pod, 'Pod')
+    pod_id_to_pod[pod['id']] = pod
+    if utilities.valid_string(project_id):
+      continue
+    pod_hostname = utilities.get_attribute(
+        pod, ['properties', 'currentState', 'host'])
+    if utilities.valid_string(pod_hostname):
+      project_id = utilities.node_id_to_project_name(pod_hostname)
+
+  # There are containers in this docker_host.
+  if not pod_id_to_pod:
+    # there are no pods in this docker_host.
+    msg = 'Docker host %s has containers but no pods' % docker_host
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
+  if not utilities.valid_string(project_id):
+    msg = ('Docker host %s has containers but no valid project ID' %
+           docker_host)
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
+  # Annotate the containers with their metrics.
+  for container in containers_list:
+    assert utilities.is_wrapped_object(container, 'Container')
+
+    # container['Config']['Hostname'] is the name of the enclosing pod
+    # (not the host).
+    parent_pod_id = utilities.get_parent_pod_id(container)
+    if not utilities.valid_string(parent_pod_id):
+      msg = ('missing or invalid parent pod ID in container %s' %
+             container['id'])
+      gs.logger_error(msg)
+      raise collector_error.CollectorError(msg)
+
+    if parent_pod_id not in pod_id_to_pod:
+      msg = ('could not locate parent pod %s for container %s' %
+             (parent_pod_id, container['id']))
+      gs.logger_error(msg)
+      raise collector_error.CollectorError(msg)
+
+    metrics.annotate_container(
+        project_id, container, pod_id_to_pod[parent_pod_id])
+
+  return containers_list
 
 
 @utilities.global_state_string_string_args

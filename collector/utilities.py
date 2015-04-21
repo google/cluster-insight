@@ -380,3 +380,54 @@ def get_attribute(obj, names_list):
       return None
 
   return v
+
+
+def get_parent_pod_id(container):
+  """Returns the parent pod ID of a given container.
+
+  In most cases, the attribute container['properties']['Config']['Hostname']
+  contains the pod ID. However, if the name is too long, it is truncated.
+
+  The current convention of container names is that the pod name appears
+  inside the container name before the "_default_" or ".default." substring.
+  If the pod name extracted from the container name is longer than the pod
+  name in the 'Hostname' attribute, we use the longer name.
+
+  Typical pod names are:
+  guestbook-controller-hh2gd
+  monitoring-heapster-controller-hquxc
+  fluentd-to-elasticsearch-kubernetes-minion-a7lt.c.gce-monitoring.internal
+
+  Typical container names are:
+  k8s_heapster.59702a6a_monitoring-heapster-controller-hquxc_default_9cc2c9ac-dd5a-11e4-8a61-42010af0c46c_5193f65d
+  k8s_fluentd-es.2a803504_fluentd-to-elasticsearch-kubernetes-minion-a7lt.c.gce-monitoring.internal_default_c5973403e9c9de201f684c38aa8a7588_4dfe38b6
+  k8s_php-redis.b317029a_guestbook-controller-hh2gd.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eb67684a
+
+  Args:
+    container: a wrapped container object.
+
+  Returns:
+  The parent pod's ID or None if parent pod ID could not be found.
+  """
+  assert is_wrapped_object(container, 'Container')
+
+  pod_name = get_attribute(
+      container, ['properties', 'Config', 'Hostname'])
+  if not valid_string(pod_name):
+    return None
+
+  # Try to extract a longer pod name from the container name.
+  start_index = container['id'].find('_' + pod_name)
+  if start_index < 0:
+    return None
+  end_index = container['id'].find('_default_', start_index + len(pod_name))
+  if end_index < 0:
+    end_index = container['id'].find('.default.', start_index + len(pod_name))
+  if end_index < 0:
+    return None
+  return container['id'][start_index + 1: end_index]
+
+
+def _do_compute_pod(gs, input_queue, node_guid, pod, g):
+  assert isinstance(gs, global_state.GlobalState)
+  assert isinstance(input_queue, Queue.PriorityQueue)

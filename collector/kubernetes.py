@@ -30,6 +30,7 @@ import requests
 
 # local imports
 import collector_error
+import metrics
 import utilities
 
 
@@ -110,13 +111,40 @@ def get_nodes(gs):
     if not utilities.valid_string(node.get('id')):
       # an invalid node without a valid node ID value.
       continue
-    nodes.append(utilities.wrap_object(
+    wrapped_node = utilities.wrap_object(
         node, 'Node', node['id'], now,
-        label=utilities.node_id_to_host_name(node['id'])))
+        label=utilities.node_id_to_host_name(node['id']))
+    nodes.append(wrapped_node)
 
   ret_value = gs.get_nodes_cache().update('', nodes, now)
   gs.logger_info('get_nodes() returns %d nodes', len(nodes))
   return ret_value
+
+
+@utilities.global_state_arg
+def get_nodes_with_metrics(gs):
+  """Gets the list of all nodes in the current cluster with their metrics.
+
+  Args:
+    gs: global state.
+
+  Returns:
+    list of wrapped node objects.
+    Each element in the list is the result of
+    utilities.wrap_object(node, 'Node', ...)
+
+  Raises:
+    CollectorError in case of failure to fetch data from Kubernetes.
+    Other exceptions may be raised due to exectution errors.
+  """
+  nodes_list = get_nodes(gs)
+
+  for node in nodes_list:
+    assert utilities.is_wrapped_object(node, 'Node')
+    project_id = utilities.node_id_to_project_name(node['id'])
+    metrics.annotate_node(project_id, node)
+
+  return nodes_list
 
 
 @utilities.global_state_optional_string_args
