@@ -261,6 +261,9 @@ def get_containers_with_metrics(gs, docker_host):
 
   pod_id_to_pod = {}
   project_id = None
+
+  # Populate the pod ID to pod lookup table.
+  # Compute the project_id from the name of the first pod.
   for pod in kubernetes.get_pods(gs, docker_host):
     assert utilities.is_wrapped_object(pod, 'Pod')
     pod_id_to_pod[pod['id']] = pod
@@ -288,8 +291,6 @@ def get_containers_with_metrics(gs, docker_host):
   for container in containers_list:
     assert utilities.is_wrapped_object(container, 'Container')
 
-    # container['Config']['Hostname'] is the name of the enclosing pod
-    # (not the host).
     parent_pod_id = utilities.get_parent_pod_id(container)
     if not utilities.valid_string(parent_pod_id):
       msg = ('missing or invalid parent pod ID in container %s' %
