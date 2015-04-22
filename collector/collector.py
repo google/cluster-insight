@@ -344,6 +344,16 @@ def get_version():
     return flask.jsonify(make_error(msg))
 
 
+@app.route('/health', methods=['GET'])
+def get_health():
+  """Computes the response of accessing the '/health' URI.
+
+  Returns:
+  A successful response containing the attribute 'health' and the value 'OK'.
+  """
+  return flask.jsonify(make_response('OK', 'health'))
+
+
 # Starts the web server and listen on all external IPs associated with this
 # host.
 if __name__ == '__main__':

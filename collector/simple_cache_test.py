@@ -19,6 +19,7 @@
 # global imports
 
 import datetime
+import sys
 import time
 import types
 import unittest
@@ -40,6 +41,9 @@ class TestSimpleCache(unittest.TestCase):
   def setUp(self):
     self._cache = simple_cache.SimpleCache(
         MAX_DATA_AGE_SECONDS, DATA_CLEANUP_AGE_SECONDS)
+
+    # The contents of the _forever_cache never expires.
+    self._forever_cache = simple_cache.SimpleCache(sys.maxint, sys.maxint)
 
   def test_basic(self):
     now = time.time()
@@ -172,6 +176,28 @@ class TestSimpleCache(unittest.TestCase):
       self.assertEqual(now, timestamp)
 
       now += 1
+
+  def test_forever(self):
+    """Verify that data entered into the 'forever_cache' remains there forever.
+    """
+    now = time.time()
+    # Verify that the cache is empty
+    self.assertEqual(0, self._forever_cache.size())
+    value, timestamp = self._forever_cache.lookup('', now)
+    self.assertTrue((value is None) and (timestamp is None))
+    value, timestamp = self._forever_cache.lookup(KEY, now)
+    self.assertTrue((value is None) and (timestamp is None))
+
+    # Insert an element into the cache. It should stay there forever.
+    self._forever_cache.update(KEY, BLOB_ID_KEY, now)
+    update_time = now
+    self.assertEqual(1, self._forever_cache.size())
+
+    for _ in range(2 * MAX_DATA_AGE_SECONDS):
+      now += 1
+      value, timestamp = self._forever_cache.lookup(KEY, now)
+      self.assertEqual(str(value), str(BLOB_ID_KEY))
+      self.assertEqual(update_time, timestamp)
 
 
 if __name__ == '__main__':

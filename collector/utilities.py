@@ -426,8 +426,3 @@ def get_parent_pod_id(container):
   if end_index < 0:
     return None
   return container['id'][start_index + 1: end_index]
-
-
-def _do_compute_pod(gs, input_queue, node_guid, pod, g):
-  assert isinstance(gs, global_state.GlobalState)
-  assert isinstance(input_queue, Queue.PriorityQueue)

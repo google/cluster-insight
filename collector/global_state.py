@@ -17,6 +17,7 @@
 """Keeps global system state to be used by concurrent threads.
 """
 import random
+import sys
 import threading
 import types
 
@@ -69,6 +70,7 @@ class GlobalState(object):
     self._containers_cache = None
     self._images_cache = None
     self._processes_cache = None
+    self._version_cache = None
 
     # pointers to synchronization constructs.
     self._bounded_semaphore = None
@@ -96,6 +98,9 @@ class GlobalState(object):
     self._processes_cache = simple_cache.SimpleCache(
         constants.MAX_CACHED_DATA_AGE_SECONDS,
         constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
+    # Never delete anything from the _version_cache.
+    self._version_cache = simple_cache.SimpleCache(
+        sys.maxint, sys.maxint)
     self._bounded_semaphore = threading.BoundedSemaphore(
         constants.MAX_CONCURRENT_COMPUTE_GRAPH)
 
@@ -119,6 +124,9 @@ class GlobalState(object):
 
   def get_processes_cache(self):
     return self._processes_cache
+
+  def get_version_cache(self):
+    return self._version_cache
 
   def get_bounded_semaphore(self):
     return self._bounded_semaphore
