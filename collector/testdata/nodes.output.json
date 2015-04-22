@@ -5,106 +5,25 @@
         "label": "k8s-guestbook-node-1",
         "metrics": [
           { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "nanoseconds"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
               "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
+            "names": [
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
+            ],
             "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "milliseconds"
+            "source": "gcm"
           }
-        ] 
-      }, 
+        ]
+      },
       "id": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:39:34Z", 
@@ -139,106 +58,25 @@
         "label": "k8s-guestbook-node-2",
         "metrics": [
           { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "nanoseconds"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
               "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
+            "names": [
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
+            ],
             "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "milliseconds"
+            "source": "gcm"
           }
-        ] 
-      }, 
+        ]
+      },
       "id": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:39:34Z", 
@@ -273,106 +111,25 @@
         "label": "k8s-guestbook-node-3",
         "metrics": [
           { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "nanoseconds"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
               "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
+            "names": [
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
+            ],
             "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "rising-apricot-840",
-            "source": "gcm",
-            "units": "milliseconds"
+            "source": "gcm"
           }
-        ] 
-      }, 
+        ]
+      },
       "id": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
       "properties": {
         "creationTimestamp": "2015-02-20T21:39:34Z", 
@@ -407,106 +164,25 @@
         "label": "kubernetes-minion-11cx",
         "metrics": [
           { "labels": {
-            "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "nanoseconds"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-            "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-            "metricType": "gauge",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
               "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
+            "names": [
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
+            ],
             "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "bytes"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "count"
-          },
-          { "labels": {
-              "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "metric": "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime",
-            "metricType": "cumulative",
-            "metricValue": "int64",
-            "project": "the-pentameter-90318",
-            "source": "gcm",
-            "units": "milliseconds"
+            "source": "gcm"
           }
-        ] 
-      }, 
+        ]
+      },
       "id": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
       "properties": {
         "creationTimestamp": "2015-04-06T23:02:04Z", 
