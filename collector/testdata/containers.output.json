@@ -286,8 +286,8 @@
     {
       "annotations": {
         "label": "f15272658bbd",
-        "metrics": [
-          { "labels":
+        "metrics": {
+          "gcm": { "labels":
             { "container_name": "POD",
               "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal",
               "pod_id": "32a27c5a-b949-11e4-8246-42010af0c3dd"
@@ -304,10 +304,9 @@
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
             ],
-            "project": "rising-apricot-840",
-            "source": "gcm"
+            "project": "rising-apricot-840"
           }
-        ]
+        }
       },
       "id": "k8s_POD.23ebee62_redis-master.default.api_32a27c5a-b949-11e4-8246-42010af0c3dd_0e0f9003",
       "properties": {
@@ -427,8 +426,8 @@
     {
       "annotations": {
         "label": "a8515e7b12ba",
-        "metrics": [
-          { "labels":
+        "metrics": {
+          "gcm": { "labels":
             { "container_name": "POD",
               "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal",
               "pod_id": "bdb88fe4-b949-11e4-8246-42010af0c3dd"
@@ -445,10 +444,9 @@
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
             ],
-            "project": "rising-apricot-840",
-            "source": "gcm"
+            "project": "rising-apricot-840"
           }
-        ]
+        }
       },
       "id": "k8s_POD.1522ef03_redis-worker-controller-gziey.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105", 
       "properties": {
@@ -617,8 +615,8 @@
     {
       "annotations": {
         "label": "6c4ffba1d895",
-        "metrics": [
-          { "labels":
+        "metrics": {
+          "gcm": { "labels":
             { "container_name": "fluentd-es",
               "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal",
               "pod_id": "0e4ee16a-dcb1-11e4-b2b5-42010af052bc"
@@ -635,10 +633,9 @@
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
             ],
-            "project": "the-pentameter-90318",
-            "source": "gcm"
+            "project": "the-pentameter-90318"
           }
-        ]
+        }
       },
       "id": "k8s_fluentd-es.2a803504_fluentd-to-elasticsearch-kubernetes-minion-11cx.c.the-pentameter-90318.internal_default_f0e5e87bee35c96a87fac98784c0aee0_8459e4bf", 
       "properties": {

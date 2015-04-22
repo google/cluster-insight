@@ -3,8 +3,8 @@
     {
       "annotations": {
         "label": "k8s-guestbook-node-1",
-        "metrics": [
-          { "labels": {
+        "metrics": {
+          "gcm": { "labels": {
               "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
@@ -19,10 +19,9 @@
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
             ],
-            "project": "rising-apricot-840",
-            "source": "gcm"
+            "project": "rising-apricot-840"
           }
-        ]
+        }
       },
       "id": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
       "properties": {
@@ -56,8 +55,8 @@
     {
       "annotations": {
         "label": "k8s-guestbook-node-2",
-        "metrics": [
-          { "labels": {
+        "metrics": {
+          "gcm": { "labels": {
               "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
@@ -72,10 +71,9 @@
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
             ],
-            "project": "rising-apricot-840",
-            "source": "gcm"
+            "project": "rising-apricot-840"
           }
-        ]
+        }
       },
       "id": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
       "properties": {
@@ -109,8 +107,8 @@
     {
       "annotations": {
         "label": "k8s-guestbook-node-3",
-        "metrics": [
-          { "labels": {
+        "metrics": {
+          "gcm": { "labels": {
               "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
@@ -125,10 +123,9 @@
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
             ],
-            "project": "rising-apricot-840",
-            "source": "gcm"
+            "project": "rising-apricot-840"
           }
-        ]
+        }
       },
       "id": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
       "properties": {
@@ -162,8 +159,8 @@
     {
       "annotations": {
         "label": "kubernetes-minion-11cx",
-        "metrics": [
-          { "labels": {
+        "metrics": {
+          "gcm": { "labels": {
               "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
             },
             "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
@@ -178,10 +175,9 @@
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
             ],
-            "project": "the-pentameter-90318",
-            "source": "gcm"
+            "project": "the-pentameter-90318"
           }
-        ]
+        }
       },
       "id": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
       "properties": {

@@ -139,20 +139,21 @@ def _make_gcm_metrics(project_id, labels_dict):
     current resource.
 
   Returns:
-  A list containing the descriptor of the GCM metrics. See below for details.
+  A dictionary containing the descriptor of the GCM metrics.
+  See below for details.
   If 'labels_dict' is None, returns None.
 
   Typical output is:
-  [
-    { 'names': ['.../cpu/usage', '.../memory/page_faults', ...],
+  {
+    'gcm': {
+      'names': ['.../cpu/usage', '.../memory/page_faults', ...],
       'project': PROJECT,
-      'source': 'gcm',
       'labels_prefix': PREFIX,
       'labels': {
          'pod_id': POD_ID, 'hostname': HOSTNAME,
          'container_name': CONTAINER_NAME }
     }
-  ]
+  }
   """
   if labels_dict is None:
     return None
@@ -164,13 +165,12 @@ def _make_gcm_metrics(project_id, labels_dict):
     # an empty dictionary
     return None
 
-  return [{
+  return {'gcm': {
       'names': copy.deepcopy(METRIC_NAMES),
       'project': project_id,
-      'source': 'gcm',
       'labels': copy.deepcopy(labels_dict),
       'labels_prefix': METRIC_PREFIX + 'label/'
-  }]
+  }}
 
 
 def annotate_container(project_id, container, parent_pod):
