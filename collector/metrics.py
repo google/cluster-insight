@@ -31,66 +31,21 @@ import types
 import utilities
 
 METRIC_PREFIX = 'custom.cloudmonitoring.googleapis.com/kubernetes.io/'
-METRIC_HEADERS = [
-    {
-        'metric': METRIC_PREFIX + 'cpu/usage',
-        'metricType': 'cumulative',
-        'units': 'nanoseconds',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'memory/page_faults',
-        'metricType': 'cumulative',
-        'units': 'count',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'memory/usage',
-        'metricType': 'gauge',
-        'units': 'bytes',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'memory/working_set',
-        'metricType': 'gauge',
-        'units': 'bytes',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'network/rx',
-        'metricType': 'cumulative',
-        'units': 'bytes',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'network/rx_errors',
-        'metricType': 'cumulative',
-        'units': 'count',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'network/tx',
-        'metricType': 'cumulative',
-        'units': 'bytes',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'network/tx_errors',
-        'metricType': 'cumulative',
-        'units': 'count',
-        'metricValue': 'int64'
-    },
-    {
-        'metric': METRIC_PREFIX + 'uptime',
-        'metricType': 'cumulative',
-        'units': 'milliseconds',
-        'metricValue': 'int64'
-    }
+METRIC_NAMES = [
+    METRIC_PREFIX + 'cpu/usage',
+    METRIC_PREFIX + 'memory/page_faults',
+    METRIC_PREFIX + 'memory/usage',
+    METRIC_PREFIX + 'memory/working_set',
+    METRIC_PREFIX + 'network/rx',
+    METRIC_PREFIX + 'network/rx_errors',
+    METRIC_PREFIX + 'network/tx',
+    METRIC_PREFIX + 'network/tx_errors',
+    METRIC_PREFIX + 'uptime'
 ]
 
 
 def _get_container_labels(container, parent_pod):
-  """Returns key/value pairs identifying the metrics of this container.
+  """Returns key/value pairs identifying all metrics of this container.
 
   Args:
     container: the container object to annotate.
@@ -152,7 +107,7 @@ def _get_container_labels(container, parent_pod):
 
 
 def _get_node_labels(node):
-  """Returns key/value pairs identifying the metrics of this node.
+  """Returns key/value pairs identifying all metrics of this node.
 
   Args:
     node: the node object to annotate.
@@ -176,27 +131,29 @@ def _get_node_labels(node):
 
 
 def _make_gcm_metrics(project_id, labels_dict):
-  """Generate the list of GCM metrics from 'project_id' and 'labels_dict'.
+  """Generate a descriptor of GCM metrics from 'project_id' and 'labels_dict'.
 
   Args:
     project_id: the project ID
-    labels_dict: the key/value pairs that identify the metric.
+    labels_dict: the key/value pairs that identify all metrics of the
+    current resource.
 
   Returns:
-  A list of dictionaries, one for each metric available for the current
-  resource.
-  If no metrics are available, returns None.
+  A dictionary containing the descriptor of the GCM metrics.
+  See below for details.
+  If 'labels_dict' is None, returns None.
 
   Typical output is:
-  [
-    { 'metric': '.../cpu/usage', 'metricType': 'cumulative',
-      'units': 'nanoseconds', 'metricValue': 'int64', 'project': PROJECT,
-      'source': 'gcm', 'labels_prefix': PREFIX, 'labels': {
+  {
+    'gcm': {
+      'names': ['.../cpu/usage', '.../memory/page_faults', ...],
+      'project': PROJECT,
+      'labels_prefix': PREFIX,
+      'labels': {
          'pod_id': POD_ID, 'hostname': HOSTNAME,
          'container_name': CONTAINER_NAME }
-    },
-    ...
-  ]
+    }
+  }
   """
   if labels_dict is None:
     return None
@@ -208,17 +165,12 @@ def _make_gcm_metrics(project_id, labels_dict):
     # an empty dictionary
     return None
 
-  metrics = []
-  for m in METRIC_HEADERS:
-    assert isinstance(m, types.DictType)
-    new_m = copy.deepcopy(m)
-    new_m['project'] = project_id
-    new_m['source'] = 'gcm'
-    new_m['labels'] = copy.deepcopy(labels_dict)
-    new_m['labels_prefix'] = METRIC_PREFIX + 'label/'
-    metrics.append(new_m)
-
-  return metrics
+  return {'gcm': {
+      'names': copy.deepcopy(METRIC_NAMES),
+      'project': project_id,
+      'labels': copy.deepcopy(labels_dict),
+      'labels_prefix': METRIC_PREFIX + 'label/'
+  }}
 
 
 def annotate_container(project_id, container, parent_pod):
