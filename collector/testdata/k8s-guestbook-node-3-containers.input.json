@@ -17,7 +17,7 @@
 "Ports":[],"Status":"Up 3 weeks"}
 ,{"Command":"/pause","Created":1424472982,"Id":"a8515e7b12ba52eed616cc8530eaeadf702c3e29e2e466a923cff0be30a1403a",
 "Image":"kubernetes/pause:go",
-"Names":["/k8s_POD.1522ef03_redis-worker-controller-oh43e.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105"],
+"Names":["/k8s_POD.1522ef03_redis-worker-controller-gziey.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105"],
 "Ports":[{"IP":"0.0.0.0","PrivatePort":6379,"PublicPort":6380,"Type":"tcp"}],
 "Status":"Up 3 weeks"}
 ,{"Command":"/pause","Created":1424472982,"Id":"c6e8f60a7df43fb716bb9f14671b5945493ea60398cf0406921b1db8ebd52e79",

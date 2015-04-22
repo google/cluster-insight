@@ -124,7 +124,7 @@
         "Id": "a8515e7b12ba52eed616cc8530eaeadf702c3e29e2e466a923cff0be30a1403a", 
         "Image": "6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
         "MountLabel": "", 
-        "Name": "/k8s_POD.1522ef03_redis-worker-controller-oh43e.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105", 
+        "Name": "/k8s_POD.1522ef03_redis-worker-controller-gziey.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105", 
         "NetworkSettings": {
           "Bridge": "cbr0", 
           "Gateway": "10.64.2.1", 

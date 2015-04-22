@@ -302,22 +302,6 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
 def _container_in_pod(gs, container, pod):
   """Returns True when 'container' is a part of 'pod'.
 
-  In most cases, the attribute container['properties']['Config']['Hostname']
-  contains the pod ID. However, if the name is too long, it is truncated.
-
-  The current convention of container names is that the pod name appears
-  inside the container name before the "_default_" substring.
-  If the pod name extracted from the container name is longer than the pod
-  name in the 'Hostname' attribute, we use the longer name.
-
-  Typical pod names are:
-  monitoring-heapster-controller-hquxc
-  fluentd-to-elasticsearch-kubernetes-minion-a7lt.c.gce-monitoring.internal
-
-  Typical container names are:
-  k8s_heapster.59702a6a_monitoring-heapster-controller-hquxc_default_9cc2c9ac-dd5a-11e4-8a61-42010af0c46c_5193f65d
-  k8s_fluentd-es.2a803504_fluentd-to-elasticsearch-kubernetes-minion-a7lt.c.gce-monitoring.internal_default_c5973403e9c9de201f684c38aa8a7588_4dfe38b6
-
   Args:
     gs: global state.
     container: a wrapped container object.
@@ -334,26 +318,13 @@ def _container_in_pod(gs, container, pod):
   assert utilities.is_wrapped_object(container, 'Container')
   assert utilities.is_wrapped_object(pod, 'Pod')
 
-  pod_name = utilities.get_attribute(
-      container, ['properties', 'Config', 'Hostname'])
-  if not utilities.valid_string(pod_name):
-    msg = 'could not find Hostname in container %s' % container['id']
+  parent_pod_id = utilities.get_parent_pod_id(container)
+  if not utilities.valid_string(parent_pod_id):
+    msg = 'could not find parent pod ID in container %s' % container['id']
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
 
-  if pod_name == pod['id']:
-    return True
-
-  # Try to extract a longer pod name from the container name.
-  start_index = container['id'].find('_' + pod_name)
-  if start_index < 0:
-    return False
-  end_index = container['id'].find('_default_', start_index + len(pod_name))
-  if end_index < 0:
-    return False
-  pod_name = container['id'][start_index + 1: end_index]
-
-  return pod_name == pod['id']
+  return parent_pod_id == pod['id']
 
 
 def _do_compute_pod(gs, input_queue, node_guid, pod, g):
@@ -378,7 +349,7 @@ def _do_compute_pod(gs, input_queue, node_guid, pod, g):
   g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
 
   # Containers in a Pod
-  for container in docker.get_containers(gs, docker_host):
+  for container in docker.get_containers_with_metrics(gs, docker_host):
     if not _container_in_pod(gs, container, pod):
       continue
 
@@ -534,7 +505,7 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
   g.set_metadata({'timestamp': datetime.datetime.now().isoformat()})
 
   # Nodes
-  nodes_list = kubernetes.get_nodes(gs)
+  nodes_list = kubernetes.get_nodes_with_metrics(gs)
   if not nodes_list:
     return g.dump(gs, output_format)
 

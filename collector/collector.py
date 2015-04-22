@@ -109,7 +109,7 @@ def get_nodes():
   """
   gs = app.context_graph_global_state
   try:
-    nodes_list = kubernetes.get_nodes(gs)
+    nodes_list = kubernetes.get_nodes_with_metrics(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
   except:
@@ -196,7 +196,7 @@ def get_containers():
     for node in kubernetes.get_nodes(gs):
       # The node_id is the Docker host name.
       docker_host = node['id']
-      containers.extend(docker.get_containers(gs, docker_host))
+      containers.extend(docker.get_containers_with_metrics(gs, docker_host))
 
   except collector_error.CollectorError as e:
     return flask.jsonify(make_error(str(e)))
