@@ -219,6 +219,14 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(
         'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
 
+  def test_health(self):
+    ret_value = self.app.get('/health')
+    result = json.loads(ret_value.data)
+    self.assertTrue(result.get('success'))
+    health = result.get('health')
+    self.assertTrue(isinstance(health, types.StringTypes))
+    self.assertEqual('OK', health)
+
 
 if __name__ == '__main__':
   unittest.main()

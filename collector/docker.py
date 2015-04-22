@@ -592,6 +592,12 @@ def get_version(gs):
     CollectorError: in case of any error to compute the running image
       information.
   """
+  version, timestamp_secs = gs.get_version_cache().lookup('')
+  if timestamp_secs is not None:
+    assert utilities.valid_string(version)
+    gs.logger_info('get_version() cache hit')
+    return version
+
   if gs.get_testing():
     fname = 'testdata/proc-self-cgroup.txt'
   else:
@@ -651,6 +657,7 @@ def get_version(gs):
   # Remove the trailing subsecond part of the creation timestamp.
   created = re.sub(r'\.[0-9]+Z$', '', created)
 
-  ret_val = '%s %s %s' % (symbolic_image_id, hex_image_id[:12], created)
-  gs.logger_info('get_version() returns: %s', ret_val)
-  return ret_val
+  version = '%s %s %s' % (symbolic_image_id, hex_image_id[:12], created)
+  ret_value = gs.get_version_cache().update('', version)
+  gs.logger_info('get_version() returns: %s', ret_value)
+  return ret_value
