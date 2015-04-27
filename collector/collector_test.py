@@ -178,7 +178,6 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
     # Verify that all resources are valid wrapped objects.
-    assert isinstance(result, types.DictType)
     assert isinstance(result.get('resources'), types.ListType)
 
     for r in result.get('resources'):
@@ -229,8 +228,8 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(
         'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
 
-  def test_health(self):
-    ret_value = self.app.get('/health')
+  def test_healthz(self):
+    ret_value = self.app.get('/healthz')
     result = json.loads(ret_value.data)
     self.assertTrue(result.get('success'))
     health = result.get('health')

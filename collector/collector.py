@@ -92,7 +92,7 @@ def make_error(error_message):
 
 @app.route('/', methods=['GET'])
 def home():
-  """Returns the home.html contents for all accesses to the '/' URI.
+  """Returns the response of the '/' endpoint.
 
   Returns:
     The home page of the Cluster-Insight data collector.
@@ -102,7 +102,7 @@ def home():
 
 @app.route('/cluster/resources/nodes', methods=['GET'])
 def get_nodes():
-  """Computes the response of accessing the '/cluster/resources/nodes' URI.
+  """Computes the response of the '/cluster/resources/nodes' endpoint.
 
   Returns:
     The nodes of the context graph.
@@ -122,7 +122,7 @@ def get_nodes():
 
 @app.route('/cluster/resources/services', methods=['GET'])
 def get_services():
-  """Computes the response of accessing the '/cluster/resources/services' URI.
+  """Computes the response of the '/cluster/resources/services' endpoint.
 
   Returns:
     The services of the context graph.
@@ -164,7 +164,7 @@ def get_rcontrollers():
 
 @app.route('/cluster/resources/pods', methods=['GET'])
 def get_pods():
-  """Computes the response of accessing the '/cluster/resources/pods' URI.
+  """Computes the response of the '/cluster/resources/pods' endpoint.
 
   Returns:
     The pods of the context graph.
@@ -184,7 +184,7 @@ def get_pods():
 
 @app.route('/cluster/resources/containers', methods=['GET'])
 def get_containers():
-  """Computes the response of accessing the '/cluster/resources/containers' URI.
+  """Computes the response of the '/cluster/resources/containers' endpoint.
 
   Returns:
     The containers of the context graph.
@@ -210,7 +210,7 @@ def get_containers():
 
 @app.route('/cluster/resources/processes', methods=['GET'])
 def get_processes():
-  """Computes the response of accessing the '/cluster/resources/processes' URI.
+  """Computes the response of the '/cluster/resources/processes' endpoint.
 
   Returns:
     The processes of the context graph.
@@ -238,7 +238,7 @@ def get_processes():
 
 @app.route('/cluster/resources/images', methods=['GET'])
 def get_images():
-  """Computes the response of accessing the '/cluster/resources/images' URI.
+  """Computes the response of the '/cluster/resources/images' endpoint.
 
   Returns:
     The images of the context graph.
@@ -268,7 +268,7 @@ def get_images():
 
 @app.route('/debug', methods=['GET'])
 def get_debug():
-  """Computes the response of accessing the '/cluster/resources/debug' URI.
+  """Computes the response of the '/cluster/resources/debug' endpoint.
 
   Returns:
     The DOT graph depicting the context graph.
@@ -287,7 +287,7 @@ def get_debug():
 
 @app.route('/cluster/resources', methods=['GET'])
 def get_resources():
-  """Computes the response of accessing the '/cluster/resources' URI.
+  """Computes the response of the '/cluster/resources' endpoint.
 
   Returns:
     The 'resources' section of the context graph.
@@ -307,7 +307,7 @@ def get_resources():
 
 @app.route('/cluster', methods=['GET'])
 def get_cluster():
-  """Computes the response of accessing the '/cluster' URI.
+  """Computes the response of the '/cluster' endpoint.
 
   Returns:
     The entire context graph.
@@ -327,7 +327,7 @@ def get_cluster():
 
 @app.route('/version', methods=['GET'])
 def get_version():
-  """Computes the response of accessing the '/version' URI.
+  """Computes the response of the '/version' endpoint.
 
   Returns:
     The value of the docker.get_version() or an error message.
@@ -344,9 +344,9 @@ def get_version():
     return flask.jsonify(make_error(msg))
 
 
-@app.route('/health', methods=['GET'])
+@app.route('/healthz', methods=['GET'])
 def get_health():
-  """Computes the response of accessing the '/health' URI.
+  """Computes the response of the '/healthz' endpoint.
 
   Returns:
   A successful response containing the attribute 'health' and the value 'OK'.
