@@ -366,6 +366,11 @@ def get_attribute(obj, names_list):
   will attempt to fetch container['Config']['Image'] and return None
   if this attribute or any of its parents is not found.
 
+  Args:
+    obj: the object to fetch the attributes from.
+    names_list: a list of strings specifying the name of the attributes to
+      fetch successively from 'obj'.
+
   Returns:
   The attribute value or None if any of the intermediate values is not a
   dictionary of any of the attributes in 'names_list' was not found.

@@ -90,13 +90,14 @@ class ContextGraph(object):
     self._version = None
     self._id_set = set()
 
-  def add_resource(self, rid, annotations, rtype, timestamp, obj=None):
+  def add_resource(self, rid, annotations, rtype, timestamp, obj):
     """Adds a resource to the context graph."""
     assert utilities.valid_string(rid)
     assert utilities.valid_string(utilities.get_attribute(
         annotations, ['label']))
     assert utilities.valid_string(rtype)
     assert utilities.valid_string(timestamp)
+    assert isinstance(obj, types.DictType)
 
     with self._lock:
       # It is possible that the same resource is referenced by more than one
@@ -115,9 +116,7 @@ class ContextGraph(object):
       if self._version is not None:
         resource['annotations']['createdBy'] = self._version
 
-      # Do not add a 'metadata' attribute if its value is None.
-      if obj is not None:
-        resource['properties'] = obj
+      resource['properties'] = obj
 
       self._context_resources.append(resource)
       self._id_set.add(rid)
@@ -517,7 +516,7 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
   cluster_guid = 'Cluster:' + cluster_id
   g.set_title(cluster_id)
   g.add_resource(cluster_guid, {'label': cluster_id}, 'Cluster',
-                 nodes_list[0]['timestamp'])
+                 nodes_list[0]['timestamp'], {})
 
   # Nodes
   for node in nodes_list:

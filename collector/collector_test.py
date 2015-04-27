@@ -25,6 +25,7 @@ import unittest
 # local imports
 import collector
 import global_state
+import utilities
 
 
 # A regular expression that matches the 'timestamp' attribute and value
@@ -175,6 +176,15 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(7, self.count_resources(result, 'Process'))
     self.assertEqual(2, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
+
+    # Verify that all resources are valid wrapped objects.
+    assert isinstance(result, types.DictType)
+    assert isinstance(result.get('resources'), types.ListType)
+
+    for r in result.get('resources'):
+      # The type of resource must be defined.
+      assert utilities.valid_string(r.get('type'))
+      assert utilities.is_wrapped_object(r, r.get('type'))
 
   def test_resources(self):
     ret_value = self.app.get('/cluster/resources')
