@@ -221,7 +221,7 @@ def get_containers(gs, docker_host):
 
     short_hex_id = utilities.object_to_hex_id(container)
     if short_hex_id is None:
-      msg = 'Could not compute container %s short hex ID' % container_id
+      msg = 'Could not compute short hex ID of container %s' % container_id
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
 
@@ -232,8 +232,8 @@ def get_containers(gs, docker_host):
 
     # Modify the container's label after the wrapped container was added
     # to the containers list.
-    # Compute the container's short ID to create a better container label:
-    # short_container_id/short_hex_id.
+    # Compute the container's short name to create a better container label:
+    # short_container_name/short_hex_id.
     # For example: "cassandra/d85b599c17d8".
     parent_pod_id = utilities.get_parent_pod_id(wrapped_container)
     if parent_pod_id is None:
@@ -545,7 +545,7 @@ def get_image(gs, docker_host, image_id):
 
   short_hex_label = utilities.object_to_hex_id(image)
   if short_hex_label is None:
-    msg = 'Could not compute image %s short hex ID' % image_id
+    msg = 'Could not compute short hex ID of image %s' % image_id
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
 
