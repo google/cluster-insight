@@ -411,9 +411,9 @@ def get_processes(gs, docker_host, container_id):
 
   container = get_one_container(gs, docker_host, container_id)
   if container is not None:
-    assert utilities.valid_string(
-        utilities.get_attribute(container, ['annotations', 'label']))
-    container_label = container['annotations']['label']
+    assert utilities.is_wrapped_object(container, 'Container')
+    container_short_hex_id = utilities.object_to_hex_id(container['properties'])
+    assert utilities.valid_string(container_short_hex_id)
   else:
     # Parent container not found. Container might have crashed while we were
     # looking for it.
@@ -468,7 +468,7 @@ def get_processes(gs, docker_host, container_id):
       process[pstat] = pvalue
 
     # Prefix with container Id to ensure uniqueness across the whole graph.
-    process_id = '%s/%s' % (container_label, process['PID'])
+    process_id = '%s/%s' % (container_short_hex_id, process['PID'])
     processes.append(utilities.wrap_object(
         process, 'Process', process_id, now, label=process['PID']))
 
