@@ -285,7 +285,7 @@
     }, 
     {
       "annotations": {
-        "label": "f15272658bbd",
+        "label": "POD/f15272658bbd",
         "metrics": {
           "gcm": { "labels":
             { "container_name": "POD",
@@ -425,7 +425,7 @@
     },
     {
       "annotations": {
-        "label": "a8515e7b12ba",
+        "label": "POD/a8515e7b12ba",
         "metrics": {
           "gcm": { "labels":
             { "container_name": "POD",
@@ -614,7 +614,7 @@
     },
     {
       "annotations": {
-        "label": "6c4ffba1d895",
+        "label": "fluentd-es/6c4ffba1d895",
         "metrics": {
           "gcm": { "labels":
             { "container_name": "fluentd-es",

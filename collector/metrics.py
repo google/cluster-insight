@@ -69,32 +69,8 @@ def _get_container_labels(container, parent_pod):
   if not utilities.valid_string(hostname):
     return None
 
-  info_dict = utilities.get_attribute(
-      parent_pod, ['properties', 'currentState', 'info'])
-  if not isinstance(info_dict, types.DictType):
-    return None
-
-  expected_id = utilities.get_attribute(container, ['properties', 'Id'])
-  if not utilities.valid_string(expected_id):
-    return None
-  docker_id = 'docker://' + expected_id
-
-  # The short container name is the key of the value identifying the container.
-  # For example, the short name of the container is "cassandra" and its
-  # Docker ID is the hexadecimal string after "docker://".
-  # "info": {
-  #   "cassandra": {
-  #     "containerID": "docker://325316d8009...",
-  #     "image": "kubernetes/cassandra:v2",
-  #     "imageID": ...
-  #   }
-  # }
-  short_container_name = None
-  for key, value in info_dict.iteritems():
-    container_id = utilities.get_attribute(value, ['containerID'])
-    if utilities.valid_string(container_id) and container_id == docker_id:
-      short_container_name = key
-      break
+  short_container_name = utilities.get_short_container_name(
+      container, parent_pod)
 
   if not utilities.valid_string(short_container_name):
     return None

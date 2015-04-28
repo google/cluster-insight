@@ -143,7 +143,7 @@ def two_string_args(func):
   return inner
 
 
-def global_state_string_string_args(func):
+def global_state_two_string_args(func):
   """A decorator for a function with a global state and two string arguments.
 
   All string arguments must be valid strings (see valid_string() above).
@@ -302,7 +302,7 @@ def timeless_json_hash(obj):
 def object_to_hex_id(obj):
   """Computes the short object ID (12 hexadecimal digits) for the given object.
 
-  The short  ID is the contents of the "CONTAINER ID" column in the
+  The short ID is the contents of the "CONTAINER ID" column in the
   output of the "docker ps" command or the contents of the "IMAGE ID"
   column in the output of the "docker images" command.
 
@@ -312,10 +312,15 @@ def object_to_hex_id(obj):
   Returns:
   The short object ID (12 hexadecimal digits) of 'obj', which is the first
   12 characters of the obj['Id'] value.
+  If the short object ID could not be computed, returns None.
   """
   id_value = get_attribute(obj, ['Id'])
-  assert valid_string(id_value)
-  assert re.match('^[0-9a-fA-F]+$', id_value) and (len(id_value) > 12)
+  if not valid_string(id_value):
+    return None
+  if not re.match('^[0-9a-fA-F]+$', id_value):
+    return None
+  if len(id_value) < 12:
+    return None
 
   return id_value[:12]
 
@@ -431,3 +436,49 @@ def get_parent_pod_id(container):
   if end_index < 0:
     return None
   return container['id'][start_index + 1: end_index]
+
+
+@two_dict_args
+def get_short_container_name(container, parent_pod):
+  """Returns the short container name of 'container'.
+
+  The short container name is the key of the value identifying the container.
+  For example, the short name of the container is "cassandra" and its
+  Docker ID is the hexadecimal string after "docker://".
+  "info": {
+    "cassandra": {
+      "containerID": "docker://325316d8009...",
+      "image": "kubernetes/cassandra:v2",
+      "imageID": ...
+    }
+  }
+
+  Args:
+    container: the container to be named.
+    parent_pod: the container's parent pod.
+
+  Returns:
+  The short container name if one was found or None if no short container
+  was found.
+  """
+  assert is_wrapped_object(container, 'Container')
+  assert is_wrapped_object(parent_pod, 'Pod')
+
+  info_dict = get_attribute(parent_pod, ['properties', 'currentState', 'info'])
+  if not isinstance(info_dict, types.DictType):
+    return None
+
+  expected_id = get_attribute(container, ['properties', 'Id'])
+  if not valid_string(expected_id):
+    return None
+  docker_id = 'docker://' + expected_id
+
+  # Search the container ID in the pod's properties.currentState.info
+  # dictionary.
+  for key, value in info_dict.iteritems():
+    assert valid_string(key)
+    container_id = get_attribute(value, ['containerID'])
+    if valid_string(container_id) and container_id == docker_id:
+      return key
+
+  return None

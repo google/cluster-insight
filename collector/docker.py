@@ -93,7 +93,7 @@ def fetch_data(gs, url, base_name, expect_missing=False):
     return requests.get(url).json()
 
 
-@utilities.global_state_string_string_args
+@utilities.global_state_two_string_args
 def _inspect_container(gs, docker_host, container_id):
   """Fetch detailed information about the given container in the given host.
 
@@ -219,12 +219,34 @@ def get_containers(gs, docker_host):
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
 
-    container_label = utilities.object_to_hex_id(container)
-    wrapped_container = utilities.wrap_object(
-        container, 'Container', container_id, ts, label=container_label)
+    short_hex_id = utilities.object_to_hex_id(container)
+    if short_hex_id is None:
+      msg = 'Could not compute container %s short hex ID' % container_id
+      gs.logger_error(msg)
+      raise collector_error.CollectorError(msg)
 
+    wrapped_container = utilities.wrap_object(
+        container, 'Container', container_id, ts, label=short_hex_id)
     containers.append(wrapped_container)
     timestamps.append(ts)
+
+    # Modify the container's label after the wrapped container was added
+    # to the containers list.
+    # Compute the container's short ID to create a better container label:
+    # short_container_id/short_hex_id.
+    # For example: "cassandra/d85b599c17d8".
+    parent_pod_id = utilities.get_parent_pod_id(wrapped_container)
+    if parent_pod_id is None:
+      continue
+    parent_pod = kubernetes.get_one_pod(gs, docker_host, parent_pod_id)
+    if parent_pod is None:
+      continue
+    short_container_name = utilities.get_short_container_name(
+        wrapped_container, parent_pod)
+    if not utilities.valid_string(short_container_name):
+      continue
+    wrapped_container['annotations']['label'] = (short_container_name + '/' +
+                                                 short_hex_id)
 
   ret_value = gs.get_containers_cache().update(
       docker_host, containers,
@@ -274,7 +296,7 @@ def get_containers_with_metrics(gs, docker_host):
     if utilities.valid_string(pod_hostname):
       project_id = utilities.node_id_to_project_name(pod_hostname)
 
-  # There are containers in this docker_host.
+  # We know that there are containers in this docker_host.
   if not pod_id_to_pod:
     # there are no pods in this docker_host.
     msg = 'Docker host %s has containers but no pods' % docker_host
@@ -310,7 +332,7 @@ def get_containers_with_metrics(gs, docker_host):
   return containers_list
 
 
-@utilities.global_state_string_string_args
+@utilities.global_state_two_string_args
 def get_one_container(gs, docker_host, container_id):
   """Gets the given container that runs in the given Docker host.
 
@@ -358,7 +380,7 @@ def invalid_processes(gs, url):
   raise collector_error.CollectorError(msg)
 
 
-@utilities.global_state_string_string_args
+@utilities.global_state_two_string_args
 def get_processes(gs, docker_host, container_id):
   """Gets the list of all processes in the 'docker_host' and 'container_id'.
 
@@ -458,7 +480,7 @@ def get_processes(gs, docker_host, container_id):
   return ret_value
 
 
-@utilities.global_state_string_string_args
+@utilities.global_state_two_string_args
 def get_image(gs, docker_host, image_id):
   """Gets the information of the given image in the given host.
 
@@ -522,6 +544,11 @@ def get_image(gs, docker_host, image_id):
     raise collector_error.CollectorError(msg)
 
   short_hex_label = utilities.object_to_hex_id(image)
+  if short_hex_label is None:
+    msg = 'Could not compute image %s short hex ID' % image_id
+    gs.logger_error(msg)
+    raise collector_error.CollectorError(msg)
+
   image_name_label = image_id
 
   wrapped_image = utilities.wrap_object(
