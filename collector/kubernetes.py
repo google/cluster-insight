@@ -203,6 +203,32 @@ def get_pods(gs, node_id=None):
   return ret_value
 
 
+@utilities.global_state_two_string_args
+def get_one_pod(gs, node_id, pod_id):
+  """Gets the pod with the given pod_id in the given node_id.
+
+  Args:
+    gs: global state.
+    node_id: the parent node of requested pod.
+    pod_id: the ID of the requested pod.
+
+  Returns:
+    If the pod was found, returns the wrapped pod object, which is the result
+    of utilities.wrap_object(pod, 'Pod', ...).
+    If the pod was not found, returns None.
+
+  Raises:
+    CollectorError in case of failure to fetch data from Kubernetes.
+    Other exceptions may be raised due to exectution errors.
+  """
+  for pod in get_pods(gs, node_id):
+    assert utilities.is_wrapped_object(pod, 'Pod')
+    if pod['id'] == pod_id:
+      return pod
+
+  return None
+
+
 @utilities.two_dict_args
 def matching_labels(pod, selector):
   """Compares the key/vale pairs in 'selector' with the pod's label.
