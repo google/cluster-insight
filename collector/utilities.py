@@ -52,6 +52,9 @@ NODE_ID_PATTERN = '^([^.]+)[.]c[.]([^.]+).*[.]internal$'
 # dashes. Thus the cluster name matched by this pattern may be inaccurate.
 HOST_NAME_PATTERN = '^k8s-([^-]+)-.*'
 
+# Optional prefix of node ID.
+NODE_PREFIX = 'Node:'
+
 
 def valid_string(x):
   """Returns True iff 'x' is a non-empty string."""
@@ -353,6 +356,10 @@ def node_id_to_project_id(node_id):
   Returns:
   The project ID or '_unknown_'.
   """
+  # Remove optional 'Node:' prefix before pattern matching.
+  if node_id.startswith(NODE_PREFIX):
+    return node_id_to_project_id(node_id[len(NODE_PREFIX):])
+
   m = re.match(NODE_ID_PATTERN, node_id)
   if m:
     return m.group(2)
@@ -376,6 +383,10 @@ def node_id_to_host_name(node_id):
   Raises:
     ValueError: failed to parse the node ID.
   """
+  # Remove optional 'Node:' prefix before pattern matching.
+  if node_id.startswith(NODE_PREFIX):
+    return node_id_to_host_name(node_id[len(NODE_PREFIX):])
+
   if valid_string(node_id) and node_id.find('.') < 0:
     return node_id
 
@@ -399,6 +410,10 @@ def node_id_to_cluster_name(node_id):
   Returns:
     The cluster name or '_unknown_'.
   """
+  # Remove optional 'Node:' prefix before pattern matching.
+  if node_id.startswith(NODE_PREFIX):
+    return node_id_to_cluster_name(node_id[len(NODE_PREFIX):])
+
   m = re.match(HOST_NAME_PATTERN, node_id)
   if m:
     return m.group(1)
