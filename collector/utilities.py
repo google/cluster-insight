@@ -41,7 +41,7 @@ import global_state
 # For example: google.com:nth-segment-93514
 # Thus the project name matched by this pattern just an approximation of the
 # correct project name.
-NODE_ID_PATTERN = '^([^.]+)[.]c[.]([^.]+).*[.]internal$'
+NODE_ID_PATTERN = '^(Node:)?([^.]+)[.]c[.]([^.]+).*[.]internal$'
 
 # Some host names may contain the cluster name, but not all.
 # Host names that contain cluster names have the following format:
@@ -50,9 +50,9 @@ NODE_ID_PATTERN = '^([^.]+)[.]c[.]([^.]+).*[.]internal$'
 # "k8s-guestbook-node-1.c.rising-apricot-840.internal"
 # The above pattern does not match cluster names that contain internal
 # dashes. Thus the cluster name matched by this pattern may be inaccurate.
-HOST_NAME_PATTERN = '^k8s-([^-]+)-.*'
+HOST_NAME_PATTERN = '^(Node:)?k8s-([^-]+)-.*'
 
-# Optional prefix of node ID.
+# Optional 'Node:' prefix of node ID.
 NODE_PREFIX = 'Node:'
 
 
@@ -356,13 +356,9 @@ def node_id_to_project_id(node_id):
   Returns:
   The project ID or '_unknown_'.
   """
-  # Remove optional 'Node:' prefix before pattern matching.
-  if node_id.startswith(NODE_PREFIX):
-    return node_id_to_project_id(node_id[len(NODE_PREFIX):])
-
   m = re.match(NODE_ID_PATTERN, node_id)
   if m:
-    return m.group(2)
+    return m.group(3)
   else:
     return '_unknown_'
 
@@ -383,16 +379,16 @@ def node_id_to_host_name(node_id):
   Raises:
     ValueError: failed to parse the node ID.
   """
-  # Remove optional 'Node:' prefix before pattern matching.
+  # Remove the optional 'Node:' prefix.
   if node_id.startswith(NODE_PREFIX):
-    return node_id_to_host_name(node_id[len(NODE_PREFIX):])
+      return node_id_to_host_name(node_id[len(NODE_PREFIX):])
 
   if valid_string(node_id) and node_id.find('.') < 0:
     return node_id
 
   m = re.match(NODE_ID_PATTERN, node_id)
   if m:
-    return m.group(1)
+    return m.group(2)
   else:
     raise ValueError('Cannot parse node ID to obtain host name: %s' % node_id)
 
@@ -410,13 +406,9 @@ def node_id_to_cluster_name(node_id):
   Returns:
     The cluster name or '_unknown_'.
   """
-  # Remove optional 'Node:' prefix before pattern matching.
-  if node_id.startswith(NODE_PREFIX):
-    return node_id_to_cluster_name(node_id[len(NODE_PREFIX):])
-
   m = re.match(HOST_NAME_PATTERN, node_id)
   if m:
-    return m.group(1)
+    return m.group(2)
   else:
     return '_unknown_'
 
