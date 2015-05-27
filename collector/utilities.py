@@ -27,15 +27,30 @@ import global_state
 
 
 # The format of node ID is:
-# <host name>.c.<project_name>.internal
-# The <project_name> may contain internal periods.
-# If <project_name> contains periods, then we are interested only in the
-# first component of the <project_name> up to the first period.
+# <host name>.c.<project ID>.internal
+# The <project ID> may contain internal periods.
+# If <project ID> contains periods, then we are interested only in the
+# first component of the <project ID> up to the first period.
 # For example:
 # "k8s-guestbook-node-1.c.rising-apricot-840.internal"
 # or
 # "kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.internal".
+# or
+# "kubernetes-minion-mmj2.c.nth-segment-93514.google.com.internal"
+# Note that the actual project name may include a "google.com" prefix.
+# For example: google.com:nth-segment-93514
+# Thus the project name matched by this pattern just an approximation of the
+# correct project name.
 NODE_ID_PATTERN = '^([^.]+)[.]c[.]([^.]+).*[.]internal$'
+
+# Some host names may contain the cluster name, but not all.
+# Host names that contain cluster names have the following format:
+# ks8-<cluster name>-<suffix>
+# For example:
+# "k8s-guestbook-node-1.c.rising-apricot-840.internal"
+# The above pattern does not match cluster names that contain internal
+# dashes. Thus the cluster name matched by this pattern may be inaccurate.
+HOST_NAME_PATTERN = '^k8s-([^-]+)-.*'
 
 
 def valid_string(x):
@@ -325,27 +340,31 @@ def object_to_hex_id(obj):
   return id_value[:12]
 
 
-def node_id_to_project_name(node_id):
+def node_id_to_project_id(node_id):
   """Returns the project ID of the node ID.
 
   It assumes that the node's ID matches the pattern NODE_ID_PATTERN.
   See the comment describing NODE_ID_PATTERN for details and examples.
+  If the node's ID does not match NODE_ID_PATTERN, return '_unknown_'.
 
   Args:
     node_id: node identifier. Must not be empty.
 
   Returns:
-  The project name.
+  The project ID or '_unknown_'.
   """
   m = re.match(NODE_ID_PATTERN, node_id)
-  assert m
-  return m.group(2)
+  if m:
+    return m.group(2)
+  else:
+    return '_unknown_'
 
 
 def node_id_to_host_name(node_id):
   """Returns the host name part of the given node ID.
 
-  It assumes that the node's ID matches the pattern NODE_ID_PATTERN.
+  It assumes that the node's ID matches the pattern NODE_ID_PATTERN or
+  if the node ID does not contain any dots, return the node ID.
   See the comment describing NODE_ID_PATTERN for details and examples.
 
   Args:
@@ -353,10 +372,38 @@ def node_id_to_host_name(node_id):
 
   Returns:
     The host name.
+
+  Raises:
+    ValueError: failed to parse the node ID.
   """
+  if valid_string(node_id) and node_id.find('.') < 0:
+    return node_id
+
   m = re.match(NODE_ID_PATTERN, node_id)
-  assert m
-  return m.group(1)
+  if m:
+    return m.group(1)
+  else:
+    raise ValueError('Cannot parse node ID to obtain host name: %s' % node_id)
+
+
+def node_id_to_cluster_name(node_id):
+  """Returns the cluster name part of the given node ID.
+
+  It assumes that the node's ID matches the pattern HOST_NAME_PATTERN.
+  See the comment describing HOST_NAME_PATTERN for details and examples.
+  If the node ID does not match the pattern, return '_unknown_'.
+
+  Args:
+    node_id: node identifier. Must not be empty.
+
+  Returns:
+    The cluster name or '_unknown_'.
+  """
+  m = re.match(HOST_NAME_PATTERN, node_id)
+  if m:
+    return m.group(1)
+  else:
+    return '_unknown_'
 
 
 def get_attribute(obj, names_list):

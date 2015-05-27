@@ -22,6 +22,7 @@ is accessible via the URL defined by KUBERNETES_API.
 """
 
 import json
+import re
 import sys
 import time
 import types
@@ -141,7 +142,12 @@ def get_nodes_with_metrics(gs):
 
   for node in nodes_list:
     assert utilities.is_wrapped_object(node, 'Node')
-    project_id = utilities.node_id_to_project_name(node['id'])
+    # node['id'] starts with 'Node:', which node_id_to_project_id() may
+    # not expect.
+    project_id = utilities.node_id_to_project_id(
+        re.sub('^Node:', '', node['id']))
+    # The project_id may be '_unknown_'. This is not a big
+    # deal, since the aggregator knows the project ID.
     metrics.annotate_node(project_id, node)
 
   return nodes_list

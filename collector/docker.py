@@ -282,30 +282,24 @@ def get_containers_with_metrics(gs, docker_host):
     return []
 
   pod_id_to_pod = {}
-  project_id = None
+  project_id = '_unknown_'
 
   # Populate the pod ID to pod lookup table.
   # Compute the project_id from the name of the first pod.
   for pod in kubernetes.get_pods(gs, docker_host):
     assert utilities.is_wrapped_object(pod, 'Pod')
     pod_id_to_pod[pod['id']] = pod
-    if utilities.valid_string(project_id):
+    if project_id != '_unknown_':
       continue
     pod_hostname = utilities.get_attribute(
         pod, ['properties', 'currentState', 'host'])
     if utilities.valid_string(pod_hostname):
-      project_id = utilities.node_id_to_project_name(pod_hostname)
+      project_id = utilities.node_id_to_project_id(pod_hostname)
 
   # We know that there are containers in this docker_host.
   if not pod_id_to_pod:
     # there are no pods in this docker_host.
     msg = 'Docker host %s has containers but no pods' % docker_host
-    gs.logger_exception(msg)
-    raise collector_error.CollectorError(msg)
-
-  if not utilities.valid_string(project_id):
-    msg = ('Docker host %s has containers but no valid project ID' %
-           docker_host)
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
@@ -326,6 +320,8 @@ def get_containers_with_metrics(gs, docker_host):
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
 
+    # Note that the project ID may be '_unknown_'.
+    # This is not a big deal, because the aggregator knows the project ID.
     metrics.annotate_container(
         project_id, container, pod_id_to_pod[parent_pod_id])
 

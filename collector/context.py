@@ -508,14 +508,13 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
   if not nodes_list:
     return g.dump(gs, output_format)
 
-  # Get the project name from the first node.
-  project_id = utilities.node_id_to_project_name(nodes_list[0]['id'])
-
-  # TODO(vasbala): how do we get the name of this Kubernetes cluster?
-  cluster_id = project_id
-  cluster_guid = 'Cluster:' + cluster_id
-  g.set_title(cluster_id)
-  g.add_resource(cluster_guid, {'label': cluster_id}, 'Cluster',
+  # Get the cluster name from the first node.
+  # The cluster name is an approximation. It is not a big deal if it
+  # is incorrect, since the aggregator knows the cluster name.
+  cluster_name = utilities.node_id_to_cluster_name(nodes_list[0]['id'])
+  cluster_guid = 'Cluster:' + cluster_name
+  g.set_title(cluster_name)
+  g.add_resource(cluster_guid, {'label': cluster_name}, 'Cluster',
                  nodes_list[0]['timestamp'], {})
 
   # Nodes
