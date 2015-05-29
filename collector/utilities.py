@@ -381,7 +381,7 @@ def node_id_to_host_name(node_id):
   """
   # Remove the optional 'Node:' prefix.
   if node_id.startswith(NODE_PREFIX):
-      return node_id_to_host_name(node_id[len(NODE_PREFIX):])
+    return node_id_to_host_name(node_id[len(NODE_PREFIX):])
 
   if valid_string(node_id) and node_id.find('.') < 0:
     return node_id
@@ -496,15 +496,20 @@ def get_parent_pod_id(container):
 def get_short_container_name(container, parent_pod):
   """Returns the short container name of 'container'.
 
-  The short container name is the key of the value identifying the container.
-  For example, the short name of the container is "cassandra" and its
+  The short container name is the "name" attribute of the corresponding
+  entry in the "containerStatuses" list in the parent pod.
+  For example, the short name of the container is "php-redis" and its
   Docker ID is the hexadecimal string after "docker://".
-  "info": {
-    "cassandra": {
-      "containerID": "docker://325316d8009...",
-      "image": "kubernetes/cassandra:v2",
-      "imageID": ...
-    }
+  "status": {
+    "containerStatuses": [
+      {
+        "containerID": "docker://c6bf48e9b60...",
+        "image": "brendanburns/php-redis",
+        "name": "php-redis",
+        ...
+      }
+    ],
+    ...
   }
 
   Args:
@@ -518,21 +523,24 @@ def get_short_container_name(container, parent_pod):
   assert is_wrapped_object(container, 'Container')
   assert is_wrapped_object(parent_pod, 'Pod')
 
-  info_dict = get_attribute(parent_pod, ['properties', 'currentState', 'info'])
-  if not isinstance(info_dict, types.DictType):
+  containers_status_list = get_attribute(
+      parent_pod, ['properties', 'status', 'containerStatuses'])
+  if not isinstance(containers_status_list, types.ListType):
     return None
 
-  expected_id = get_attribute(container, ['properties', 'Id'])
-  if not valid_string(expected_id):
+  container_id = get_attribute(container, ['properties', 'Id'])
+  if not valid_string(container_id):
     return None
-  docker_id = 'docker://' + expected_id
+  container_docker_id = 'docker://' + container_id
 
   # Search the container ID in the pod's properties.currentState.info
   # dictionary.
-  for key, value in info_dict.iteritems():
-    assert valid_string(key)
-    container_id = get_attribute(value, ['containerID'])
-    if valid_string(container_id) and container_id == docker_id:
-      return key
+  for status in containers_status_list:
+    if not isinstance(status, types.DictType):
+      continue
+    cid = status.get('containerID')
+    cname = status.get('name')
+    if valid_string(cid) and valid_string(cname) and cid == container_docker_id:
+      return cname
 
   return None

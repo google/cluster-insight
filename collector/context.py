@@ -336,9 +336,9 @@ def _do_compute_pod(gs, input_queue, node_guid, pod, g):
   pod_id = pod['id']
   pod_guid = 'Pod:' + pod_id
   docker_host = utilities.get_attribute(
-      pod, ['properties', 'currentState', 'host'])
+      pod, ['properties', 'spec', 'host'])
   if not utilities.valid_string(docker_host):
-    msg = ('Docker host (pod["properties"]["currentState"]["host"]) '
+    msg = ('Docker host (pod.properties.spec.host) '
            'not found in pod ID %s' % pod_id)
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
@@ -426,9 +426,10 @@ def _do_compute_service(gs, cluster_guid, service, g):
   # Cluster contains Service.
   g.add_relation(cluster_guid, service_guid, 'contains')
 
-  # Pods load balanced by this Service (use the service['labels']
+  # Pods load balanced by this service (use the service['spec', 'selector']
   # key/value pairs to find matching Pods)
-  selector = utilities.get_attribute(service, ['properties', 'selector'])
+  selector = utilities.get_attribute(
+      service, ['properties', 'spec', 'selector'])
   if selector:
     if not isinstance(selector, types.DictType):
       msg = 'Service id=%s has an invalid "selector" value' % service_id
@@ -458,10 +459,11 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
   # Cluster contains Rcontroller
   g.add_relation(cluster_guid, rcontroller_guid, 'contains')
 
-  # Pods that are monitored by this Rcontroller (use the rcontroller['labels']
-  # key/value pairs to find matching pods)
+  # Pods that are monitored by this replication controller.
+  # Use the rcontroller['spec']['selector'] key/value pairs to find matching
+  # pods.
   selector = utilities.get_attribute(
-      rcontroller, ['properties', 'desiredState', 'replicaSelector'])
+      rcontroller, ['properties', 'spec', 'selector'])
   if selector:
     if not isinstance(selector, types.DictType):
       msg = ('Rcontroller id=%s has an invalid "replicaSelector" value' %
@@ -474,7 +476,7 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
       # Rcontroller monitors Pod
       g.add_relation(rcontroller_guid, pod_guid, 'monitors')
   else:
-    gs.logger_error('Rcontroller id=%s has no "replicaSelector" attribute',
+    gs.logger_error('Rcontroller id=%s has no "spec.selector" attribute',
                     rcontroller_id)
 
 
