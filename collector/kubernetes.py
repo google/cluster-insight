@@ -36,7 +36,7 @@ import utilities
 
 ## Kubernetes APIs
 
-KUBERNETES_API = 'http://127.0.0.1:8080/api/v1beta1'
+KUBERNETES_API = 'http://127.0.0.1:8080/api/v1beta3'
 
 
 @utilities.global_state_string_args
@@ -89,7 +89,7 @@ def get_nodes(gs):
     utilities.wrap_object(node, 'Node', ...)
 
   Raises:
-    CollectorError in case of failure to fetch data from Kubernetes.
+    CollectorError: in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
   nodes, timestamp_secs = gs.get_nodes_cache().lookup('')
@@ -107,13 +107,19 @@ def get_nodes(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
+  if not (isinstance(result, types.DictType) and 'items' in result):
+    msg = 'invalid result when fetching %s' % url
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
   for node in result['items']:
-    if not utilities.valid_string(node.get('id')):
+    name = utilities.get_attribute(node, ['metadata', 'name'])
+    if not utilities.valid_string(name):
       # an invalid node without a valid node ID value.
       continue
     wrapped_node = utilities.wrap_object(
-        node, 'Node', node['id'], now,
-        label=utilities.node_id_to_host_name(node['id']))
+        node, 'Node', name, now,
+        label=utilities.node_id_to_host_name(name))
     nodes.append(wrapped_node)
 
   ret_value = gs.get_nodes_cache().update('', nodes, now)
@@ -167,7 +173,7 @@ def get_pods(gs, node_id=None):
     utilities.wrap_object(pod, 'Pod', ...)
 
   Raises:
-    CollectorError in case of failure to fetch data from Kubernetes.
+    CollectorError: in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
   pods_label = '' if node_id is None else node_id
@@ -187,17 +193,25 @@ def get_pods(gs, node_id=None):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
+  gs.logger_info('getting url %s result=%s', url, result)
+  if not (isinstance(result, types.DictType) and 'items' in result):
+    msg = 'invalid result when fetching %s' % url
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
   for pod in result['items']:
-    if not utilities.valid_string(pod.get('id')):
+    name = utilities.get_attribute(pod, ['metadata', 'name'])
+    if not utilities.valid_string(name):
       # an invalid pod without a valid pod ID value.
       continue
-    wrapped_pod = utilities.wrap_object(pod, 'Pod', pod['id'], now)
+    wrapped_pod = utilities.wrap_object(pod, 'Pod', name, now)
     if node_id:
-      # pod['currentState']['host'] may be missing if the pod is in "Waiting"
+      # pod['spec']['host'] may be missing if the pod is in "Waiting"
       # status.
-      if utilities.get_attribute(pod, ['currentState', 'host']) == node_id:
+      if utilities.get_attribute(pod, ['spec', 'host']) == node_id:
         pods.append(wrapped_pod)
     else:
+      # append pod to output if 'node_id' is not specified.
       pods.append(wrapped_pod)
 
   ret_value = gs.get_pods_cache().update(pods_label, pods, now)
@@ -246,7 +260,8 @@ def matching_labels(pod, selector):
   Returns:
     True iff the pod's label matches the key/value pairs in 'selector'.
   """
-  pod_labels = utilities.get_attribute(pod, ['properties', 'labels'])
+  pod_labels = utilities.get_attribute(
+      pod, ['properties', 'metadata', 'labels'])
   if not isinstance(pod_labels, types.DictType):
     return False
   selector_view = selector.viewitems()
@@ -271,7 +286,7 @@ def get_selected_pods(gs, selector):
     utilities.wrap_object(pod, 'Pod', ...)
 
   Raises:
-    CollectorError in case of failure to fetch data from Kubernetes.
+    CollectorError: in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
   try:
@@ -316,11 +331,10 @@ def get_pod_host(gs, pod_id):
       # Found an invalid pod without a pod ID.
       continue
 
-    if pod['id'] == pod_id and utilities.valid_string(
-        utilities.get_attribute(pod, ['properties', 'currentState', 'host'])):
-      # pod['properties']['currentState']['host'] may be missing if the pod
-      # is in "Waiting" state.
-      return pod['properties']['currentState']['host']
+    pod_host = utilities.get_attribute(pod, ['properties', 'spec', 'host'])
+    if pod['id'] == pod_id and utilities.valid_string(pod_host):
+      # 'pod_host' may be missing if the pod is in "Waiting" state.
+      return pod_host
 
   # Could not find pod.
   return ''
@@ -336,12 +350,12 @@ def get_services(gs):
   Returns:
     list of wrapped service objects.
     Each element in the list is the result of
-    utilities.wrap_object(rcontroller, 'Service', ...)
+    utilities.wrap_object(service, 'Service', ...)
 
     (list_of_services, timestamp_in_seconds)
 
   Raises:
-    CollectorError in case of failure to fetch data from Kubernetes.
+    CollectorError: in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
   services, timestamp_secs = gs.get_services_cache().lookup('')
@@ -360,12 +374,18 @@ def get_services(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
+  if not (isinstance(result, types.DictType) and 'items' in result):
+    msg = 'invalid result when fetching %s' % url
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
   for service in result['items']:
-    if not utilities.valid_string(service.get('id')):
+    name = utilities.get_attribute(service, ['metadata', 'name'])
+    if not utilities.valid_string(name):
       # an invalid service without a valid service ID.
       continue
     services.append(
-        utilities.wrap_object(service, 'Service', service['id'], now))
+        utilities.wrap_object(service, 'Service', name, now))
 
   ret_value = gs.get_services_cache().update('', services, now)
   gs.logger_info('get_services() returns %d services', len(services))
@@ -385,7 +405,7 @@ def get_rcontrollers(gs):
     utilities.wrap_object(rcontroller, 'ReplicationController', ...)
 
   Raises:
-    CollectorError in case of failure to fetch data from Kubernetes.
+    CollectorError: in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
   rcontrollers, ts = gs.get_rcontrollers_cache().lookup('')
@@ -396,7 +416,7 @@ def get_rcontrollers(gs):
     return rcontrollers
 
   rcontrollers = []
-  url = '{kubernetes}/replicationControllers'.format(kubernetes=KUBERNETES_API)
+  url = '{kubernetes}/replicationcontrollers'.format(kubernetes=KUBERNETES_API)
   try:
     result = fetch_data(gs, url)
   except:
@@ -405,13 +425,19 @@ def get_rcontrollers(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
+  if not (isinstance(result, types.DictType) and 'items' in result):
+    msg = 'invalid result when fetching %s' % url
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
   for rcontroller in result['items']:
-    if not utilities.valid_string(rcontroller.get('id')):
+    name = utilities.get_attribute(rcontroller, ['metadata', 'name'])
+    if not utilities.valid_string(name):
       # an invalid replication controller without a valid rcontroller ID.
       continue
 
     rcontrollers.append(utilities.wrap_object(
-        rcontroller, 'ReplicationController', rcontroller['id'], now))
+        rcontroller, 'ReplicationController', name, now))
 
   ret_value = gs.get_rcontrollers_cache().update('', rcontrollers, now)
   gs.logger_info(

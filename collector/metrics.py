@@ -60,12 +60,13 @@ def _get_container_labels(container, parent_pod):
   if not utilities.is_wrapped_object(parent_pod, 'Pod'):
     return None
 
-  pod_id = utilities.get_attribute(parent_pod, ['properties', 'uid'])
+  pod_id = utilities.get_attribute(
+      parent_pod, ['properties', 'metadata', 'uid'])
   if not utilities.valid_string(pod_id):
     return None
 
   hostname = utilities.get_attribute(
-      parent_pod, ['properties', 'currentState', 'host'])
+      parent_pod, ['properties', 'spec', 'host'])
   if not utilities.valid_string(hostname):
     return None
 
@@ -95,7 +96,7 @@ def _get_node_labels(node):
   if not utilities.is_wrapped_object(node, 'Node'):
     return None
 
-  hostname = utilities.get_attribute(node, ['properties', 'id'])
+  hostname = utilities.get_attribute(node, ['properties', 'metadata', 'name'])
   if not utilities.valid_string(hostname):
     return None
 
@@ -167,7 +168,8 @@ def annotate_container(project_id, container, parent_pod):
   parent_name = utilities.get_attribute(
       container, ['properties', 'Config', 'Hostname'])
   assert utilities.valid_string(parent_name)
-  pod_name = utilities.get_attribute(parent_pod, ['properties', 'id'])
+  pod_name = utilities.get_attribute(
+      parent_pod, ['properties', 'metadata', 'name'])
   assert utilities.valid_string(pod_name)
 
   # The 'parent_name' value is truncated to the first 64 characters.
