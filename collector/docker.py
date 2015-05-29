@@ -184,6 +184,11 @@ def get_containers(gs, docker_host):
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
+  if not isinstance(containers_list, types.ListType):
+    msg = 'invalid response from fetching %s' % url
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
   containers = []
   timestamps = []
   for container_info in containers_list:

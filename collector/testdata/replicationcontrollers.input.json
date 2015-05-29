@@ -1,0 +1,262 @@
+{
+  "items": [
+      {
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:37:17Z", 
+          "labels": {
+            "name": "guestbook"
+          }, 
+          "name": "guestbook-controller", 
+          "namespace": "default", 
+          "resourceVersion": "698", 
+          "selfLink": "/api/v1beta3/namespaces/default/replicationcontrollers/guestbook-controller", 
+          "uid": "173439b0-03bd-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "replicas": 3, 
+          "selector": {
+            "name": "guestbook"
+          }, 
+          "template": {
+            "metadata": {
+              "creationTimestamp": null, 
+              "labels": {
+                "name": "guestbook"
+              }
+            }, 
+            "spec": {
+              "containers": [
+                {
+                  "capabilities": {}, 
+                  "image": "brendanburns/php-redis", 
+                  "imagePullPolicy": "IfNotPresent", 
+                  "name": "php-redis", 
+                  "ports": [
+                    {
+                      "containerPort": 80, 
+                      "name": "http-server", 
+                      "protocol": "TCP"
+                    }
+                  ], 
+                  "resources": {
+                    "limits": {
+                      "cpu": "100m", 
+                      "memory": "50M"
+                    }
+                  }, 
+                  "securityContext": {
+                    "capabilities": {}
+                  }, 
+                  "terminationMessagePath": "/dev/termination-log"
+                }
+              ], 
+              "dnsPolicy": "ClusterFirst", 
+              "restartPolicy": "Always", 
+              "volumes": null
+            }
+          }
+        }, 
+        "status": {
+          "replicas": 3
+        }
+      }, 
+      {
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:30:09Z", 
+          "labels": {
+            "k8s-app": "kube-dns", 
+            "kubernetes.io/cluster-service": "true"
+          }, 
+          "name": "kube-dns", 
+          "namespace": "default", 
+          "resourceVersion": "694", 
+          "selfLink": "/api/v1beta3/namespaces/default/replicationcontrollers/kube-dns", 
+          "uid": "1801b580-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "replicas": 1, 
+          "selector": {
+            "k8s-app": "kube-dns"
+          }, 
+          "template": {
+            "metadata": {
+              "creationTimestamp": null, 
+              "labels": {
+                "k8s-app": "kube-dns", 
+                "kubernetes.io/cluster-service": "true"
+              }
+            }, 
+            "spec": {
+              "containers": [
+                {
+                  "capabilities": {}, 
+                  "command": [
+                    "/usr/local/bin/etcd", 
+                    "-listen-client-urls", 
+                    "http://127.0.0.1:2379,http://127.0.0.1:4001", 
+                    "-advertise-client-urls", 
+                    "http://127.0.0.1:2379,http://127.0.0.1:4001", 
+                    "-initial-cluster-token", 
+                    "skydns-etcd"
+                  ], 
+                  "image": "gcr.io/google_containers/etcd:2.0.9", 
+                  "imagePullPolicy": "IfNotPresent", 
+                  "name": "etcd", 
+                  "resources": {}, 
+                  "securityContext": {
+                    "capabilities": {}
+                  }, 
+                  "terminationMessagePath": "/dev/termination-log"
+                }, 
+                {
+                  "args": [
+                    "-domain=kubernetes.local", 
+                    "-kubecfg_file=/etc/dns_token/kubeconfig"
+                  ], 
+                  "capabilities": {}, 
+                  "image": "gcr.io/google_containers/kube2sky:1.4", 
+                  "imagePullPolicy": "IfNotPresent", 
+                  "name": "kube2sky", 
+                  "resources": {}, 
+                  "securityContext": {
+                    "capabilities": {}
+                  }, 
+                  "terminationMessagePath": "/dev/termination-log", 
+                  "volumeMounts": [
+                    {
+                      "mountPath": "/etc/dns_token", 
+                      "name": "dns-token", 
+                      "readOnly": true
+                    }
+                  ]
+                }, 
+                {
+                  "args": [
+                    "-machines=http://localhost:4001", 
+                    "-addr=0.0.0.0:53", 
+                    "-domain=kubernetes.local."
+                  ], 
+                  "capabilities": {}, 
+                  "image": "gcr.io/google_containers/skydns:2015-03-11-001", 
+                  "imagePullPolicy": "IfNotPresent", 
+                  "livenessProbe": {
+                    "exec": {
+                      "command": [
+                        "/bin/sh", 
+                        "-c", 
+                        "nslookup foobar 127.0.0.1 &> /dev/null; echo ok"
+                      ]
+                    }, 
+                    "initialDelaySeconds": 30, 
+                    "timeoutSeconds": 5
+                  }, 
+                  "name": "skydns", 
+                  "ports": [
+                    {
+                      "containerPort": 53, 
+                      "name": "dns", 
+                      "protocol": "UDP"
+                    }, 
+                    {
+                      "containerPort": 53, 
+                      "name": "dns-tcp", 
+                      "protocol": "TCP"
+                    }
+                  ], 
+                  "resources": {}, 
+                  "securityContext": {
+                    "capabilities": {}
+                  }, 
+                  "terminationMessagePath": "/dev/termination-log"
+                }
+              ], 
+              "dnsPolicy": "Default", 
+              "restartPolicy": "Always", 
+              "volumes": [
+                {
+                  "awsElasticBlockStore": null, 
+                  "emptyDir": null, 
+                  "gcePersistentDisk": null, 
+                  "gitRepo": null, 
+                  "glusterfs": null, 
+                  "hostPath": null, 
+                  "iscsi": null, 
+                  "name": "dns-token", 
+                  "nfs": null, 
+                  "secret": {
+                    "secretName": "token-system-dns"
+                  }
+                }
+              ]
+            }
+          }
+        }, 
+        "status": {
+          "replicas": 1
+        }
+      }, 
+      {
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:35:51Z", 
+          "labels": {
+            "name": "redis", 
+            "role": "worker"
+          }, 
+          "name": "redis-worker-controller", 
+          "namespace": "default", 
+          "resourceVersion": "695", 
+          "selfLink": "/api/v1beta3/namespaces/default/replicationcontrollers/redis-worker-controller", 
+          "uid": "e3e6b374-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "replicas": 2, 
+          "selector": {
+            "name": "redis", 
+            "role": "worker"
+          }, 
+          "template": {
+            "metadata": {
+              "creationTimestamp": null, 
+              "labels": {
+                "name": "redis", 
+                "role": "worker"
+              }
+            }, 
+            "spec": {
+              "containers": [
+                {
+                  "capabilities": {}, 
+                  "image": "brendanburns/redis-slave", 
+                  "imagePullPolicy": "IfNotPresent", 
+                  "name": "redis-worker", 
+                  "ports": [
+                    {
+                      "containerPort": 6379, 
+                      "hostPort": 6380, 
+                      "name": "redis-server", 
+                      "protocol": "TCP"
+                    }
+                  ], 
+                  "resources": {
+                    "limits": {
+                      "cpu": "200m"
+                    }
+                  }, 
+                  "securityContext": {
+                    "capabilities": {}
+                  }, 
+                  "terminationMessagePath": "/dev/termination-log"
+                }
+              ], 
+              "dnsPolicy": "ClusterFirst", 
+              "restartPolicy": "Always", 
+              "volumes": null
+            }
+          }
+        }, 
+        "status": {
+          "replicas": 2
+        }
+      }
+  ] 
+}

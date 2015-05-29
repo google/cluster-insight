@@ -121,12 +121,10 @@ class TestUtilities(unittest.TestCase):
       pod_ids_list.append(pod_id)
 
     self.assertEqual(
-        ['guestbook-controller-hh2gd',
-         'guestbook-controller-0133o',
+        ['guestbook-controller-14zj2',
          'redis-master',
-         'redis-worker-controller-gziey',
-         'fluentd-to-elasticsearch-kubernetes-minion-11cx.c.'
-         'the-pentameter-90318.internal'],
+         'guestbook-controller-myab8',
+         'redis-worker-controller-4qg33'],
         pod_ids_list)
 
   def test_timeless_json_hash(self):
@@ -165,6 +163,47 @@ class TestUtilities(unittest.TestCase):
     # Verify that the hash value of dissimilar objects is not equal.
     self.assertTrue(utilities.timeless_json_hash(wrapped_a1) !=
                     utilities.timeless_json_hash(wrapped_b1))
+
+  def test_get_short_container_name(self):
+    """Tests get_short_container_name()."""
+    container = {
+        'annotations': {
+            'label': 'php-redis/c6bf48e9b60c',
+        },
+        'id': 'k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default',
+        'properties': {
+            'Id': 'deadbeef',
+            'Image': '01234567',
+            'Name': '/k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default'
+        },
+        'timestamp': '2015-05-29T18:42:52.217499',
+        'type': 'Container'
+    }
+    parent_pod = {
+        'annotations': {
+            'label': 'guestbook-controller-14zj2'
+        },
+        'id': 'guestbook-controller-14zj2',
+        'properties': {
+            'status': {
+                'containerStatuses': [
+                    {
+                        'containerID': 'docker://deadbeef',
+                        'image': 'brendanburns/php-redis',
+                        'name': 'php-redis'
+                    }
+                ],
+                'hostIP': '104.154.34.132',
+                'phase': 'Running',
+                'podIP': '10.64.0.5'
+            }
+        },
+        'timestamp': '2015-05-29T18:37:04.852412',
+        'type': 'Pod'
+    }
+    self.assertEqual(
+        'php-redis',
+        utilities.get_short_container_name(container, parent_pod))
 
 
 if __name__ == '__main__':
