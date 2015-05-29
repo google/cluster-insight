@@ -107,7 +107,6 @@ def get_nodes(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  gs.logger_info('fetching url %s returns %s', url, result)  # DEBUG
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
@@ -375,7 +374,6 @@ def get_services(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  gs.logger_info('getting url %s returns=%s', url, result)  # DEBUG
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
@@ -427,7 +425,6 @@ def get_rcontrollers(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  gs.logger_info('getting url %s result=%s', url, result)  # DEBUG
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
