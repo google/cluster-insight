@@ -6,29 +6,84 @@
       }, 
       "id": "guestbook", 
       "properties": {
-        "containerPort": "http-server", 
-        "createExternalLoadBalancer": true, 
-        "creationTimestamp": "2015-02-20T21:48:12Z", 
-        "id": "guestbook", 
-        "labels": {
-          "name": "guestbook"
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:38:32Z", 
+          "labels": {
+            "name": "guestbook"
+          }, 
+          "name": "guestbook", 
+          "namespace": "default", 
+          "resourceVersion": "401", 
+          "selfLink": "/api/v1beta3/namespaces/default/services/guestbook", 
+          "uid": "440262d1-03bd-11e5-94dd-42010af099dd"
         }, 
-        "namespace": "default", 
-        "port": 3000, 
-        "portalIP": "10.67.244.170", 
-        "protocol": "TCP", 
-        "publicIPs": [
-          "146.148.91.51"
-        ], 
-        "resourceVersion": 345, 
-        "selector": {
-          "name": "guestbook"
+        "spec": {
+          "createExternalLoadBalancer": true, 
+          "portalIP": "10.67.244.167", 
+          "ports": [
+            {
+              "name": "", 
+              "port": 3000, 
+              "protocol": "TCP", 
+              "targetPort": "http-server"
+            }
+          ], 
+          "publicIPs": [
+            "146.148.90.68"
+          ], 
+          "selector": {
+            "name": "guestbook"
+          }, 
+          "sessionAffinity": "None"
         }, 
-        "selfLink": "/api/v1beta1/services/guestbook?namespace=default", 
-        "sessionAffinity": "None", 
-        "uid": "2a8f311b-b94a-11e4-8246-42010af0c3dd"
+        "status": {}
       }, 
-      "timestamp": "2015-03-16T17:48:55.190156", 
+      "timestamp": "2015-05-29T15:30:34.150679", 
+      "type": "Service"
+    }, 
+    {
+      "annotations": {
+        "label": "kube-dns"
+      }, 
+      "id": "kube-dns", 
+      "properties": {
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:30:08Z", 
+          "labels": {
+            "k8s-app": "kube-dns", 
+            "kubernetes.io/cluster-service": "true", 
+            "name": "kube-dns"
+          }, 
+          "name": "kube-dns", 
+          "namespace": "default", 
+          "resourceVersion": "48", 
+          "selfLink": "/api/v1beta3/namespaces/default/services/kube-dns", 
+          "uid": "177f363c-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "portalIP": "10.67.240.10", 
+          "ports": [
+            {
+              "name": "dns", 
+              "port": 53, 
+              "protocol": "UDP", 
+              "targetPort": 53
+            }, 
+            {
+              "name": "dns-tcp", 
+              "port": 53, 
+              "protocol": "TCP", 
+              "targetPort": 53
+            }
+          ], 
+          "selector": {
+            "k8s-app": "kube-dns"
+          }, 
+          "sessionAffinity": "None"
+        }, 
+        "status": {}
+      }, 
+      "timestamp": "2015-05-29T15:30:34.150679", 
       "type": "Service"
     }, 
     {
@@ -37,24 +92,33 @@
       }, 
       "id": "kubernetes", 
       "properties": {
-        "containerPort": 0, 
-        "creationTimestamp": "2015-02-20T21:39:29Z", 
-        "id": "kubernetes", 
-        "labels": {
-          "component": "apiserver", 
-          "provider": "kubernetes"
+        "metadata": {
+          "creationTimestamp": null, 
+          "labels": {
+            "component": "apiserver", 
+            "provider": "kubernetes"
+          }, 
+          "name": "kubernetes", 
+          "namespace": "default", 
+          "resourceVersion": "5", 
+          "selfLink": "/api/v1beta3/namespaces/default/services/kubernetes"
         }, 
-        "namespace": "default", 
-        "port": 443, 
-        "portalIP": "10.67.240.2", 
-        "protocol": "TCP", 
-        "resourceVersion": 5, 
-        "selector": null, 
-        "selfLink": "/api/v1beta1/services/kubernetes?namespace=default", 
-        "sessionAffinity": "None", 
-        "uid": "f30905e0-b948-11e4-8246-42010af0c3dd"
+        "spec": {
+          "portalIP": "10.67.240.2", 
+          "ports": [
+            {
+              "name": "", 
+              "port": 443, 
+              "protocol": "TCP", 
+              "targetPort": 443
+            }
+          ], 
+          "selector": null, 
+          "sessionAffinity": "None"
+        }, 
+        "status": {}
       }, 
-      "timestamp": "2015-03-16T17:48:55.190156", 
+      "timestamp": "2015-05-29T15:30:34.150679", 
       "type": "Service"
     }, 
     {
@@ -63,24 +127,33 @@
       }, 
       "id": "kubernetes-ro", 
       "properties": {
-        "containerPort": 0, 
-        "creationTimestamp": "2015-02-20T21:39:29Z", 
-        "id": "kubernetes-ro", 
-        "labels": {
-          "component": "apiserver", 
-          "provider": "kubernetes"
+        "metadata": {
+          "creationTimestamp": null, 
+          "labels": {
+            "component": "apiserver", 
+            "provider": "kubernetes"
+          }, 
+          "name": "kubernetes-ro", 
+          "namespace": "default", 
+          "resourceVersion": "7", 
+          "selfLink": "/api/v1beta3/namespaces/default/services/kubernetes-ro"
         }, 
-        "namespace": "default", 
-        "port": 80, 
-        "portalIP": "10.67.240.1", 
-        "protocol": "TCP", 
-        "resourceVersion": 4, 
-        "selector": null, 
-        "selfLink": "/api/v1beta1/services/kubernetes-ro?namespace=default", 
-        "sessionAffinity": "None", 
-        "uid": "f3044d15-b948-11e4-8246-42010af0c3dd"
+        "spec": {
+          "portalIP": "10.67.240.1", 
+          "ports": [
+            {
+              "name": "", 
+              "port": 80, 
+              "protocol": "TCP", 
+              "targetPort": 80
+            }
+          ], 
+          "selector": null, 
+          "sessionAffinity": "None"
+        }, 
+        "status": {}
       }, 
-      "timestamp": "2015-03-16T17:48:55.190156", 
+      "timestamp": "2015-05-29T15:30:34.150679", 
       "type": "Service"
     }, 
     {
@@ -89,27 +162,37 @@
       }, 
       "id": "redis-master", 
       "properties": {
-        "containerPort": "redis-server", 
-        "creationTimestamp": "2015-02-20T21:44:28Z", 
-        "id": "redis-master", 
-        "labels": {
-          "name": "redis", 
-          "role": "master"
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:35:18Z", 
+          "labels": {
+            "name": "redis", 
+            "role": "master"
+          }, 
+          "name": "redis-master", 
+          "namespace": "default", 
+          "resourceVersion": "238", 
+          "selfLink": "/api/v1beta3/namespaces/default/services/redis-master", 
+          "uid": "cff416f8-03bc-11e5-94dd-42010af099dd"
         }, 
-        "namespace": "default", 
-        "port": 6379, 
-        "portalIP": "10.67.253.42", 
-        "protocol": "TCP", 
-        "resourceVersion": 185, 
-        "selector": {
-          "name": "redis", 
-          "role": "master"
+        "spec": {
+          "portalIP": "10.67.255.179", 
+          "ports": [
+            {
+              "name": "", 
+              "port": 6379, 
+              "protocol": "TCP", 
+              "targetPort": "redis-server"
+            }
+          ], 
+          "selector": {
+            "name": "redis", 
+            "role": "master"
+          }, 
+          "sessionAffinity": "None"
         }, 
-        "selfLink": "/api/v1beta1/services/redis-master?namespace=default", 
-        "sessionAffinity": "None", 
-        "uid": "a51b892f-b949-11e4-8246-42010af0c3dd"
+        "status": {}
       }, 
-      "timestamp": "2015-03-16T17:48:55.190156", 
+      "timestamp": "2015-05-29T15:30:34.150679", 
       "type": "Service"
     }, 
     {
@@ -118,57 +201,40 @@
       }, 
       "id": "redis-worker", 
       "properties": {
-        "containerPort": "redis-server", 
-        "creationTimestamp": "2015-02-20T21:46:12Z", 
-        "id": "redis-worker", 
-        "labels": {
-          "name": "redis", 
-          "role": "worker"
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:36:47Z", 
+          "labels": {
+            "name": "redis", 
+            "role": "worker"
+          }, 
+          "name": "redis-worker", 
+          "namespace": "default", 
+          "resourceVersion": "301", 
+          "selfLink": "/api/v1beta3/namespaces/default/services/redis-worker", 
+          "uid": "052e132e-03bd-11e5-94dd-42010af099dd"
         }, 
-        "namespace": "default", 
-        "port": 6379, 
-        "portalIP": "10.67.248.146", 
-        "protocol": "TCP", 
-        "resourceVersion": 257, 
-        "selector": {
-          "name": "redis", 
-          "role": "worker"
+        "spec": {
+          "portalIP": "10.67.254.45", 
+          "ports": [
+            {
+              "name": "", 
+              "port": 6379, 
+              "protocol": "TCP", 
+              "targetPort": "redis-server"
+            }
+          ], 
+          "selector": {
+            "name": "redis", 
+            "role": "worker"
+          }, 
+          "sessionAffinity": "None"
         }, 
-        "selfLink": "/api/v1beta1/services/redis-worker?namespace=default", 
-        "sessionAffinity": "None", 
-        "uid": "e35601f7-b949-11e4-8246-42010af0c3dd"
+        "status": {}
       }, 
-      "timestamp": "2015-03-16T17:48:55.190156", 
-      "type": "Service"
-    }, 
-    {
-      "annotations": {
-        "label": "skydns"
-      }, 
-      "id": "skydns", 
-      "properties": {
-        "containerPort": 53, 
-        "creationTimestamp": "2015-02-20T21:39:42Z", 
-        "id": "skydns", 
-        "labels": {
-          "k8s-app": "skydns"
-        }, 
-        "namespace": "default", 
-        "port": 53, 
-        "portalIP": "10.67.240.10", 
-        "protocol": "UDP", 
-        "resourceVersion": 36, 
-        "selector": {
-          "k8s-app": "skydns"
-        }, 
-        "selfLink": "/api/v1beta1/services/skydns?namespace=default", 
-        "sessionAffinity": "None", 
-        "uid": "faa8fab0-b948-11e4-8246-42010af0c3dd"
-      }, 
-      "timestamp": "2015-03-16T17:48:55.190156", 
+      "timestamp": "2015-05-29T15:30:34.150679", 
       "type": "Service"
     }
   ], 
   "success": true, 
-  "timestamp": "2015-03-16T17:48:55.191078"
+  "timestamp": "2015-05-29T15:30:34.152171"
 }

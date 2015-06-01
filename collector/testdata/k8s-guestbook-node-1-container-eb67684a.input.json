@@ -66,7 +66,7 @@
           "ExposedPorts": {
             "80/tcp": {}
           }, 
-          "Hostname": "guestbook-controller-hh2gd", 
+          "Hostname": "guestbook-controller-14zj2", 
           "Image": "brendanburns/php-redis", 
           "MacAddress": "", 
           "Memory": 50000000, 
@@ -124,7 +124,7 @@
         "Id": "c9ec7a91506bb92a8312e1a22715760d5bcf2e00420aa99993c8124f6b94d68d", 
         "Image": "317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
         "MountLabel": "", 
-        "Name": "/k8s_php-redis.b317029a_guestbook-controller-hh2gd.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eb67684a", 
+        "Name": "/k8s_php-redis.b317029a_guestbook-controller-14zj2.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eb67684a", 
         "NetworkSettings": {
           "Bridge": "", 
           "Gateway": "", 

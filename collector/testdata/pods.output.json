@@ -2,305 +2,1681 @@
   "resources": [
     {
       "annotations": {
-        "label": "guestbook-controller-0133o"
+        "label": "etcd-server-k8s-guestbook-master"
       }, 
-      "id": "guestbook-controller-0133o", 
+      "id": "etcd-server-k8s-guestbook-master", 
       "properties": {
-        "creationTimestamp": "2015-02-20T21:46:49Z", 
-        "currentState": {
-          "Condition": [
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/config.mirror": "mirror", 
+            "kubernetes.io/config.source": "file"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:05Z", 
+          "name": "etcd-server-k8s-guestbook-master", 
+          "namespace": "default", 
+          "resourceVersion": "767", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/etcd-server-k8s-guestbook-master", 
+          "uid": "157d9a58-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
             {
-              "kind": "Ready", 
-              "status": "None"
+              "capabilities": {}, 
+              "command": [
+                "/usr/local/bin/etcd", 
+                "--addr", 
+                "127.0.0.1:4001", 
+                "--bind-addr", 
+                "127.0.0.1:4001", 
+                "--data-dir", 
+                "/var/etcd/data"
+              ], 
+              "env": [
+                {
+                  "name": "GOMAXPROCS", 
+                  "value": "1"
+                }
+              ], 
+              "image": "gcr.io/google_containers/etcd:2.0.9", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "etcd-container", 
+              "ports": [
+                {
+                  "containerPort": 2380, 
+                  "hostPort": 2380, 
+                  "name": "serverport", 
+                  "protocol": "TCP"
+                }, 
+                {
+                  "containerPort": 4001, 
+                  "hostPort": 4001, 
+                  "name": "clientport", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/var/etcd", 
+                  "name": "varetcd"
+                }
+              ]
             }
           ], 
-          "host": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
-          "hostIP": "130.211.145.7", 
-          "info": {
-            "POD": {
-              "containerID": "docker://b726ff497159c9629bc5bf2e95a38b42534a88da73e69083aa502b5a29cd9f28", 
-              "image": "kubernetes/pause:latest", 
-              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
-              "ready": false, 
-              "restartCount": 6, 
-              "state": {
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-master", 
+          "hostNetwork": true, 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/mnt/master-pd/var/etcd"
+              }, 
+              "iscsi": null, 
+              "name": "varetcd", 
+              "nfs": null, 
+              "secret": null
+            }
+          ]
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://6864598423ceb5f48bd6d6c5013e94da1c67d20f33f69538931faeb4d5278ab7", 
+              "image": "gcr.io/google_containers/etcd:2.0.9", 
+              "imageID": "docker://b6b9a86dc06aa1361357ca1b105feba961f6a4145adca6c54e142c0be0fe87b0", 
+              "lastState": {
                 "termination": {
+                  "containerID": "docker://12043638822f63fa08eb94468d88580c7f254f2017825101d9045ebf783f5a59", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:43Z", 
+                  "startedAt": "2015-05-26T15:29:59Z"
+                }
+              }, 
+              "name": "etcd-container", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:48Z"
+                }
+              }
+            }
+          ], 
+          "phase": "Running"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "fluentd-cloud-logging-k8s-guestbook-node-1"
+      }, 
+      "id": "fluentd-cloud-logging-k8s-guestbook-node-1", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/config.mirror": "mirror", 
+            "kubernetes.io/config.source": "file"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:05Z", 
+          "name": "fluentd-cloud-logging-k8s-guestbook-node-1", 
+          "namespace": "default", 
+          "resourceVersion": "771", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-1", 
+          "uid": "159ac10c-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "env": [
+                {
+                  "name": "FLUENTD_ARGS", 
+                  "value": "-qq"
+                }
+              ], 
+              "image": "gcr.io/google_containers/fluentd-gcp:1.5", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "fluentd-cloud-logging", 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/varlog", 
+                  "name": "varlog"
+                }, 
+                {
+                  "mountPath": "/var/lib/docker/containers", 
+                  "name": "containers"
+                }, 
+                {
+                  "mountPath": "/etc/token-admin", 
+                  "name": "token-admin", 
+                  "readOnly": true
+                }
+              ]
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-1", 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/log"
+              }, 
+              "iscsi": null, 
+              "name": "varlog", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/lib/docker/containers"
+              }, 
+              "iscsi": null, 
+              "name": "containers", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": {
+                "medium": ""
+              }, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": null, 
+              "iscsi": null, 
+              "name": "token-admin", 
+              "nfs": null, 
+              "secret": null
+            }
+          ]
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://35c080eec7fd885044b9f9cde75f80f19d061592200d62d3ac116a200aea5ac2", 
+              "image": "gcr.io/google_containers/fluentd-gcp:1.5", 
+              "imageID": "docker://6270b3790c19bab7567146a992ac5b579a56b375ac669464dc6bec1a593eb199", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://d31194b2944574146d510f50785240428c3dc0fc86a44eb1918631f20df00143", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:47Z", 
+                  "startedAt": "2015-05-26T15:28:46Z"
+                }
+              }, 
+              "name": "fluentd-cloud-logging", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:50Z"
+                }
+              }
+            }
+          ], 
+          "hostIP": "104.154.34.132", 
+          "phase": "Running", 
+          "podIP": "10.64.0.2"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "fluentd-cloud-logging-k8s-guestbook-node-2"
+      }, 
+      "id": "fluentd-cloud-logging-k8s-guestbook-node-2", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/config.mirror": "mirror", 
+            "kubernetes.io/config.source": "file"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:06Z", 
+          "name": "fluentd-cloud-logging-k8s-guestbook-node-2", 
+          "namespace": "default", 
+          "resourceVersion": "806", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-2", 
+          "uid": "15e32526-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "env": [
+                {
+                  "name": "FLUENTD_ARGS", 
+                  "value": "-qq"
+                }
+              ], 
+              "image": "gcr.io/google_containers/fluentd-gcp:1.5", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "fluentd-cloud-logging", 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/varlog", 
+                  "name": "varlog"
+                }, 
+                {
+                  "mountPath": "/var/lib/docker/containers", 
+                  "name": "containers"
+                }, 
+                {
+                  "mountPath": "/etc/token-admin", 
+                  "name": "token-admin", 
+                  "readOnly": true
+                }
+              ]
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-2", 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/log"
+              }, 
+              "iscsi": null, 
+              "name": "varlog", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/lib/docker/containers"
+              }, 
+              "iscsi": null, 
+              "name": "containers", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": {
+                "medium": ""
+              }, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": null, 
+              "iscsi": null, 
+              "name": "token-admin", 
+              "nfs": null, 
+              "secret": null
+            }
+          ]
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://d02f8503b519e6031add3ceba4b5220df9b1f015d18092d0905ea8447e094be6", 
+              "image": "gcr.io/google_containers/fluentd-gcp:1.5", 
+              "imageID": "docker://6270b3790c19bab7567146a992ac5b579a56b375ac669464dc6bec1a593eb199", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://3a8ac6cf0a334b843ef3043252d9c43ddcf2783e30ae90a4b00ed744a3027cbf", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:48Z", 
+                  "startedAt": "2015-05-26T15:28:40Z"
+                }
+              }, 
+              "name": "fluentd-cloud-logging", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:50:00Z"
+                }
+              }
+            }
+          ], 
+          "hostIP": "104.197.1.75", 
+          "phase": "Running", 
+          "podIP": "10.64.1.2"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "fluentd-cloud-logging-k8s-guestbook-node-3"
+      }, 
+      "id": "fluentd-cloud-logging-k8s-guestbook-node-3", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/config.mirror": "mirror", 
+            "kubernetes.io/config.source": "file"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:05Z", 
+          "name": "fluentd-cloud-logging-k8s-guestbook-node-3", 
+          "namespace": "default", 
+          "resourceVersion": "801", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-3", 
+          "uid": "15461a8e-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "env": [
+                {
+                  "name": "FLUENTD_ARGS", 
+                  "value": "-qq"
+                }
+              ], 
+              "image": "gcr.io/google_containers/fluentd-gcp:1.5", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "fluentd-cloud-logging", 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/varlog", 
+                  "name": "varlog"
+                }, 
+                {
+                  "mountPath": "/var/lib/docker/containers", 
+                  "name": "containers"
+                }, 
+                {
+                  "mountPath": "/etc/token-admin", 
+                  "name": "token-admin", 
+                  "readOnly": true
+                }
+              ]
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-3", 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/log"
+              }, 
+              "iscsi": null, 
+              "name": "varlog", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/lib/docker/containers"
+              }, 
+              "iscsi": null, 
+              "name": "containers", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": {
+                "medium": ""
+              }, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": null, 
+              "iscsi": null, 
+              "name": "token-admin", 
+              "nfs": null, 
+              "secret": null
+            }
+          ]
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://27d5d07a50b7d64c9fa247e842ef730deb74d1308d00aacd5ae021c72180938f", 
+              "image": "gcr.io/google_containers/fluentd-gcp:1.5", 
+              "imageID": "docker://6270b3790c19bab7567146a992ac5b579a56b375ac669464dc6bec1a593eb199", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://cc386bc797abbd89fc1110800e7d3c6ab6184f106e7c18428b5db4e4a14d7c12", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:52Z", 
+                  "startedAt": "2015-05-26T15:28:43Z"
+                }
+              }, 
+              "name": "fluentd-cloud-logging", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:54Z"
+                }
+              }
+            }
+          ], 
+          "hostIP": "130.211.190.34", 
+          "phase": "Running", 
+          "podIP": "10.64.2.2"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "guestbook-controller-14zj2"
+      }, 
+      "id": "guestbook-controller-14zj2", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"312\"}}"
+          }, 
+          "creationTimestamp": "2015-05-26T15:37:17Z", 
+          "generateName": "guestbook-controller-", 
+          "labels": {
+            "name": "guestbook"
+          }, 
+          "name": "guestbook-controller-14zj2", 
+          "namespace": "default", 
+          "resourceVersion": "775", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/guestbook-controller-14zj2", 
+          "uid": "1736c5f9-03bd-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "image": "brendanburns/php-redis", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "php-redis", 
+              "ports": [
+                {
+                  "containerPort": 80, 
+                  "name": "http-server", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {
+                "limits": {
+                  "cpu": "100m", 
+                  "memory": "50M"
+                }
+              }, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-1", 
+          "restartPolicy": "Always", 
+          "volumes": null
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://c6bf48e9b60ccd6ea1a25007895728737750464c1833ddb1b6af5bdbc48e8a92", 
+              "image": "brendanburns/php-redis", 
+              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://0541feead06b0ad8f863ad561c8c46f74a4d14a5aa6cc9109345b9e6ea63f7d7", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:47Z", 
+                  "startedAt": "2015-05-26T15:38:04Z"
+                }
+              }, 
+              "name": "php-redis", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:50Z"
+                }
+              }
+            }
+          ], 
+          "hostIP": "104.154.34.132", 
+          "phase": "Running", 
+          "podIP": "10.64.0.5"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "guestbook-controller-5lmj9"
+      }, 
+      "id": "guestbook-controller-5lmj9", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"312\"}}"
+          }, 
+          "creationTimestamp": "2015-05-26T15:37:17Z", 
+          "generateName": "guestbook-controller-", 
+          "labels": {
+            "name": "guestbook"
+          }, 
+          "name": "guestbook-controller-5lmj9", 
+          "namespace": "default", 
+          "resourceVersion": "777", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/guestbook-controller-5lmj9", 
+          "uid": "1736980f-03bd-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "image": "brendanburns/php-redis", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "php-redis", 
+              "ports": [
+                {
+                  "containerPort": 80, 
+                  "name": "http-server", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {
+                "limits": {
+                  "cpu": "100m", 
+                  "memory": "50M"
+                }
+              }, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-1", 
+          "restartPolicy": "Always", 
+          "volumes": null
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://d6b7ac2f81aea702f7e1efdc427e098a7b91e9dba7102b9aaa0952b15167edf8", 
+              "image": "brendanburns/php-redis", 
+              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://47281870ee711e6774c967cd15e68e13ea4324e59ee68d993d76168d4b3cb0f4", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:47Z", 
+                  "startedAt": "2015-05-26T15:38:04Z"
+                }
+              }, 
+              "name": "php-redis", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:50Z"
+                }
+              }
+            }
+          ], 
+          "hostIP": "104.154.34.132", 
+          "phase": "Running", 
+          "podIP": "10.64.0.3"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "guestbook-controller-myab8"
+      }, 
+      "id": "guestbook-controller-myab8", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"312\"}}"
+          }, 
+          "creationTimestamp": "2015-05-26T15:37:17Z", 
+          "generateName": "guestbook-controller-", 
+          "labels": {
+            "name": "guestbook"
+          }, 
+          "name": "guestbook-controller-myab8", 
+          "namespace": "default", 
+          "resourceVersion": "807", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/guestbook-controller-myab8", 
+          "uid": "1736dffd-03bd-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "image": "brendanburns/php-redis", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "php-redis", 
+              "ports": [
+                {
+                  "containerPort": 80, 
+                  "name": "http-server", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {
+                "limits": {
+                  "cpu": "100m", 
+                  "memory": "50M"
+                }
+              }, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-2", 
+          "restartPolicy": "Always", 
+          "volumes": null
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://a0cea02867c4bc385f8709068ceebc3f7f1e40c7f2f28759731ca9d09f045589", 
+              "image": "brendanburns/php-redis", 
+              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://4b3667f3b708991255612446f71c4eda348bb183d4921fa86c461755f0d50bbd", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:49Z", 
+                  "startedAt": "2015-05-26T15:38:04Z"
+                }
+              }, 
+              "name": "php-redis", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:50:00Z"
+                }
+              }
+            }
+          ], 
+          "hostIP": "104.197.1.75", 
+          "phase": "Running", 
+          "podIP": "10.64.1.3"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "kube-apiserver-k8s-guestbook-master"
+      }, 
+      "id": "kube-apiserver-k8s-guestbook-master", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/config.mirror": "mirror", 
+            "kubernetes.io/config.source": "file"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:05Z", 
+          "name": "kube-apiserver-k8s-guestbook-master", 
+          "namespace": "default", 
+          "resourceVersion": "765", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-apiserver-k8s-guestbook-master", 
+          "uid": "1572f235-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "command": [
+                "/bin/sh", 
+                "-c", 
+                "/usr/local/bin/kube-apiserver --address=127.0.0.1 --etcd_servers=http://127.0.0.1:4001 --cloud_provider=gce   --admission_control=NamespaceAutoProvision,LimitRanger,ResourceQuota --portal_net=10.67.240.0/20 --client_ca_file=/srv/kubernetes/ca.crt --basic_auth_file=/srv/kubernetes/basic_auth.csv --cluster_name=k8s-guestbook --tls_cert_file=/srv/kubernetes/server.cert --tls_private_key_file=/srv/kubernetes/server.key --secure_port=443 --token_auth_file=/srv/kubernetes/known_tokens.csv  --v=2 --allow_privileged=False 1>>/var/log/kube-apiserver.log 2>&1"
+              ], 
+              "image": "gcr.io/google_containers/kube-apiserver:67d4077257af136da2c6d8456690f0e8", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "kube-apiserver", 
+              "ports": [
+                {
+                  "containerPort": 443, 
+                  "hostPort": 443, 
+                  "name": "https", 
+                  "protocol": "TCP"
+                }, 
+                {
+                  "containerPort": 7080, 
+                  "hostPort": 7080, 
+                  "name": "http", 
+                  "protocol": "TCP"
+                }, 
+                {
+                  "containerPort": 8080, 
+                  "hostPort": 8080, 
+                  "name": "local", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/srv/kubernetes", 
+                  "name": "srvkube", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/var/log/kube-apiserver.log", 
+                  "name": "logfile"
+                }, 
+                {
+                  "mountPath": "/etc/ssl", 
+                  "name": "etcssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/share/ssl", 
+                  "name": "usrsharessl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/var/ssl", 
+                  "name": "varssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/ssl", 
+                  "name": "usrssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/lib/ssl", 
+                  "name": "usrlibssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/local/openssl", 
+                  "name": "usrlocalopenssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/etc/openssl", 
+                  "name": "etcopenssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/etc/pki/tls", 
+                  "name": "etcpkitls", 
+                  "readOnly": true
+                }
+              ]
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-master", 
+          "hostNetwork": true, 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/srv/kubernetes"
+              }, 
+              "iscsi": null, 
+              "name": "srvkube", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/log/kube-apiserver.log"
+              }, 
+              "iscsi": null, 
+              "name": "logfile", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/etc/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "etcssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/share/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrsharessl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "varssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/lib/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrlibssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/local/openssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrlocalopenssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/etc/openssl"
+              }, 
+              "iscsi": null, 
+              "name": "etcopenssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/etc/pki/tls"
+              }, 
+              "iscsi": null, 
+              "name": "etcpkitls", 
+              "nfs": null, 
+              "secret": null
+            }
+          ]
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://e15a3598e05d892a5c5b9f2587031e219a8ad951283ce21572d20299641ba441", 
+              "image": "gcr.io/google_containers/kube-apiserver:67d4077257af136da2c6d8456690f0e8", 
+              "imageID": "docker://b8f04e304b16b8d4545c6bd3c5e71c07fc0ac3b6d07c3303d4ca008e2a94f0ad", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://e57c722a174d8c5234c23364cfcb50c11dba9c651fb0b5f9c10bae17f1caf801", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:43Z", 
+                  "startedAt": "2015-05-26T15:29:57Z"
+                }
+              }, 
+              "name": "kube-apiserver", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:48Z"
+                }
+              }
+            }
+          ], 
+          "phase": "Running"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "kube-controller-manager-k8s-guestbook-master"
+      }, 
+      "id": "kube-controller-manager-k8s-guestbook-master", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/config.mirror": "mirror", 
+            "kubernetes.io/config.source": "file"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:05Z", 
+          "name": "kube-controller-manager-k8s-guestbook-master", 
+          "namespace": "default", 
+          "resourceVersion": "768", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-controller-manager-k8s-guestbook-master", 
+          "uid": "1577fff6-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "command": [
+                "/bin/sh", 
+                "-c", 
+                "/usr/local/bin/kube-controller-manager --master=127.0.0.1:8080  --cluster_name=k8s-guestbook --cluster-cidr=10.64.0.0/14 --allocate-node-cidrs=false --minion_regexp='k8s-guestbook-node.*' --cloud_provider=gce --sync_nodes=true  --v=2 1>>/var/log/kube-controller-manager.log 2>&1"
+              ], 
+              "image": "gcr.io/google_containers/kube-controller-manager:bcd3a802be9b9d4792976c039f852e2b", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "kube-controller-manager", 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/srv/kubernetes", 
+                  "name": "srvkube", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/var/log/kube-controller-manager.log", 
+                  "name": "logfile"
+                }, 
+                {
+                  "mountPath": "/etc/ssl", 
+                  "name": "etcssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/share/ssl", 
+                  "name": "usrsharessl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/var/ssl", 
+                  "name": "varssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/ssl", 
+                  "name": "usrssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/lib/ssl", 
+                  "name": "usrlibssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/usr/local/openssl", 
+                  "name": "usrlocalopenssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/etc/openssl", 
+                  "name": "etcopenssl", 
+                  "readOnly": true
+                }, 
+                {
+                  "mountPath": "/etc/pki/tls", 
+                  "name": "etcpkitls", 
+                  "readOnly": true
+                }
+              ]
+            }
+          ], 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-master", 
+          "hostNetwork": true, 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/srv/kubernetes"
+              }, 
+              "iscsi": null, 
+              "name": "srvkube", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/log/kube-controller-manager.log"
+              }, 
+              "iscsi": null, 
+              "name": "logfile", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/etc/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "etcssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/share/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrsharessl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "varssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/lib/ssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrlibssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/usr/local/openssl"
+              }, 
+              "iscsi": null, 
+              "name": "usrlocalopenssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/etc/openssl"
+              }, 
+              "iscsi": null, 
+              "name": "etcopenssl", 
+              "nfs": null, 
+              "secret": null
+            }, 
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/etc/pki/tls"
+              }, 
+              "iscsi": null, 
+              "name": "etcpkitls", 
+              "nfs": null, 
+              "secret": null
+            }
+          ]
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://269389aad67c2f0f28c8d0bd4feb4da83bd7eaa448f251e661d555c5c2b2ac26", 
+              "image": "gcr.io/google_containers/kube-controller-manager:bcd3a802be9b9d4792976c039f852e2b", 
+              "imageID": "docker://c9641eb3e74f56a6f02b7ea038c924a4f78996e94f86fd991f28360e3c8cbe83", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://12296b276ec4d5749bc2d04bbb37730baaf422d272718b2721e063e086d10897", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:43Z", 
+                  "startedAt": "2015-05-26T15:29:57Z"
+                }
+              }, 
+              "name": "kube-controller-manager", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:49Z"
+                }
+              }
+            }
+          ], 
+          "phase": "Running"
+        }
+      }, 
+      "timestamp": "2015-05-29T15:25:25.780135", 
+      "type": "Pod"
+    }, 
+    {
+      "annotations": {
+        "label": "kube-dns-bqw5e"
+      }, 
+      "id": "kube-dns-bqw5e", 
+      "properties": {
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"kube-dns\",\"uid\":\"1801b580-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"56\"}}"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:09Z", 
+          "generateName": "kube-dns-", 
+          "labels": {
+            "k8s-app": "kube-dns", 
+            "kubernetes.io/cluster-service": "true"
+          }, 
+          "name": "kube-dns-bqw5e", 
+          "namespace": "default", 
+          "resourceVersion": "101183", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-dns-bqw5e", 
+          "uid": "18061efc-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
+            {
+              "capabilities": {}, 
+              "command": [
+                "/usr/local/bin/etcd", 
+                "-listen-client-urls", 
+                "http://127.0.0.1:2379,http://127.0.0.1:4001", 
+                "-advertise-client-urls", 
+                "http://127.0.0.1:2379,http://127.0.0.1:4001", 
+                "-initial-cluster-token", 
+                "skydns-etcd"
+              ], 
+              "image": "gcr.io/google_containers/etcd:2.0.9", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "etcd", 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
+            }, 
+            {
+              "args": [
+                "-domain=kubernetes.local", 
+                "-kubecfg_file=/etc/dns_token/kubeconfig"
+              ], 
+              "capabilities": {}, 
+              "image": "gcr.io/google_containers/kube2sky:1.4", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "kube2sky", 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/etc/dns_token", 
+                  "name": "dns-token", 
+                  "readOnly": true
+                }
+              ]
+            }, 
+            {
+              "args": [
+                "-machines=http://localhost:4001", 
+                "-addr=0.0.0.0:53", 
+                "-domain=kubernetes.local."
+              ], 
+              "capabilities": {}, 
+              "image": "gcr.io/google_containers/skydns:2015-03-11-001", 
+              "imagePullPolicy": "IfNotPresent", 
+              "livenessProbe": {
+                "exec": {
+                  "command": [
+                    "/bin/sh", 
+                    "-c", 
+                    "nslookup foobar 127.0.0.1 &> /dev/null; echo ok"
+                  ]
+                }, 
+                "initialDelaySeconds": 30, 
+                "timeoutSeconds": 5
+              }, 
+              "name": "skydns", 
+              "ports": [
+                {
+                  "containerPort": 53, 
+                  "name": "dns", 
+                  "protocol": "UDP"
+                }, 
+                {
+                  "containerPort": 53, 
+                  "name": "dns-tcp", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
+            }
+          ], 
+          "dnsPolicy": "Default", 
+          "host": "k8s-guestbook-node-3", 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": null, 
+              "iscsi": null, 
+              "name": "dns-token", 
+              "nfs": null, 
+              "secret": {
+                "secretName": "token-system-dns"
+              }
+            }
+          ]
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://e9a7dfae7834d34a7923168cb623c92eb7b31f826344d2749c9f1cfeb793d0db", 
+              "image": "gcr.io/google_containers/kube2sky:1.4", 
+              "imageID": "docker://3df83f1bccbf18ab59cd64da32cda26b4f56ae0cd6bb6e374477a60468f04232", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://74103fa5e8a7d7d4387cfc72a6054e657b7b4d32e4542e85f782488c058791db", 
                   "exitCode": 2, 
-                  "finishedAt": "2015-03-16T17:43:21Z", 
-                  "startedAt": "2015-03-16T17:42:11Z"
+                  "finishedAt": "2015-05-26T15:49:51Z", 
+                  "startedAt": "2015-05-26T15:30:22Z"
+                }
+              }, 
+              "name": "kube2sky", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:55Z"
                 }
               }
             }, 
-            "php-redis": {
-              "containerID": "docker://be2fc9d473f21c8c925dc84115a65369167b9c0539349b55d0a76fa9451e6c4f", 
-              "image": "brendanburns/php-redis", 
-              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
-              "ready": false, 
-              "restartCount": 7, 
+            {
+              "containerID": "docker://110674f2154fe9f0d73d06bfe1de57869a7c8225e9849eb8bc12e250f176ffdb", 
+              "image": "gcr.io/google_containers/skydns:2015-03-11-001", 
+              "imageID": "docker://791ddf327076e0fd35a1125568a56c05ee1f1dfd7a165c74f4d489d8a5e65ac5", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://08f3e2bb19f27845075a8ddd8e74025aace13b23a86e17548e3b6aec08dff691", 
+                  "exitCode": 2, 
+                  "finishedAt": "2015-05-26T15:49:51Z", 
+                  "startedAt": "2015-05-26T15:30:25Z"
+                }
+              }, 
+              "name": "skydns", 
+              "ready": true, 
+              "restartCount": 1, 
               "state": {
-                "waiting": {
-                  "reason": "Container cannot run"
+                "running": {
+                  "startedAt": "2015-05-26T15:49:55Z"
+                }
+              }
+            }, 
+            {
+              "containerID": "docker://017dc58c87e87a81d06368a62a795ff7a0a1782c799cf5b8a8137d7f25c080ae", 
+              "image": "gcr.io/google_containers/etcd:2.0.9", 
+              "imageID": "docker://b6b9a86dc06aa1361357ca1b105feba961f6a4145adca6c54e142c0be0fe87b0", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://681fc525db2044735443d982b0b3b5a20389b22c1f46bae560123fc75654eaa8", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:51Z", 
+                  "startedAt": "2015-05-26T15:30:20Z"
+                }
+              }, 
+              "name": "etcd", 
+              "ready": true, 
+              "restartCount": 1, 
+              "state": {
+                "running": {
+                  "startedAt": "2015-05-26T15:49:54Z"
                 }
               }
             }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "status": "Waiting"
-        }, 
-        "desiredState": {
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "cpu": 100, 
-                "image": "brendanburns/php-redis", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "memory": 50000000, 
-                "name": "php-redis", 
-                "ports": [
-                  {
-                    "containerPort": 80, 
-                    "name": "http-server", 
-                    "protocol": "TCP"
-                  }
-                ], 
-                "resources": {
-                  "limits": {
-                    "cpu": "0.1", 
-                    "memory": 50000000
-                  }
-                }, 
-                "terminationMessagePath": "/dev/termination-log"
-              }
-            ], 
-            "dnsPolicy": "ClusterFirst", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": null
-          }
-        }, 
-        "generateName": "guestbook-controller-", 
-        "id": "guestbook-controller-0133o", 
-        "labels": {
-          "name": "guestbook"
-        }, 
-        "namespace": "default", 
-        "resourceVersion": 269, 
-        "selfLink": "/api/v1beta1/pods/guestbook-controller-0133o?namespace=default", 
-        "uid": "f9914838-b949-11e4-8246-42010af0c3dd"
+          ], 
+          "hostIP": "130.211.190.34", 
+          "phase": "Running", 
+          "podIP": "10.64.2.4"
+        }
       }, 
-      "timestamp": "2015-03-16T17:43:31.245485", 
+      "timestamp": "2015-05-29T15:25:25.780135", 
       "type": "Pod"
     }, 
     {
       "annotations": {
-        "label": "guestbook-controller-hh2gd"
+        "label": "kube-scheduler-k8s-guestbook-master"
       }, 
-      "id": "guestbook-controller-hh2gd", 
+      "id": "kube-scheduler-k8s-guestbook-master", 
       "properties": {
-        "creationTimestamp": "2015-02-20T21:46:49Z", 
-        "currentState": {
-          "Condition": [
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/config.mirror": "mirror", 
+            "kubernetes.io/config.source": "file"
+          }, 
+          "creationTimestamp": "2015-05-26T15:30:05Z", 
+          "name": "kube-scheduler-k8s-guestbook-master", 
+          "namespace": "default", 
+          "resourceVersion": "766", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-scheduler-k8s-guestbook-master", 
+          "uid": "157fd04f-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
             {
-              "kind": "Ready", 
-              "status": "Full"
+              "capabilities": {}, 
+              "command": [
+                "/bin/sh", 
+                "-c", 
+                "/usr/local/bin/kube-scheduler --master=127.0.0.1:8080 --v=2 1>>/var/log/kube-scheduler.log 2>&1"
+              ], 
+              "image": "gcr.io/google_containers/kube-scheduler:003a51822660c5b54b0df12c6d9a820d", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "kube-scheduler", 
+              "resources": {}, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log", 
+              "volumeMounts": [
+                {
+                  "mountPath": "/var/log/kube-scheduler.log", 
+                  "name": "logfile"
+                }
+              ]
             }
           ], 
-          "host": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
-          "hostIP": "130.211.181.148", 
-          "info": {
-            "POD": {
-              "containerID": "docker://71ef793eaaccf9045780a6f003f6d47bb7cee01fbd6aca66063aac5262bd2ceb", 
-              "image": "kubernetes/pause:latest", 
-              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
-              "podIP": "10.64.0.26", 
-              "ready": false, 
-              "restartCount": 6, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-03-16T17:42:18Z"
-                }
-              }
-            }, 
-            "php-redis": {
-              "containerID": "docker://91c3cf0d7808e2cf246fc44838b90b5d8422cea51122163e7d29697db85c9b9c", 
-              "image": "brendanburns/php-redis", 
-              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
-              "ready": true, 
-              "restartCount": 6, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-03-16T17:42:18Z"
-                }
-              }
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-master", 
+          "hostNetwork": true, 
+          "restartPolicy": "Always", 
+          "volumes": [
+            {
+              "awsElasticBlockStore": null, 
+              "emptyDir": null, 
+              "gcePersistentDisk": null, 
+              "gitRepo": null, 
+              "glusterfs": null, 
+              "hostPath": {
+                "path": "/var/log/kube-scheduler.log"
+              }, 
+              "iscsi": null, 
+              "name": "logfile", 
+              "nfs": null, 
+              "secret": null
             }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "podIP": "10.64.0.26", 
-          "status": "Running"
+          ]
         }, 
-        "desiredState": {
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "cpu": 100, 
-                "image": "brendanburns/php-redis", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "memory": 50000000, 
-                "name": "php-redis", 
-                "ports": [
-                  {
-                    "containerPort": 80, 
-                    "name": "http-server", 
-                    "protocol": "TCP"
-                  }
-                ], 
-                "resources": {
-                  "limits": {
-                    "cpu": "0.1", 
-                    "memory": 50000000
-                  }
-                }, 
-                "terminationMessagePath": "/dev/termination-log"
-              }
-            ], 
-            "dnsPolicy": "ClusterFirst", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": null
-          }
-        }, 
-        "generateName": "guestbook-controller-", 
-        "id": "guestbook-controller-hh2gd", 
-        "labels": {
-          "name": "guestbook"
-        }, 
-        "namespace": "default", 
-        "resourceVersion": 271, 
-        "selfLink": "/api/v1beta1/pods/guestbook-controller-hh2gd?namespace=default", 
-        "uid": "f991f13c-b949-11e4-8246-42010af0c3dd"
-      }, 
-      "timestamp": "2015-03-16T17:43:31.245485", 
-      "type": "Pod"
-    }, 
-    {
-      "annotations": {
-        "label": "guestbook-controller-ls6k1"
-      }, 
-      "id": "guestbook-controller-ls6k1", 
-      "properties": {
-        "creationTimestamp": "2015-02-20T21:46:49Z", 
-        "currentState": {
+        "status": {
           "Condition": [
             {
-              "kind": "Ready", 
-              "status": "Full"
+              "status": "True", 
+              "type": "Ready"
             }
           ], 
-          "host": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
-          "hostIP": "104.154.41.133", 
-          "info": {
-            "POD": {
-              "containerID": "docker://81a3733d1e0bce81a1a53eb9ece053c050c7633a85fd988c9d082c415d714bac", 
-              "image": "kubernetes/pause:latest", 
-              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
-              "podIP": "10.64.2.49", 
-              "ready": false, 
-              "restartCount": 6, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-03-16T17:42:04Z"
+          "containerStatuses": [
+            {
+              "containerID": "docker://09928df641a8d8acaa496ae623a26c8a15a292688569794dc9dfb7e6b0745a68", 
+              "image": "gcr.io/google_containers/kube-scheduler:003a51822660c5b54b0df12c6d9a820d", 
+              "imageID": "docker://5ab1e7ce693ec9909eda6b8bd2b9c536a4e76650ff4ef83ee2bcf6272c1add36", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://efeb0613ec0a2c127eb80f790c7c7e13faa63feda4221ba04ba7e8127f18c3f6", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:43Z", 
+                  "startedAt": "2015-05-26T15:29:57Z"
                 }
-              }
-            }, 
-            "php-redis": {
-              "containerID": "docker://b48fbb4c42f17a5657d40d7a58b4fee0c5f37e1a299d646fb9afc1722cfbc89c", 
-              "image": "brendanburns/php-redis", 
-              "imageID": "docker://317d645532c7b333e752708dfd233cff1a099b45d12e1974e061b84b547a395e", 
+              }, 
+              "name": "kube-scheduler", 
               "ready": true, 
-              "restartCount": 6, 
+              "restartCount": 1, 
               "state": {
                 "running": {
-                  "startedAt": "2015-03-16T17:42:05Z"
+                  "startedAt": "2015-05-26T15:49:49Z"
                 }
               }
             }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "podIP": "10.64.2.49", 
-          "status": "Running"
-        }, 
-        "desiredState": {
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "cpu": 100, 
-                "image": "brendanburns/php-redis", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "memory": 50000000, 
-                "name": "php-redis", 
-                "ports": [
-                  {
-                    "containerPort": 80, 
-                    "name": "http-server", 
-                    "protocol": "TCP"
-                  }
-                ], 
-                "resources": {
-                  "limits": {
-                    "cpu": "0.1", 
-                    "memory": 50000000
-                  }
-                }, 
-                "terminationMessagePath": "/dev/termination-log"
-              }
-            ], 
-            "dnsPolicy": "ClusterFirst", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": null
-          }
-        }, 
-        "generateName": "guestbook-controller-", 
-        "id": "guestbook-controller-ls6k1", 
-        "labels": {
-          "name": "guestbook"
-        }, 
-        "namespace": "default", 
-        "resourceVersion": 270, 
-        "selfLink": "/api/v1beta1/pods/guestbook-controller-ls6k1?namespace=default", 
-        "uid": "f991d53e-b949-11e4-8246-42010af0c3dd"
+          ], 
+          "phase": "Running"
+        }
       }, 
-      "timestamp": "2015-03-16T17:43:31.245485", 
+      "timestamp": "2015-05-29T15:25:25.780135", 
       "type": "Pod"
     }, 
     {
@@ -309,566 +1685,269 @@
       }, 
       "id": "redis-master", 
       "properties": {
-        "creationTimestamp": "2015-02-20T21:41:16Z", 
-        "currentState": {
-          "Condition": [
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:32:52Z", 
+          "labels": {
+            "name": "redis", 
+            "role": "master"
+          }, 
+          "name": "redis-master", 
+          "namespace": "default", 
+          "resourceVersion": "773", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/redis-master", 
+          "uid": "78d43440-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
             {
-              "kind": "Ready", 
-              "status": "Full"
+              "capabilities": {}, 
+              "image": "redis", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "master", 
+              "ports": [
+                {
+                  "containerPort": 6379, 
+                  "name": "redis-server", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {
+                "limits": {
+                  "cpu": "100m"
+                }
+              }, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
             }
           ], 
-          "host": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
-          "hostIP": "130.211.145.7", 
-          "info": {
-            "POD": {
-              "containerID": "docker://f15272658bbd7be306d9ee14a06602bf1530866edc8724f843beeb3efdad0088", 
-              "image": "kubernetes/pause:latest", 
-              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
-              "podIP": "10.64.1.4", 
-              "ready": false, 
-              "restartCount": 2, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-02-20T22:55:24Z"
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-1", 
+          "restartPolicy": "Always", 
+          "volumes": null
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://fb527718271d885503a3c70fe2994d1d1002ce2a2feb2da32a64b7559a0b6501", 
+              "image": "redis", 
+              "imageID": "docker://95af5842ddb9b03f7c6ec7601e65924cec516fcedd7e590ae31660057085cf67", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://ada4fd9028708b7583d74e1183047c62c0daf3bcbd3087cbca48889918683486", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:46Z", 
+                  "startedAt": "2015-05-26T15:33:09Z"
                 }
-              }
-            }, 
-            "master": {
-              "containerID": "docker://93475404a11774b9dfe74be20c689a07a481e98e365793a505f5a2355dd7ec69", 
-              "image": "dockerfile/redis", 
-              "imageID": "docker://c059fe93c46a2fb873656b65eeed5153208bbbaecc420f53fe2131262cce0549", 
+              }, 
+              "name": "master", 
               "ready": true, 
-              "restartCount": 2, 
+              "restartCount": 1, 
               "state": {
                 "running": {
-                  "startedAt": "2015-02-20T22:55:24Z"
+                  "startedAt": "2015-05-26T15:49:50Z"
                 }
               }
             }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "podIP": "10.64.1.4", 
-          "status": "Running"
-        }, 
-        "desiredState": {
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "cpu": 100, 
-                "image": "dockerfile/redis", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "name": "master", 
-                "ports": [
-                  {
-                    "containerPort": 6379, 
-                    "name": "redis-server", 
-                    "protocol": "TCP"
-                  }
-                ], 
-                "resources": {
-                  "limits": {
-                    "cpu": "0.1"
-                  }
-                }, 
-                "terminationMessagePath": "/dev/termination-log"
-              }
-            ], 
-            "dnsPolicy": "ClusterFirst", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": null
-          }
-        }, 
-        "id": "redis-master", 
-        "labels": {
-          "name": "redis", 
-          "role": "master"
-        }, 
-        "namespace": "default", 
-        "resourceVersion": 110, 
-        "selfLink": "/api/v1beta1/pods/redis-master?namespace=default", 
-        "uid": "32a27c5a-b949-11e4-8246-42010af0c3dd"
+          ], 
+          "hostIP": "104.154.34.132", 
+          "phase": "Running", 
+          "podIP": "10.64.0.4"
+        }
       }, 
-      "timestamp": "2015-03-16T17:43:31.245485", 
+      "timestamp": "2015-05-29T15:25:25.780135", 
       "type": "Pod"
     }, 
     {
       "annotations": {
-        "label": "redis-worker-controller-gziey"
+        "label": "redis-worker-controller-1ow70"
       }, 
-      "id": "redis-worker-controller-gziey", 
+      "id": "redis-worker-controller-1ow70", 
       "properties": {
-        "creationTimestamp": "2015-02-20T21:45:09Z", 
-        "currentState": {
-          "Condition": [
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"redis-worker-controller\",\"uid\":\"e3e6b374-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"249\"}}"
+          }, 
+          "creationTimestamp": "2015-05-26T15:35:51Z", 
+          "generateName": "redis-worker-controller-", 
+          "labels": {
+            "name": "redis", 
+            "role": "worker"
+          }, 
+          "name": "redis-worker-controller-1ow70", 
+          "namespace": "default", 
+          "resourceVersion": "804", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/redis-worker-controller-1ow70", 
+          "uid": "e3e92219-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
             {
-              "kind": "Ready", 
-              "status": "Full"
+              "capabilities": {}, 
+              "image": "brendanburns/redis-slave", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "redis-worker", 
+              "ports": [
+                {
+                  "containerPort": 6379, 
+                  "hostPort": 6380, 
+                  "name": "redis-server", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {
+                "limits": {
+                  "cpu": "200m"
+                }
+              }, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
             }
           ], 
-          "host": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
-          "hostIP": "104.154.41.133", 
-          "info": {
-            "POD": {
-              "containerID": "docker://a8515e7b12ba52eed616cc8530eaeadf702c3e29e2e466a923cff0be30a1403a", 
-              "image": "kubernetes/pause:latest", 
-              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
-              "podIP": "10.64.2.3", 
-              "ready": false, 
-              "restartCount": 2, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-02-20T22:56:23Z"
-                }
-              }
-            }, 
-            "redis-worker": {
-              "containerID": "docker://3b2da7c60ec7d85c33af1c4596854b38f404fc4c08b10b3f95b78811f5cee885", 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-2", 
+          "restartPolicy": "Always", 
+          "volumes": null
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://f03cbf828b9475cde64bad305de6c97774191718c28d5879a06a1dae61fbaedb", 
               "image": "brendanburns/redis-slave", 
               "imageID": "docker://81b1b696a77a9b5ca5e8954b0428208daa67853c118bb8d15cae073028a0ee3c", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://d2e8661797e2e001946ac4d4f31ccc0e232e08fd6ae3b730bc5660a3eebb4913", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:49Z", 
+                  "startedAt": "2015-05-26T15:36:18Z"
+                }
+              }, 
+              "name": "redis-worker", 
               "ready": true, 
-              "restartCount": 2, 
+              "restartCount": 1, 
               "state": {
                 "running": {
-                  "startedAt": "2015-02-20T22:56:23Z"
+                  "startedAt": "2015-05-26T15:50:01Z"
                 }
               }
             }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "podIP": "10.64.2.3", 
-          "status": "Running"
-        }, 
-        "desiredState": {
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "cpu": 200, 
-                "image": "brendanburns/redis-slave", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "name": "redis-worker", 
-                "ports": [
-                  {
-                    "containerPort": 6379, 
-                    "hostPort": 6380, 
-                    "name": "redis-server", 
-                    "protocol": "TCP"
-                  }
-                ], 
-                "resources": {
-                  "limits": {
-                    "cpu": "0.2"
-                  }
-                }, 
-                "terminationMessagePath": "/dev/termination-log"
-              }
-            ], 
-            "dnsPolicy": "ClusterFirst", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": null
-          }
-        }, 
-        "generateName": "redis-worker-controller-", 
-        "id": "redis-worker-controller-gziey", 
-        "namespace": "default", 
-        "resourceVersion": 200, 
-        "selfLink": "/api/v1beta1/pods/redis-worker-controller-gziey?namespace=default", 
-        "uid": "bdb88fe4-b949-11e4-8246-42010af0c3dd"
+          ], 
+          "hostIP": "104.197.1.75", 
+          "phase": "Running", 
+          "podIP": "10.64.1.4"
+        }
       }, 
-      "timestamp": "2015-03-16T17:43:31.245485", 
+      "timestamp": "2015-05-29T15:25:25.780135", 
       "type": "Pod"
     }, 
     {
       "annotations": {
-        "label": "redis-worker-controller-oh43e"
+        "label": "redis-worker-controller-4qg33"
       }, 
-      "id": "redis-worker-controller-oh43e", 
+      "id": "redis-worker-controller-4qg33", 
       "properties": {
-        "creationTimestamp": "2015-02-20T21:45:09Z", 
-        "currentState": {
-          "Condition": [
+        "metadata": {
+          "annotations": {
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"redis-worker-controller\",\"uid\":\"e3e6b374-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"249\"}}"
+          }, 
+          "creationTimestamp": "2015-05-26T15:35:51Z", 
+          "generateName": "redis-worker-controller-", 
+          "labels": {
+            "name": "redis", 
+            "role": "worker"
+          }, 
+          "name": "redis-worker-controller-4qg33", 
+          "namespace": "default", 
+          "resourceVersion": "799", 
+          "selfLink": "/api/v1beta3/namespaces/default/pods/redis-worker-controller-4qg33", 
+          "uid": "e3e945ff-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "containers": [
             {
-              "kind": "Ready", 
-              "status": "Full"
+              "capabilities": {}, 
+              "image": "brendanburns/redis-slave", 
+              "imagePullPolicy": "IfNotPresent", 
+              "name": "redis-worker", 
+              "ports": [
+                {
+                  "containerPort": 6379, 
+                  "hostPort": 6380, 
+                  "name": "redis-server", 
+                  "protocol": "TCP"
+                }
+              ], 
+              "resources": {
+                "limits": {
+                  "cpu": "200m"
+                }
+              }, 
+              "securityContext": {
+                "capabilities": {}
+              }, 
+              "terminationMessagePath": "/dev/termination-log"
             }
           ], 
-          "host": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
-          "hostIP": "130.211.181.148", 
-          "info": {
-            "POD": {
-              "containerID": "docker://56befea62157f224bb95cb2fdea8babbfd6809c37c703d97b9a17a39655b9206", 
-              "image": "kubernetes/pause:latest", 
-              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
-              "podIP": "10.64.0.3", 
-              "ready": false, 
-              "restartCount": 3, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-02-20T22:53:43Z"
-                }
-              }
-            }, 
-            "redis-worker": {
-              "containerID": "docker://83fd58c4c8abecd49e454d68c2326a5ab406a28fa6f5f1a8b93530b8177c1001", 
+          "dnsPolicy": "ClusterFirst", 
+          "host": "k8s-guestbook-node-3", 
+          "restartPolicy": "Always", 
+          "volumes": null
+        }, 
+        "status": {
+          "Condition": [
+            {
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "containerStatuses": [
+            {
+              "containerID": "docker://773ad44416fa5d34f032579b408bbcf4552afbb6bfd820c670cc33e67d12ba6a", 
               "image": "brendanburns/redis-slave", 
               "imageID": "docker://81b1b696a77a9b5ca5e8954b0428208daa67853c118bb8d15cae073028a0ee3c", 
+              "lastState": {
+                "termination": {
+                  "containerID": "docker://243a27a9307a2db6dfe39e5cd4c267ecc0a73716a7ed9c4d8dde33d907cc84d5", 
+                  "exitCode": 0, 
+                  "finishedAt": "2015-05-26T15:49:52Z", 
+                  "startedAt": "2015-05-26T15:36:19Z"
+                }
+              }, 
+              "name": "redis-worker", 
               "ready": true, 
-              "restartCount": 3, 
+              "restartCount": 1, 
               "state": {
                 "running": {
-                  "startedAt": "2015-02-20T22:53:43Z"
+                  "startedAt": "2015-05-26T15:49:54Z"
                 }
               }
-            }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "podIP": "10.64.0.3", 
-          "status": "Running"
-        }, 
-        "desiredState": {
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "cpu": 200, 
-                "image": "brendanburns/redis-slave", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "name": "redis-worker", 
-                "ports": [
-                  {
-                    "containerPort": 6379, 
-                    "hostPort": 6380, 
-                    "name": "redis-server", 
-                    "protocol": "TCP"
-                  }
-                ], 
-                "resources": {
-                  "limits": {
-                    "cpu": "0.2"
-                  }
-                }, 
-                "terminationMessagePath": "/dev/termination-log"
-              }
-            ], 
-            "dnsPolicy": "ClusterFirst", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": null
-          }
-        }, 
-        "generateName": "redis-worker-controller-", 
-        "id": "redis-worker-controller-oh43e", 
-        "labels": {
-          "name": "redis", 
-          "role": "worker"
-        }, 
-        "namespace": "default", 
-        "resourceVersion": 201, 
-        "selfLink": "/api/v1beta1/pods/redis-worker-controller-oh43e?namespace=default", 
-        "uid": "bdb8f295-b949-11e4-8246-42010af0c3dd"
-      }, 
-      "timestamp": "2015-03-16T17:43:31.245485", 
-      "type": "Pod"
-    }, 
-    {
-      "annotations": {
-        "label": "skydns-fplln"
-      }, 
-      "id": "skydns-fplln", 
-      "properties": {
-        "creationTimestamp": "2015-02-20T21:39:46Z", 
-        "currentState": {
-          "Condition": [
-            {
-              "kind": "Ready", 
-              "status": "Full"
             }
           ], 
-          "host": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
-          "hostIP": "130.211.181.148", 
-          "info": {
-            "POD": {
-              "containerID": "docker://471189efe7f42db7e283ca9b807dabdf05d0e9076df52840f2af9f8b0e063a7d", 
-              "image": "kubernetes/pause:latest", 
-              "imageID": "docker://6c4579af347b649857e915521132f15a06186d73faa62145e3eeeb6be0e97c27", 
-              "podIP": "10.64.0.4", 
-              "ready": false, 
-              "restartCount": 3, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-02-20T22:53:43Z"
-                }
-              }
-            }, 
-            "etcd": {
-              "containerID": "docker://326a9191db3c66b6a3ba41184bf3f4ec2ff316202e287757a375f9398457b7db", 
-              "image": "quay.io/coreos/etcd:latest", 
-              "imageID": "docker://c5f34efc44466ec7abb9a68af20d2f876ea691095747e7e5a62e890cdedadcdc", 
-              "ready": true, 
-              "restartCount": 3, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-02-20T22:53:46Z"
-                }
-              }
-            }, 
-            "kube2sky": {
-              "containerID": "docker://436644a4173923f1de0848545fd996496826a854766a137312e8ed5da81f1d9b", 
-              "image": "kubernetes/kube2sky:1.0", 
-              "imageID": "docker://3ea44ca9f1bd295f38fb1922e39d26e59294453ac0c5da9ae3c12cea5834c4ad", 
-              "ready": true, 
-              "restartCount": 3, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-02-20T22:53:47Z"
-                }
-              }
-            }, 
-            "skydns": {
-              "containerID": "docker://5af2989e53c311a1d84f72ec23768dc1e2d305edf11b4d8cbe6450be92be5c1d", 
-              "image": "kubernetes/skydns:2014-12-23-001", 
-              "imageID": "docker://93f9564eaa3307440f3486b109c2fd39172d59a4b49ee4470d0b6141b4113388", 
-              "ready": true, 
-              "restartCount": 3, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-02-20T22:53:47Z"
-                }
-              }
-            }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "podIP": "10.64.0.4", 
-          "status": "Running"
-        }, 
-        "desiredState": {
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "command": [
-                  "/etcd", 
-                  "-bind-addr=127.0.0.1", 
-                  "-peer-bind-addr=127.0.0.1"
-                ], 
-                "image": "quay.io/coreos/etcd:latest", 
-                "imagePullPolicy": "PullAlways", 
-                "name": "etcd", 
-                "resources": {}, 
-                "terminationMessagePath": "/dev/termination-log"
-              }, 
-              {
-                "capabilities": {}, 
-                "command": [
-                  "-domain=kubernetes.local"
-                ], 
-                "image": "kubernetes/kube2sky:1.0", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "name": "kube2sky", 
-                "resources": {}, 
-                "terminationMessagePath": "/dev/termination-log"
-              }, 
-              {
-                "capabilities": {}, 
-                "command": [
-                  "-machines=http://localhost:4001", 
-                  "-addr=0.0.0.0:53", 
-                  "-domain=kubernetes.local."
-                ], 
-                "image": "kubernetes/skydns:2014-12-23-001", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "name": "skydns", 
-                "ports": [
-                  {
-                    "containerPort": 53, 
-                    "name": "dns", 
-                    "protocol": "UDP"
-                  }
-                ], 
-                "resources": {}, 
-                "terminationMessagePath": "/dev/termination-log"
-              }
-            ], 
-            "dnsPolicy": "Default", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": null
-          }
-        }, 
-        "generateName": "skydns-", 
-        "id": "skydns-fplln", 
-        "labels": {
-          "k8s-app": "skydns"
-        }, 
-        "namespace": "default", 
-        "resourceVersion": 42, 
-        "selfLink": "/api/v1beta1/pods/skydns-fplln?namespace=default", 
-        "uid": "fd673cff-b948-11e4-8246-42010af0c3dd"
+          "hostIP": "130.211.190.34", 
+          "phase": "Running", 
+          "podIP": "10.64.2.3"
+        }
       }, 
-      "timestamp": "2015-03-16T17:43:31.245485", 
-      "type": "Pod"
-    },
-    {
-      "annotations": {
-        "label": "fluentd-to-elasticsearch-kubernetes-minion-11cx.c.the-pentameter-90318.internal"
-      }, 
-      "id": "fluentd-to-elasticsearch-kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
-      "properties": {
-        "annotations": {
-          "kubernetes.io/config.mirror": "mirror", 
-          "kubernetes.io/config.source": "file"
-        }, 
-        "creationTimestamp": "2015-04-06T23:02:53Z", 
-        "currentState": {
-          "Condition": [
-            {
-              "kind": "Ready", 
-              "status": "Full"
-            }
-          ], 
-          "host": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
-          "hostIP": "104.197.30.200", 
-          "info": {
-            "fluentd-es": {
-              "containerID": "docker://6c4ffba1d895869e69829689cbef4f591e4f8ef005dbcf68ec00933a00f3bbcb", 
-              "image": "kubernetes/fluentd-elasticsearch:1.3", 
-              "imageID": "docker://9c21ec8f13f154f99ab4d0a17894eda97c5d48bfcd938675dcecaba93a8522ce", 
-              "lastState": {}, 
-              "ready": true, 
-              "restartCount": 3, 
-              "state": {
-                "running": {
-                  "startedAt": "2015-04-07T20:18:14Z"
-                }
-              }
-            }
-          }, 
-          "manifest": {
-            "containers": null, 
-            "id": "", 
-            "restartPolicy": {}, 
-            "version": "", 
-            "volumes": null
-          }, 
-          "status": "Running"
-        }, 
-        "desiredState": {
-          "host": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
-          "manifest": {
-            "containers": [
-              {
-                "capabilities": {}, 
-                "env": [
-                  {
-                    "key": "FLUENTD_ARGS", 
-                    "name": "FLUENTD_ARGS", 
-                    "value": "-qq"
-                  }
-                ], 
-                "image": "kubernetes/fluentd-elasticsearch:1.3", 
-                "imagePullPolicy": "PullIfNotPresent", 
-                "name": "fluentd-es", 
-                "resources": {}, 
-                "terminationMessagePath": "/dev/termination-log", 
-                "volumeMounts": [
-                  {
-                    "mountPath": "/var/lib/docker/containers", 
-                    "name": "containers", 
-                    "path": "/var/lib/docker/containers"
-                  }, 
-                  {
-                    "mountPath": "/varlog", 
-                    "name": "varlog", 
-                    "path": "/varlog"
-                  }
-                ]
-              }
-            ], 
-            "dnsPolicy": "ClusterFirst", 
-            "id": "", 
-            "restartPolicy": {
-              "always": {}
-            }, 
-            "version": "v1beta2", 
-            "volumes": [
-              {
-                "name": "containers", 
-                "source": {
-                  "emptyDir": null, 
-                  "gitRepo": null, 
-                  "hostDir": {
-                    "path": "/var/lib/docker/containers"
-                  }, 
-                  "nfs": null, 
-                  "persistentDisk": null, 
-                  "secret": null
-                }
-              }, 
-              {
-                "name": "varlog", 
-                "source": {
-                  "emptyDir": null, 
-                  "gitRepo": null, 
-                  "hostDir": {
-                    "path": "/var/log"
-                  }, 
-                  "nfs": null, 
-                  "persistentDisk": null, 
-                  "secret": null
-                }
-              }
-            ]
-          }
-        }, 
-        "id": "fluentd-to-elasticsearch-kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
-        "namespace": "default", 
-        "resourceVersion": 152813, 
-        "selfLink": "/api/v1beta1/pods/fluentd-to-elasticsearch-kubernetes-minion-11cx.c.the-pentameter-90318.internal?namespace=default", 
-        "uid": "0e4ee16a-dcb1-11e4-b2b5-42010af052bc"
-      }, 
-      "timestamp": "2015-04-10T02:11:19.937609", 
+      "timestamp": "2015-05-29T15:25:25.780135", 
       "type": "Pod"
     }
   ], 
   "success": true, 
-  "timestamp": "2015-03-16T17:43:31.250509"
+  "timestamp": "2015-05-29T15:25:25.791973"
 }

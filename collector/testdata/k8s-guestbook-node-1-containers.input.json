@@ -1,11 +1,11 @@
 [{"Command":"/bin/sh -c /run.sh","Created":1426602314,
 "Id":"7601231ec04ea529e4e8daa5d88ef05e7a14b4b229cd76b44715de00f655373a",
 "Image":"brendanburns/php-redis:latest",
-"Names":["/k8s_php-redis.b317029a_guestbook-controller-hh2gd.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eb67684a"],
+"Names":["/k8s_php-redis.b317029a_guestbook-controller-14zj2.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eb67684a"],
 "Ports":[],"Status":"Up 6 seconds"}
 ,{"Command":"/pause","Created":1426602313,"Id":"ec5331b506e92762517a395003070af2701031288d6a02c4c3433778a6875fdb",
 "Image":"kubernetes/pause:go",
-"Names":["/k8s_POD.e614ed9a_guestbook-controller-hh2gd.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eca6b12d"],
+"Names":["/k8s_POD.e614ed9a_guestbook-controller-14zj2.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eca6b12d"],
 "Ports":[],"Status":"Up 6 seconds"}
 ,{"Command":"/skydns -machines=http://localhost:4001 -addr=0.0.0.0:53 -domain=kubernetes.local.",
 "Created":1424472827,
@@ -43,6 +43,11 @@
 "Names":["/k8s_POD.1522ef03_redis-worker-controller-oh43e.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105"],
 "Ports":[{"IP":"0.0.0.0","PrivatePort":6379,"PublicPort":6380,"Type":"tcp"}],
 "Status":"Up 3 weeks"}
+,{"Command":"/pause","Created":1424472923,
+"Id":"f15272658bbd7be306d9ee14a06602bf1530866edc8724f843beeb3efdad0088",
+"Image":"kubernetes/pause:go",
+"Names":["/k8s_POD.23ebee62_redis-master.default.api_32a27c5a-b949-11e4-8246-42010af0c3dd_0e0f9003"],
+"Ports":[],"Status":"Up 5 weeks"}
 ,{"Command":"/pause","Created":1424472821,"Id":"5f775514ea56db12db5b7147e6c1b41fb7f6ef2ccafff3495416041362f4c5d9",
 "Image":"kubernetes/pause:go",
 "Names":["/k8s_POD.252debe0_cadvisor-agent.file-6bb810db-k8s-guestbook-node-1.file_b6be754c7f2331b63bbc02879e0367e8_5d8d013e"],

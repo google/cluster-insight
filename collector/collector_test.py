@@ -124,7 +124,7 @@ class TestCollector(unittest.TestCase):
 
   def test_rcontrollers(self):
     ret_value = self.app.get('/cluster/resources/rcontrollers')
-    self.compare_to_golden(ret_value.data, 'replicationControllers')
+    self.compare_to_golden(ret_value.data, 'replicationcontrollers')
 
   def test_containers(self):
     ret_value = self.app.get('/cluster/resources/containers')
@@ -169,10 +169,12 @@ class TestCollector(unittest.TestCase):
   def verify_resources(self, result):
     assert isinstance(result, types.DictType)
     self.assertEqual(1, self.count_resources(result, 'Cluster'))
-    self.assertEqual(4, self.count_resources(result, 'Node'))
+    self.assertEqual(3, self.count_resources(result, 'Node'))
     self.assertEqual(6, self.count_resources(result, 'Service'))
-    self.assertEqual(8, self.count_resources(result, 'Pod'))
-    self.assertEqual(5, self.count_resources(result, 'Container'))
+    # TODO(eran): the pods count does not include the pods running in the
+    # master. Fix the count once we include pods that run in the master node.
+    self.assertEqual(10, self.count_resources(result, 'Pod'))
+    self.assertEqual(4, self.count_resources(result, 'Container'))
     self.assertEqual(7, self.count_resources(result, 'Process'))
     self.assertEqual(2, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
@@ -205,15 +207,15 @@ class TestCollector(unittest.TestCase):
     result = json.loads(ret_value.data)
     self.verify_resources(result)
 
-    self.assertEqual(25, self.count_relations(result, 'contains'))
-    self.assertEqual(4, self.count_relations(result, 'createdFrom'))
-    self.assertEqual(6, self.count_relations(result, 'loadBalances'))
-    self.assertEqual(5, self.count_relations(result, 'monitors'))
-    self.assertEqual(8, self.count_relations(result, 'runs'))
+    self.assertEqual(23, self.count_relations(result, 'contains'))
+    self.assertEqual(3, self.count_relations(result, 'createdFrom'))
+    self.assertEqual(7, self.count_relations(result, 'loadBalances'))
+    self.assertEqual(6, self.count_relations(result, 'monitors'))
+    self.assertEqual(10, self.count_relations(result, 'runs'))
 
     json_output = json.dumps(result, sort_keys=True)
     self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(84, json_output.count('"createdBy": '))
+    self.assertEqual(85, json_output.count('"createdBy": '))
 
   def test_debug(self):
     ret_value = self.app.get('/debug')

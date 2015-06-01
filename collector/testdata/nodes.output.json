@@ -2,228 +2,236 @@
   "resources": [
     {
       "annotations": {
-        "label": "k8s-guestbook-node-1",
+        "label": "k8s-guestbook-node-1", 
         "metrics": {
-          "gcm": { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-1.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
+          "gcm": {
+            "labels": {
+              "container_name": "/", 
+              "hostname": "k8s-guestbook-node-1", 
+              "pod_id": ""
+            }, 
+            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/", 
             "names": [
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors", 
               "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
-            ],
-            "project": "rising-apricot-840"
+            ], 
+            "project": "_unknown_"
           }
         }
-      },
-      "id": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
-      "properties": {
-        "creationTimestamp": "2015-02-20T21:39:34Z", 
-        "hostIP": "130.211.181.148", 
-        "id": "k8s-guestbook-node-1.c.rising-apricot-840.internal", 
-        "resourceVersion": 1694535, 
-        "resources": {
-          "capacity": {
-            "cpu": "1", 
-            "memory": 4026531840
-          }
-        }, 
-        "selfLink": "/api/v1beta1/nodes/k8s-guestbook-node-1.c.rising-apricot-840.internal", 
-        "status": {
-          "conditions": [
-            {
-              "kind": "Ready", 
-              "lastProbeTime": "2015-03-16T15:35:03Z", 
-              "lastTransitionTime": "2015-02-20T22:53:43Z", 
-              "reason": "Node health check succeeded: kubelet /healthz endpoint returns ok", 
-              "status": "Full"
-            }
-          ]
-        }, 
-        "uid": "f5cf5b5e-b948-11e4-8246-42010af0c3dd"
       }, 
-      "timestamp": "2015-03-16T15:35:09.083547", 
-      "type": "Node"
-    }, 
-    {
-      "annotations": {
-        "label": "k8s-guestbook-node-2",
-        "metrics": {
-          "gcm": { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-2.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "names": [
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
-            ],
-            "project": "rising-apricot-840"
-          }
-        }
-      },
-      "id": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
+      "id": "k8s-guestbook-node-1", 
       "properties": {
-        "creationTimestamp": "2015-02-20T21:39:34Z", 
-        "hostIP": "130.211.145.7", 
-        "id": "k8s-guestbook-node-2.c.rising-apricot-840.internal", 
-        "resourceVersion": 1694536, 
-        "resources": {
-          "capacity": {
-            "cpu": "1", 
-            "memory": 4026531840
-          }
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:30:08Z", 
+          "name": "k8s-guestbook-node-1", 
+          "resourceVersion": "101140", 
+          "selfLink": "/api/v1beta3/nodes/k8s-guestbook-node-1", 
+          "uid": "1755084f-03bc-11e5-94dd-42010af099dd"
         }, 
-        "selfLink": "/api/v1beta1/nodes/k8s-guestbook-node-2.c.rising-apricot-840.internal", 
-        "status": {
-          "conditions": [
-            {
-              "kind": "Ready", 
-              "lastProbeTime": "2015-03-16T15:35:03Z", 
-              "lastTransitionTime": "2015-02-20T22:22:34Z", 
-              "reason": "Node health check succeeded: kubelet /healthz endpoint returns ok", 
-              "status": "Full"
-            }
-          ]
+        "spec": {
+          "externalID": "10905398772146573860"
         }, 
-        "uid": "f5f32d14-b948-11e4-8246-42010af0c3dd"
-      }, 
-      "timestamp": "2015-03-16T15:35:09.083547", 
-      "type": "Node"
-    }, 
-    {
-      "annotations": {
-        "label": "k8s-guestbook-node-3",
-        "metrics": {
-          "gcm": { "labels": {
-              "container_name": "/", "hostname": "k8s-guestbook-node-3.c.rising-apricot-840.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "names": [
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
-            ],
-            "project": "rising-apricot-840"
-          }
-        }
-      },
-      "id": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
-      "properties": {
-        "creationTimestamp": "2015-02-20T21:39:34Z", 
-        "hostIP": "104.154.41.133", 
-        "id": "k8s-guestbook-node-3.c.rising-apricot-840.internal", 
-        "resourceVersion": 1694537, 
-        "resources": {
-          "capacity": {
-            "cpu": "1", 
-            "memory": 4026531840
-          }
-        }, 
-        "selfLink": "/api/v1beta1/nodes/k8s-guestbook-node-3.c.rising-apricot-840.internal", 
-        "status": {
-          "conditions": [
-            {
-              "kind": "Ready", 
-              "lastProbeTime": "2015-03-16T15:35:03Z", 
-              "lastTransitionTime": "2015-02-20T22:56:30Z", 
-              "reason": "Node health check succeeded: kubelet /healthz endpoint returns ok", 
-              "status": "Full"
-            }
-          ]
-        }, 
-        "uid": "f5f40196-b948-11e4-8246-42010af0c3dd"
-      }, 
-      "timestamp": "2015-03-16T15:35:09.083547", 
-      "type": "Node"
-    },
-    {
-      "annotations": {
-        "label": "kubernetes-minion-11cx",
-        "metrics": {
-          "gcm": { "labels": {
-              "container_name": "/", "hostname": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", "pod_id": ""
-            },
-            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/",
-            "names": [
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors",
-              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
-            ],
-            "project": "the-pentameter-90318"
-          }
-        }
-      },
-      "id": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
-      "properties": {
-        "creationTimestamp": "2015-04-06T23:02:04Z", 
-        "externalID": "2425115037103139076", 
-        "hostIP": "104.197.30.200", 
-        "id": "kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
-        "resourceVersion": 537475, 
-        "resources": {
-          "capacity": {
-            "cpu": "1", 
-            "memory": 3892043776
-          }
-        }, 
-        "selfLink": "/api/v1beta1/nodes/kubernetes-minion-11cx.c.the-pentameter-90318.internal", 
         "status": {
           "addresses": [
             {
-              "address": "23.251.158.160", 
+              "address": "104.154.34.132", 
               "type": "ExternalIP"
             }, 
             {
-              "address": "104.197.30.200", 
+              "address": "104.154.34.132", 
               "type": "LegacyHostIP"
             }
           ], 
+          "capacity": {
+            "cpu": "1", 
+            "memory": "3800808Ki"
+          }, 
           "conditions": [
             {
-              "kind": "Ready", 
-              "lastProbeTime": "2015-04-10T02:08:13Z", 
-              "lastTransitionTime": "2015-04-06T23:02:06Z", 
+              "lastHeartbeatTime": "2015-05-29T15:23:14Z", 
+              "lastTransitionTime": "2015-05-26T15:30:16Z", 
               "reason": "kubelet is posting ready status", 
-              "status": "Full"
+              "status": "True", 
+              "type": "Ready"
             }
           ], 
           "nodeInfo": {
+            "bootID": "1b106430-392e-47b6-869b-ce57f18b37bc", 
+            "containerRuntimeVersion": "docker://1.6.0", 
+            "kernelVersion": "3.16.0-0.bpo.4-amd64", 
+            "kubeProxyVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
+            "kubeletVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
             "machineID": "", 
-            "systemUUID": "DFFFF571-858B-0D34-6309-C309B5E0AF71"
+            "osImage": "Debian GNU/Linux 7 (wheezy)", 
+            "systemUUID": "A14542A5-5EB8-B7F6-972D-067679986F5B"
           }
-        }, 
-        "uid": "f0cae2fc-dcb0-11e4-b2b5-42010af052bc"
+        }
       }, 
-      "timestamp": "2015-04-10T02:08:15.204977", 
+      "timestamp": "2015-05-29T15:23:16.103710", 
+      "type": "Node"
+    }, 
+    {
+      "annotations": {
+        "label": "k8s-guestbook-node-2", 
+        "metrics": {
+          "gcm": {
+            "labels": {
+              "container_name": "/", 
+              "hostname": "k8s-guestbook-node-2", 
+              "pod_id": ""
+            }, 
+            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/", 
+            "names": [
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
+            ], 
+            "project": "_unknown_"
+          }
+        }
+      }, 
+      "id": "k8s-guestbook-node-2", 
+      "properties": {
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:30:08Z", 
+          "name": "k8s-guestbook-node-2", 
+          "resourceVersion": "101138", 
+          "selfLink": "/api/v1beta3/nodes/k8s-guestbook-node-2", 
+          "uid": "1754f676-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "externalID": "8317635837392287933"
+        }, 
+        "status": {
+          "addresses": [
+            {
+              "address": "104.197.1.75", 
+              "type": "ExternalIP"
+            }, 
+            {
+              "address": "104.197.1.75", 
+              "type": "LegacyHostIP"
+            }
+          ], 
+          "capacity": {
+            "cpu": "1", 
+            "memory": "3800808Ki"
+          }, 
+          "conditions": [
+            {
+              "lastHeartbeatTime": "2015-05-29T15:23:14Z", 
+              "lastTransitionTime": "2015-05-26T15:30:14Z", 
+              "reason": "kubelet is posting ready status", 
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "nodeInfo": {
+            "bootID": "fea20464-ad10-48ab-9e03-978bb4fac795", 
+            "containerRuntimeVersion": "docker://1.6.0", 
+            "kernelVersion": "3.16.0-0.bpo.4-amd64", 
+            "kubeProxyVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
+            "kubeletVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
+            "machineID": "", 
+            "osImage": "Debian GNU/Linux 7 (wheezy)", 
+            "systemUUID": "442B2882-06F1-8B2F-9D5E-FE49BAEC5346"
+          }
+        }
+      }, 
+      "timestamp": "2015-05-29T15:23:16.103710", 
+      "type": "Node"
+    }, 
+    {
+      "annotations": {
+        "label": "k8s-guestbook-node-3", 
+        "metrics": {
+          "gcm": {
+            "labels": {
+              "container_name": "/", 
+              "hostname": "k8s-guestbook-node-3", 
+              "pod_id": ""
+            }, 
+            "labels_prefix": "custom.cloudmonitoring.googleapis.com/kubernetes.io/label/", 
+            "names": [
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/cpu/usage", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/page_faults", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/usage", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/memory/working_set", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/rx_errors", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/network/tx_errors", 
+              "custom.cloudmonitoring.googleapis.com/kubernetes.io/uptime"
+            ], 
+            "project": "_unknown_"
+          }
+        }
+      }, 
+      "id": "k8s-guestbook-node-3", 
+      "properties": {
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:30:08Z", 
+          "name": "k8s-guestbook-node-3", 
+          "resourceVersion": "101139", 
+          "selfLink": "/api/v1beta3/nodes/k8s-guestbook-node-3", 
+          "uid": "1754da89-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "externalID": "7254866938629058439"
+        }, 
+        "status": {
+          "addresses": [
+            {
+              "address": "130.211.190.34", 
+              "type": "ExternalIP"
+            }, 
+            {
+              "address": "130.211.190.34", 
+              "type": "LegacyHostIP"
+            }
+          ], 
+          "capacity": {
+            "cpu": "1", 
+            "memory": "3800808Ki"
+          }, 
+          "conditions": [
+            {
+              "lastHeartbeatTime": "2015-05-29T15:23:14Z", 
+              "lastTransitionTime": "2015-05-26T15:30:14Z", 
+              "reason": "kubelet is posting ready status", 
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "nodeInfo": {
+            "bootID": "2ba078bf-1b18-43d7-a4e3-900e971f64ca", 
+            "containerRuntimeVersion": "docker://1.6.0", 
+            "kernelVersion": "3.16.0-0.bpo.4-amd64", 
+            "kubeProxyVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
+            "kubeletVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
+            "machineID": "", 
+            "osImage": "Debian GNU/Linux 7 (wheezy)", 
+            "systemUUID": "73B57188-A536-FC18-5D0A-60A562925E9C"
+          }
+        }
+      }, 
+      "timestamp": "2015-05-29T15:23:16.103710", 
       "type": "Node"
     }
   ], 
   "success": true, 
-  "timestamp": "2015-03-16T15:35:09.084327"
+  "timestamp": "2015-05-29T15:23:16.106841"
 }

@@ -13,11 +13,11 @@
 "Ports":[],"Status":"Up 3 weeks"}
 ,{"Command":"/bin/sh -c /run.sh","Created":1424472983,
 "Id":"3b2da7c60ec7d85c33af1c4596854b38f404fc4c08b10b3f95b78811f5cee885","Image":"brendanburns/redis-slave:latest",
-"Names":["/k8s_redis-worker.872a0284_redis-worker-controller-gziey.default.api_bdb88fe4-b949-11e4-8246-42010af0c3dd_17b69b78"],
+"Names":["/k8s_redis-worker.872a0284_redis-worker-controller-4qg33.default.api_bdb88fe4-b949-11e4-8246-42010af0c3dd_17b69b78"],
 "Ports":[],"Status":"Up 3 weeks"}
 ,{"Command":"/pause","Created":1424472982,"Id":"a8515e7b12ba52eed616cc8530eaeadf702c3e29e2e466a923cff0be30a1403a",
 "Image":"kubernetes/pause:go",
-"Names":["/k8s_POD.1522ef03_redis-worker-controller-gziey.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105"],
+"Names":["/k8s_POD.1522ef03_redis-worker-controller-4qg33.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105"],
 "Ports":[{"IP":"0.0.0.0","PrivatePort":6379,"PublicPort":6380,"Type":"tcp"}],
 "Status":"Up 3 weeks"}
 ,{"Command":"/pause","Created":1424472982,"Id":"c6e8f60a7df43fb716bb9f14671b5945493ea60398cf0406921b1db8ebd52e79",
