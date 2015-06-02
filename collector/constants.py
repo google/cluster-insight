@@ -41,3 +41,6 @@ MAX_CONCURRENT_WORKERS = 10
 # These calls are executed by concurrent worker threads, so they may generate
 # heavy load on the backend.
 MAX_CONCURRENT_COMPUTE_GRAPH = 2
+
+MODE_MINION = 'minion'
+MODE_MASTER = 'master'

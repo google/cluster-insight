@@ -356,7 +356,7 @@ def get_health():
 
 # Starts the web server and listen on all external IPs associated with this
 # host.
-if __name__ == '__main__':
+def main():
   parser = argparse.ArgumentParser(description='Cluster-Insight data collector')
   parser.add_argument('-d', '--debug', action='store_true',
                       help='enable debug mode')
@@ -384,3 +384,7 @@ if __name__ == '__main__':
   app.context_graph_global_state = g_state
 
   app.run(host='0.0.0.0', port=args.port, debug=args.debug)
+
+
+if __name__ == '__main__':
+  main()
