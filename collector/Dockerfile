@@ -43,14 +43,13 @@
 # (Ctrl-C will stop and remove the container):
 #   sudo docker run --rm --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight python ./collector.py --debug
 #
-# To run a container from this image in detached production mode:
-# To run as master:
+# To run a container from this image in detached production mode as the master:
 #   sudo docker run -d --net=host -p 5555:5555 --name cluster-insight -e CLUSTER_INSIGHT_MODE=master kubernetes/cluster-insight
 # (this assumes that the Web Server port specified in collector.py is 5555)
 #
-# To run as minion
+# To run a container from this image in detached production mode as a minion:
 #   sudo docker run -d --net=host -p 4243:4243 --name cluster-insight -e CLUSTER_INSIGHT_MODE=minion -v /var/run/docker.sock:/var/run/docker.sock:ro kubernetes/cluster-insight 
-# (this assumes that the docker port specified in docker_proxy.py is 5555)
+# (this assumes that the docker port specified in docker_proxy.py is 4243)
 
 # To check if the Cluster-Insight data collector is running:
 #   sudo docker ps | grep cluster-insight

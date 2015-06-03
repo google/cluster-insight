@@ -16,6 +16,7 @@
 
 
 """Chooses which top level module to run, based on the mode passed in
+the CLUSTER_INSIGHT_MODE environment variable
 """
 
 import argparse

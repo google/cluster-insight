@@ -15,6 +15,9 @@
 # limitations under the License.
 
 
+"""Runs the cluster insight data collector in minion mode. """
+
+
 import argparse
 import datetime
 import flask
@@ -26,6 +29,7 @@ import sys
 import types
 
 import constants
+import utilities
 
 app = flask.Flask(__name__)
 logger = logging.getLogger(__name__)
@@ -39,17 +43,6 @@ session = requests_unixsocket.Session()
 
 # Constant pointing to the url for the docker unix socket
 LOCAL_DOCKER_HOST= 'http+unix://%2Fvar%2Frun%2Fdocker.sock'
-
-
-def make_error(error_message):
-  """Returns a JSON response indicating an error."""
-  assert isinstance(error_message, types.StringTypes) and error_message
-  result = {
-      'success': False,
-      'timestamp': datetime.datetime.now().isoformat(),
-      'error_message': error_message
-  }
-  return result
 
 
 def get_response(api):
@@ -70,13 +63,13 @@ def get_response(api):
   except Exception as e:
     logger.error(e, exc_info=True)
     exc_type, value, _ = sys.exc_info()
-    return flask.jsonify(make_error(
+    return flask.jsonify(utilities.make_error(
 	    'Failed to retrieve %s with exception %s: %s' 
 	    % (api, exc_type, value)))
 
 
 
-# Calls to support 
+# Support the following calls and nothing else:
 # 1. /containers/{container_id}/json
 # 2. /containers/json
 # 3. /containers/{container_id}/top?ps_args=aux
@@ -97,9 +90,9 @@ def get_one_image(image_id):
 @app.route('/containers/<container_id>/top', methods=['GET'])
 def get_one_container_processes(container_id):
   qargs = flask.request.args.to_dict() if flask.request.args else {}
-  if qargs.get('ps_args') != 'aux' or len(qargs.keys()) > 1:
+  if len(qargs) != 1 or qargs.get('ps_args') != 'aux':
     return flask.jsonify(make_error(
-	    'For /container/{container_id}/top, the only allowed arg is ps_args=aux.'
+	    'For /container/{container_id}/top, the sole mandatory arg is ps_args=aux.'
 	    '%s is not allowed' % (qargs)))
 
   return get_response('/containers/{cid}/top?ps_args=aux'.format(cid=container_id))
