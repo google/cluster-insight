@@ -73,7 +73,7 @@ def get_response(api):
 # 1. /containers/{container_id}/json
 # 2. /containers/json
 # 3. /containers/{container_id}/top?ps_args=aux
-# 4. /containers/{image_id}/json
+# 4. /images/{image_id}/json
 
 @app.route('/containers/json', methods=['GET'])
 def get_all_containers():
@@ -83,9 +83,9 @@ def get_all_containers():
 def get_one_container(container_id):
   return get_response('/containers/{cid}/json'.format(cid=container_id))
 
-@app.route('/containers/<image_id>/json', methods=['GET'])
+@app.route('/images/<image_id>/json', methods=['GET'])
 def get_one_image(image_id):
-  return get_response('/containers/{iid}/json'.format(iid=image_id))
+  return get_response('/images/{iid}/json'.format(iid=image_id))
 
 @app.route('/containers/<container_id>/top', methods=['GET'])
 def get_one_container_processes(container_id):
