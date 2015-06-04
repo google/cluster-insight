@@ -23,6 +23,7 @@ import argparse
 import os
 
 import collector
+import collector_error
 import constants
 import docker_proxy
 
@@ -51,6 +52,6 @@ if __name__ == '__main__':
   elif mode == constants.MODE_MINION:
     docker_proxy.main()
   else:
-    raise Exception('Mode is %s. It can only be one of %s, and %s' 
-		    % (mode, constants.MODE_MINION, constants.MODE_MASTER))
-
+    raise collector_error.CollectorError(
+	'CLUSTER_INSIGHT_MODE environment variable is %s. Valid values are %s '
+	'or %s' % (mode, constants.MODE_MINION, constants.MODE_MASTER))

@@ -481,8 +481,8 @@ def get_processes(gs, docker_host, container_id):
   return ret_value
 
 
-@utilities.global_state_two_string_args
-def get_image(gs, docker_host, image_id):
+@utilities.global_state_two_string_optional_string_args
+def get_image(gs, docker_host, image_id, image_name=None):
   """Gets the information of the given image in the given host.
 
   Args:
@@ -490,6 +490,8 @@ def get_image(gs, docker_host, image_id):
     docker_host: Docker host name. Must not be empty.
     image_id: Image ID. Must not be empty. Must be a symbolic name of the image
       (not a long hexadecimal string).
+    image_name: Image name. Can be None. This is used to assign the alternate 
+      label. This value is embedded in the container description.
 
   Returns:
     If image was found, returns the wrapped image object, which is the result of
@@ -500,8 +502,11 @@ def get_image(gs, docker_host, image_id):
     CollectorError: in case of failure to fetch data from Docker.
     Other exceptions may be raised due to exectution errors.
   """
-  # 'image_id' should be a symbolic name and not a very long hexadecimal string.
-  assert not utilities.valid_hex_id(image_id)
+  # 'image_id' should be a very long hexadecimal string.
+  assert utilities.valid_hex_id(image_id)
+  # 'image_name' should be a symbolic name and not a very long hexadecimal string.
+  assert image_name is None or not utilities.valid_hex_id(image_name)
+
   cache_key = '%s|%s' % (docker_host, image_id)
   image, timestamp_secs = gs.get_images_cache().lookup(cache_key)
   if timestamp_secs is not None:
@@ -526,6 +531,8 @@ def get_image(gs, docker_host, image_id):
     image = fetch_data(gs, url, fname, expect_missing=True)
   except ValueError:
     # image not found.
+    msg = 'image not found for image_id: %s' % image_id
+    gs.logger_info(msg)
     return None
   except collector_error.CollectorError:
     raise
@@ -550,15 +557,15 @@ def get_image(gs, docker_host, image_id):
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
 
-  image_name_label = image_id
+  image_name_label = image_id if image_name is None else image_name
 
   wrapped_image = utilities.wrap_object(
       image, 'Image', full_hex_label, now,
       label=short_hex_label, alt_label=image_name_label)
 
   ret_value = gs.get_images_cache().update(cache_key, wrapped_image, now)
-  gs.logger_info('get_image(docker_host=%s, image_id=%s)',
-                 docker_host, image_id)
+  gs.logger_info('get_image(docker_host=%s, image_id=%s, image_name=%s)',
+                 docker_host, image_id, image_name)
   return ret_value
 
 
@@ -589,13 +596,14 @@ def get_images(gs, docker_host):
   # All containers in this 'docker_host'.
   for container in get_containers(gs, docker_host):
     # Image from which this Container was created
-    image_id = utilities.get_attribute(
+    image_id = utilities.get_attribute(container, ['properties', 'Image'])
+    image_name = utilities.get_attribute(
         container, ['properties', 'Config', 'Image'])
     if not utilities.valid_string(image_id):
       # Image ID not found
       continue
 
-    image = get_image(gs, docker_host, image_id)
+    image = get_image(gs, docker_host, image_id, image_name)
     if (image is not None) and (image['id'] not in image_id_set):
       images_list.append(image)
       image_id_set.add(image['id'])

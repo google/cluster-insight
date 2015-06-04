@@ -174,6 +174,21 @@ def global_state_two_string_args(func):
   return inner
 
 
+def global_state_two_string_optional_string_args(func):
+  """A decorator for a function with a global state, two string, and one 
+  optional string arguments.
+
+  All string arguments must be valid strings (see valid_string() above).
+  """
+  def inner(arg1, arg2, arg3,arg4=None):
+    assert isinstance(arg1, global_state.GlobalState)
+    assert valid_string(arg2) and valid_string(arg3)
+    assert valid_optional_string(arg4)
+    return func(arg1, arg2, arg3, arg4)
+
+  return inner
+
+
 def one_string_one_optional_string_args(func):
   """A decorator for a function that should be given two string arguments.
 
