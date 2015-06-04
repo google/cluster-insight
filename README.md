@@ -42,31 +42,16 @@ To build a Docker image from the source code, follow these instructions:
 
 To install and activate this service, follow these instructions:
 
-* Enable port 4243 of the Docker daemons running on the master and minion nodes.
-  The easiest way to do so on Google Cloud Platform (GCP) is by running
-  the the installation script
-  `./cluster-insight/install/gcp-project-setup.sh` by the following
-  instructions:
-* Clone the Cluster-Insight sources from Github into a local directory
-  `./cluster-insight` with the command
-  `git clone https://github.com/google/cluster-insight.git`
-  if you have not done so already.
-* Change directory to `./cluster-insight/collector`. 
-* Run the script `./gcp-project-setup.sh PROJECT_NAME`.
-* If the script ends with the message `SCRIPT ALL DONE` then the one-time setup
-  of port 4243 is complete. You can skip the following two steps. Resume
-  at the step marked "Continue here".
-* If you are installing Cluster-Insight on a different platform than GCP,
-  the script endend with the message `SCRIPT FAILED` or with another error,
-  you will have to perform the following operations by hand.
-* On each of the Kubernetes minion node and the Kubernetes master node
-  do the following:
-   * Login to the minion/master host.
-   * Edit the file /etc/default/docker, and replace the line `DOCKER_OPTS=""`
-     with the line: `DOCKER_OPTS="-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"`
-   * Restart the Docker daemon: `sudo service docker restart`
+To set up the minion nodes, do the following:
+  * Login to the master host.
+  * Run cluster-insight in "minion" mode on all the minions so as to access the docker daemon on port 4243. We provide a script for a replication controller, so this is easy to set up. Run the following kubectl commands on the master host to set this up:
+    * `kubectl create -f cluster-insight/collector/cluster-insight-controller.json`
+    * `kubectl resize rc cluster-insight-controller --replicas=<num-minions>`
+    * Here `<num-minions>` is the number of minion nodes in your cluster. Since the container binds to a specific port on the host, this will ensure that exactly one cluster-insight container runs on each minion.
+    * NOTE: If building from source, please make sure that you build the source on each minion, otherwise the master could have a different image from that on the minions. 
+    * All the minion nodes will have a cluster-insight container node running on them, and will provide limited read access to their docker daemon via port 4243. Try this out by running the following command based on the internal-ip of one of your minions: `curl http://<minion-node-internal-ip>:4243/containers/json`. 
 
-* Continue here: On the Kubernetes master do the following:
+To set up the master node, do the following:
    * Login to the master host.
    * Check if the Docker service is running: `sudo docker ps`. If this gives
      an error, you must install and start the Docker service on this machine
@@ -182,3 +167,4 @@ Each of the resources and relations has a `timestamp` field, indicating when
 it was observed or inferred, respectively. The entire context graph has a
 separate timestamp indiciating when the graph was computed from the resource
 metadata.
+

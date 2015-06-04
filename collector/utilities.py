@@ -544,3 +544,37 @@ def get_short_container_name(container, parent_pod):
       return cname
 
   return None
+
+
+def make_response(value, attribute_name):
+  """Makes the JSON response containing the given attribute name and value.
+
+  Args:
+    value: the value associated with 'attribute_name'.
+    attribute_name: a string containing the attribute name.
+
+  Returns:
+    A dictionary containing a context-graph successful response with the given
+    attribute name and value.
+  """
+  assert valid_string(attribute_name)
+  return {'success': True,
+          'timestamp': datetime.datetime.now().isoformat(),
+          attribute_name: value}
+
+
+def make_error(error_message):
+  """Makes the JSON response indicating an error.
+
+  Args:
+    error_message: a string containing the error message describing the
+    failure.
+
+  Returns:
+    A dictionary containing an failed context-graph response with a given
+    error message.
+  """
+  assert valid_string(error_message)
+  return {'success': False,
+          'timestamp': datetime.datetime.now().isoformat(),
+          'error_message': error_message}

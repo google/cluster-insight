@@ -1,0 +1,61 @@
+{
+    "kind": "ReplicationController",
+    "apiVersion": "v1beta3",
+    "metadata": {
+	"name": "cluster-insight-controller",
+	"labels": {
+	    "name": "cluster-insight"
+	}
+    },
+    "spec": {
+	"replicas": 1,
+	"selector": {
+	    "name": "cluster-insight"
+	},
+	"template": {
+	    "metadata": {
+		"labels": {
+		    "name": "cluster-insight"
+		}
+	    },
+	    "spec": {
+		"volumes": [
+		    {
+			"name": "docker-unix-socket",
+			"hostPath": {
+			    "path": "/var/run/docker.sock"
+			}
+		    }
+		],
+		"containers": [
+		    {
+			"name": "cluster-insight",
+                        "ports":[
+                           {
+                              "name":"http-docker",
+                              "containerPort":4243,
+                              "hostPort":4243,
+                              "protocol":"TCP"
+                           }
+                        ],
+                        "env": [
+                           {
+                              "name":"CLUSTER_INSIGHT_MODE",
+                              "value":"minion"
+                           }
+                        ],
+			"image": "kubernetes/cluster-insight",
+			"resources": {},
+			"volumeMounts": [
+			    {
+				"name": "docker-unix-socket",
+				"readOnly": true,
+				"mountPath": "/var/run/docker.sock"
+			    }
+			]
+		    }
+		]
+	    }
+	}
+    }
+}

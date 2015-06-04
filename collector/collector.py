@@ -15,7 +15,8 @@
 # limitations under the License.
 
 
-"""Collects context metadata from multiple places and computes a graph from it.
+"""Runs the cluster insight data collector in master mode. Collects context
+metadata from multiple places and computes a graph from it.
 """
 
 import argparse
@@ -56,40 +57,6 @@ def valid_id(x):
   return utilities.valid_optional_string(x)
 
 
-def make_response(value, attribute_name):
-  """Makes the JSON response containing the given attribute name and value.
-
-  Args:
-    value: the value associated with 'attribute_name'.
-    attribute_name: a string containing the attribute name.
-
-  Returns:
-    A dictionary containing a context-graph successful response with the given
-    attribute name and value.
-  """
-  assert utilities.valid_string(attribute_name)
-  return {'success': True,
-          'timestamp': datetime.datetime.now().isoformat(),
-          attribute_name: value}
-
-
-def make_error(error_message):
-  """Makes the JSON response indicating an error.
-
-  Args:
-    error_message: a string containing the error message describing the
-    failure.
-
-  Returns:
-    A dictionary containing an failed context-graph response with a given
-    error message.
-  """
-  assert utilities.valid_string(error_message)
-  return {'success': False,
-          'timestamp': datetime.datetime.now().isoformat(),
-          'error_message': error_message}
-
-
 @app.route('/', methods=['GET'])
 def home():
   """Returns the response of the '/' endpoint.
@@ -111,13 +78,13 @@ def get_nodes():
   try:
     nodes_list = kubernetes.get_nodes_with_metrics(gs)
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = 'kubernetes.get_nodes() failed with exception %s' % sys.exc_info()[0]
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
-  return flask.jsonify(make_response(nodes_list, 'resources'))
+  return flask.jsonify(utilities.make_response(nodes_list, 'resources'))
 
 
 @app.route('/cluster/resources/services', methods=['GET'])
@@ -131,14 +98,14 @@ def get_services():
   try:
     services_list = kubernetes.get_services(gs)
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = ('kubernetes.get_services() failed with exception %s' %
            sys.exc_info()[0])
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
-  return flask.jsonify(make_response(services_list, 'resources'))
+  return flask.jsonify(utilities.make_response(services_list, 'resources'))
 
 
 @app.route('/cluster/resources/rcontrollers', methods=['GET'])
@@ -152,14 +119,14 @@ def get_rcontrollers():
   try:
     rcontrollers_list = kubernetes.get_rcontrollers(gs)
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = ('kubernetes.get_rcontrollers() failed with exception %s' %
            sys.exc_info()[0])
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
-  return flask.jsonify(make_response(rcontrollers_list, 'resources'))
+  return flask.jsonify(utilities.make_response(rcontrollers_list, 'resources'))
 
 
 @app.route('/cluster/resources/pods', methods=['GET'])
@@ -173,13 +140,13 @@ def get_pods():
   try:
     pods_list = kubernetes.get_pods(gs, None)
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = 'kubernetes.get_pods() failed with exception %s' % sys.exc_info()[0]
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
-  return flask.jsonify(make_response(pods_list, 'resources'))
+  return flask.jsonify(utilities.make_response(pods_list, 'resources'))
 
 
 @app.route('/cluster/resources/containers', methods=['GET'])
@@ -199,13 +166,13 @@ def get_containers():
       containers.extend(docker.get_containers_with_metrics(gs, docker_host))
 
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = 'get_containers() failed with exception %s' % sys.exc_info()[0]
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
-  return flask.jsonify(make_response(containers, 'resources'))
+  return flask.jsonify(utilities.make_response(containers, 'resources'))
 
 
 @app.route('/cluster/resources/processes', methods=['GET'])
@@ -227,13 +194,13 @@ def get_processes():
         processes.extend(docker.get_processes(gs, docker_host, container_id))
 
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = 'get_processes() failed with exception %s' % sys.exc_info()[0]
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
-  return flask.jsonify(make_response(processes, 'resources'))
+  return flask.jsonify(utilities.make_response(processes, 'resources'))
 
 
 @app.route('/cluster/resources/images', methods=['GET'])
@@ -255,15 +222,15 @@ def get_images():
         images_dict[image['id']] = image
 
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = 'kubernetes.get_images() failed with exception %s' % sys.exc_info()[0]
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
   # The images list is sorted by increasing identifiers.
   images_list = [images_dict[key] for key in sorted(images_dict.keys())]
-  return flask.jsonify(make_response(images_list, 'resources'))
+  return flask.jsonify(utilities.make_response(images_list, 'resources'))
 
 
 @app.route('/debug', methods=['GET'])
@@ -277,12 +244,12 @@ def get_debug():
   try:
     return context.compute_graph(gs, 'dot')
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = ('compute_graph(\"dot\") failed with exception %s' %
            sys.exc_info()[0])
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
 
 @app.route('/cluster/resources', methods=['GET'])
@@ -297,12 +264,12 @@ def get_resources():
     response = context.compute_graph(gs, 'resources')
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = ('compute_graph(\"resources\") failed with exception %s' %
            sys.exc_info()[0])
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
 
 @app.route('/cluster', methods=['GET'])
@@ -317,12 +284,12 @@ def get_cluster():
     response = context.compute_graph(gs, 'context_graph')
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = ('compute_graph(\"context_graph\") failed with exception %s' %
            sys.exc_info()[0])
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
 
 @app.route('/version', methods=['GET'])
@@ -335,13 +302,13 @@ def get_version():
   gs = app.context_graph_global_state
   try:
     version = docker.get_version(gs)
-    return flask.jsonify(make_response(version, 'version'))
+    return flask.jsonify(utilities.make_response(version, 'version'))
   except collector_error.CollectorError as e:
-    return flask.jsonify(make_error(str(e)))
+    return flask.jsonify(utilities.make_error(str(e)))
   except:
     msg = ('get_version() failed with exception %s' % sys.exc_info()[0])
     app.logger.exception(msg)
-    return flask.jsonify(make_error(msg))
+    return flask.jsonify(utilities.make_error(msg))
 
 
 @app.route('/healthz', methods=['GET'])
@@ -351,12 +318,12 @@ def get_health():
   Returns:
   A successful response containing the attribute 'health' and the value 'OK'.
   """
-  return flask.jsonify(make_response('OK', 'health'))
+  return flask.jsonify(utilities.make_response('OK', 'health'))
 
 
 # Starts the web server and listen on all external IPs associated with this
 # host.
-if __name__ == '__main__':
+def main():
   parser = argparse.ArgumentParser(description='Cluster-Insight data collector')
   parser.add_argument('-d', '--debug', action='store_true',
                       help='enable debug mode')
@@ -384,3 +351,7 @@ if __name__ == '__main__':
   app.context_graph_global_state = g_state
 
   app.run(host='0.0.0.0', port=args.port, debug=args.debug)
+
+
+if __name__ == '__main__':
+  main()
