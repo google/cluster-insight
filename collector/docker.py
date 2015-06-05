@@ -568,11 +568,9 @@ def get_image(gs, docker_host, container):
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
 
-  image_label = image_name if utilities.valid_string(image_name) else image_id
-
   wrapped_image = utilities.wrap_object(
       image, 'Image', full_hex_label, now,
-      label=short_hex_label, alt_label=image_label)
+      label=short_hex_label, alt_label=image_name)
 
   ret_value = gs.get_images_cache().update(cache_key, wrapped_image, now)
   gs.logger_info('get_image(docker_host=%s, image_id=%s, image_name=%s)',
@@ -632,10 +630,8 @@ def get_version(gs):
     CollectorError: in case of any error to compute the running image
       information.
   """
-  #TODO(EranGabber): Edit this code to get the version from one of the minions.
+  # TODO(EranGabber): Edit this code to get the version from one of the minions.
   # Return unknown for now, so we don't have to access the docker API on master.
-  return '_unknown_'
-  
   """
   version, timestamp_secs = gs.get_version_cache().lookup('')
   if timestamp_secs is not None:
@@ -707,3 +703,5 @@ def get_version(gs):
   gs.logger_info('get_version() returns: %s', ret_value)
   return ret_value
   """
+  return '_unknown_'
+
