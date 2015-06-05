@@ -131,7 +131,7 @@ def global_state_optional_string_args(func):
   return inner
 
 
-def global_state_dictionary_args(func):
+def global_state_dict_args(func):
   """A decorator for a function with a global state and a dictionary argument.
 
   The dictionary argument must not be empty.
@@ -174,17 +174,18 @@ def global_state_two_string_args(func):
   return inner
 
 
-def global_state_two_string_optional_string_args(func):
-  """A decorator for a function with a global state, two string, and one 
-  optional string arguments.
+def global_state_string_dict_args(func):
+  """A decorator for a function with a global state, a string, and a
+  dictionary arguments.
 
-  All string arguments must be valid strings (see valid_string() above).
+  The string argument must be valid. The dictionary argument must not
+  be empty.
   """
-  def inner(arg1, arg2, arg3,arg4=None):
+  def inner(arg1, arg2, arg3):
     assert isinstance(arg1, global_state.GlobalState)
-    assert valid_string(arg2) and valid_string(arg3)
-    assert valid_optional_string(arg4)
-    return func(arg1, arg2, arg3, arg4)
+    assert valid_string(arg2)
+    assert isinstance(arg3, types.DictType) and arg3
+    return func(arg1, arg2, arg3)
 
   return inner
 

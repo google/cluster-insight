@@ -193,7 +193,6 @@ def get_pods(gs, node_id=None):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  gs.logger_info('getting url %s result=%s', url, result)
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
@@ -269,7 +268,7 @@ def matching_labels(pod, selector):
   return len(selector_view & pod_labels_view) == len(selector_view)
 
 
-@utilities.global_state_dictionary_args
+@utilities.global_state_dict_args
 def get_selected_pods(gs, selector):
   """Gets the list of pods in the current cluster matching 'selector'.
 
