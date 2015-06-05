@@ -481,17 +481,14 @@ def get_processes(gs, docker_host, container_id):
   return ret_value
 
 
-@utilities.global_state_two_string_optional_string_args
-def get_image(gs, docker_host, image_id, image_name=None):
+@utilities.global_state_string_dict_args
+def get_image(gs, docker_host, container):
   """Gets the information of the given image in the given host.
 
   Args:
     gs: global state.
     docker_host: Docker host name. Must not be empty.
-    image_id: Image ID. Must not be empty. Must be a symbolic name of the image
-      (not a long hexadecimal string).
-    image_name: Image name. Can be None. This is used to assign the alternate 
-      label. This value is embedded in the container description.
+    container: the container which runs the image.
 
   Returns:
     If image was found, returns the wrapped image object, which is the result of
@@ -500,12 +497,26 @@ def get_image(gs, docker_host, image_id, image_name=None):
 
   Raises:
     CollectorError: in case of failure to fetch data from Docker.
+    ValueError: in case the container does not contain a valid image ID.
     Other exceptions may be raised due to exectution errors.
   """
-  # 'image_id' should be a very long hexadecimal string.
-  assert utilities.valid_hex_id(image_id)
-  # 'image_name' should be a symbolic name and not a very long hexadecimal string.
-  assert image_name is None or not utilities.valid_hex_id(image_name)
+  assert utilities.is_wrapped_object(container, 'Container')
+  # The 'image_id' should be a long hexadecimal string.
+  image_id = utilities.get_attribute(container, ['properties', 'Image'])
+  if not utilities.valid_hex_id(image_id):
+    msg = 'missing or invalid image ID in container ID=%s' % container['id']
+    gs.logger_error(msg)
+    raise ValueError(msg)
+
+  # The 'image_name' should be a symbolic name (not a hexadecimal string).
+  image_name = utilities.get_attribute(
+      container, ['properties', 'Config', 'Image'])
+
+  if ((not utilities.valid_string(image_name)) or
+      utilities.valid_hex_id(image_name)):
+    msg = 'missing or invalid image name in container ID=%s' % container['id']
+    gs.logger_error(msg)
+    raise ValueError(msg)
 
   cache_key = '%s|%s' % (docker_host, image_id)
   image, timestamp_secs = gs.get_images_cache().lookup(cache_key)
@@ -517,7 +528,7 @@ def get_image(gs, docker_host, image_id, image_name=None):
   # A typical value of 'docker_host' is:
   # k8s-guestbook-node-3.c.rising-apricot-840.internal
   # Use only the first period-seperated element for the test file name.
-  # The typical value of 'image_id' is:
+  # The typical value of 'image_name' is:
   # brendanburns/php-redis
   # We convert embedded '/' and ':' characters to '-' to avoid interference with
   # the directory structure or file system.
@@ -525,7 +536,7 @@ def get_image(gs, docker_host, image_id, image_name=None):
       docker_host=docker_host, port=gs.get_docker_port(), image_id=image_id)
   fname = '{host}-image-{id}'.format(
       host=docker_host.split('.')[0],
-      id=image_id.replace('/', '-').replace(':', '-'))
+      id=image_name.replace('/', '-').replace(':', '-'))
 
   try:
     image = fetch_data(gs, url, fname, expect_missing=True)
@@ -557,11 +568,9 @@ def get_image(gs, docker_host, image_id, image_name=None):
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
 
-  image_name_label = image_id if image_name is None else image_name
-
   wrapped_image = utilities.wrap_object(
       image, 'Image', full_hex_label, now,
-      label=short_hex_label, alt_label=image_name_label)
+      label=short_hex_label, alt_label=image_name)
 
   ret_value = gs.get_images_cache().update(cache_key, wrapped_image, now)
   gs.logger_info('get_image(docker_host=%s, image_id=%s, image_name=%s)',
@@ -596,14 +605,7 @@ def get_images(gs, docker_host):
   # All containers in this 'docker_host'.
   for container in get_containers(gs, docker_host):
     # Image from which this Container was created
-    image_id = utilities.get_attribute(container, ['properties', 'Image'])
-    image_name = utilities.get_attribute(
-        container, ['properties', 'Config', 'Image'])
-    if not utilities.valid_string(image_id):
-      # Image ID not found
-      continue
-
-    image = get_image(gs, docker_host, image_id, image_name)
+    image = get_image(gs, docker_host, container)
     if (image is not None) and (image['id'] not in image_id_set):
       images_list.append(image)
       image_id_set.add(image['id'])
@@ -628,10 +630,8 @@ def get_version(gs):
     CollectorError: in case of any error to compute the running image
       information.
   """
-  #TODO(EranGabber): Edit this code to get the version from one of the minions.
+  # TODO(EranGabber): Edit this code to get the version from one of the minions.
   # Return unknown for now, so we don't have to access the docker API on master.
-  return '_unknown_'
-  
   """
   version, timestamp_secs = gs.get_version_cache().lookup('')
   if timestamp_secs is not None:
@@ -703,3 +703,5 @@ def get_version(gs):
   gs.logger_info('get_version() returns: %s', ret_value)
   return ret_value
   """
+  return '_unknown_'
+

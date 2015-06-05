@@ -392,13 +392,7 @@ def _do_compute_container(gs, docker_host, pod_guid, container, g):
     # Container contains Process
     g.add_relation(container_guid, process_guid, 'contains')
 
-  # Image from which this Container was created
-  image_id = utilities.get_attribute(
-      container, ['properties', 'Config', 'Image'])
-  if not utilities.valid_string(image_id):
-    # Image ID not found
-    return
-  image = docker.get_image(gs, docker_host, image_id)
+  image = docker.get_image(gs, docker_host, container)
   if image is None:
     # image not found
     return
