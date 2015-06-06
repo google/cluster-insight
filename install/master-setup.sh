@@ -90,9 +90,9 @@ fi
 
 # stop the Cluster-Insight minion collectors.
 echo "stop the Cluster-Insight replication controller and minions"
-kubectl delete -f ${REP_CONTROLLER}
+kubectl stop -f ${REP_CONTROLLER}
 if [[ $? != 0 ]]; then
-  echo "FAILED to delete the Cluster-Insight replication controller"
+  echo "FAILED to stop the Cluster-Insight replication controller"
   exit 1
 fi
 

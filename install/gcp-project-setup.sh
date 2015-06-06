@@ -33,18 +33,18 @@
 # project.
 #
 # Usage:
-#  ./project_setup PROJECT_NAME
+#  ./project_setup PROJECT_ID
 
 MINION_SCRIPT_NAME="./node-setup.sh"
 MASTER_SCRIPT_NAME="./master-setup.sh"
 
 if [ $# -ne 1 ]; then
   echo "SCRIPT FAILED"
-  echo "usage: $0 PROJECT_NAME"
+  echo "usage: $0 PROJECT_ID"
   exit 1
 fi
 
-readonly PROJECT_NAME="$1"
+readonly PROJECT_ID="$1"
 
 if [[ !((-r "${MINION_SCRIPT_NAME}") && (-r "${MASTER_SCRIPT_NAME}")) ]]; then
   echo "SCRIPT FAILED"
@@ -57,7 +57,7 @@ fi
 # corresponding zone name will appear in the following odd element.
 declare -a nodes_and_zones
 count=0
-for name in $(gcloud compute --project="${PROJECT_NAME}" instances list |
+for name in $(gcloud compute --project="${PROJECT_ID}" instances list |
               fgrep RUNNING | awk '{print $1, $2}'); do
   nodes_and_zones[${count}]="${name}"
   count=$((count+1))
@@ -65,7 +65,7 @@ done
 
 if [[ ${count} == 0 ]]; then
   echo "SCRIPT FAILED"
-  echo "No instances found in project ${PROJECT_NAME}"
+  echo "No instances found in project ${PROJECT_ID}"
   exit 1
 fi
 
@@ -84,8 +84,8 @@ while [[ ${i} -lt ${count} ]]; do
     i=$((i+2))
     continue
   fi
-  echo "setup: project=${PROJECT_NAME} zone=${zone_name} instance=${instance_name}"
-  output="$(cat ${MINION_SCRIPT_NAME} | gcloud compute ssh --project=${PROJECT_NAME} --zone=${zone_name} ${instance_name})"
+  echo "setup: project=${PROJECT_ID} zone=${zone_name} instance=${instance_name}"
+  output="$(cat ${MINION_SCRIPT_NAME} | gcloud compute ssh --project=${PROJECT_ID} --zone=${zone_name} ${instance_name})"
   if [[ "${output}" =~ "ALL DONE" ]]; then
     all_done_count=$((all_done_count+1))
     echo "ALL DONE"
@@ -117,8 +117,8 @@ if [[ ("${master_instance_name}" == "") || ("${master_zone_name}" == "") ]];then
   exit 1
 fi
 
-echo "setup: project=${PROJECT_NAME} zone=${master_zone_name} instance=${master_instance_name}"
-  output="$(cat ${MASTER_SCRIPT_NAME} | sed 's/NUM_MINIONS/'${all_done_count}'/' | gcloud compute ssh --project=${PROJECT_NAME} --zone=${master_zone_name} ${master_instance_name})"
+echo "setup: project=${PROJECT_ID} zone=${master_zone_name} instance=${master_instance_name}"
+  output="$(cat ${MASTER_SCRIPT_NAME} | sed 's/NUM_MINIONS/'${all_done_count}'/' | gcloud compute ssh --project=${PROJECT_ID} --zone=${master_zone_name} ${master_instance_name})"
 if [[ "${output}" =~ "ALL DONE" ]]; then
   echo "master ALL DONE"
 else
