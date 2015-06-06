@@ -33,21 +33,22 @@
 # project.
 #
 # Usage:
-#  ./project_setup PROJECT_NAME
+#  ./project_setup PROJECT_ID
 
-SCRIPT_NAME="./node-setup.sh"
+MINION_SCRIPT_NAME="./node-setup.sh"
+MASTER_SCRIPT_NAME="./master-setup.sh"
 
 if [ $# -ne 1 ]; then
   echo "SCRIPT FAILED"
-  echo "usage: $0 PROJECT_NAME"
+  echo "usage: $0 PROJECT_ID"
   exit 1
 fi
 
-readonly PROJECT_NAME="$1"
+readonly PROJECT_ID="$1"
 
-if [ \! -r "${SCRIPT_NAME}" ]; then
+if [[ !((-r "${MINION_SCRIPT_NAME}") && (-r "${MASTER_SCRIPT_NAME}")) ]]; then
   echo "SCRIPT FAILED"
-  echo "cannot read script ${SCRIPT_NAME}"
+  echo "cannot read script ${MINION_SCRIPT_NAME} or ${MASTER_SCRIPT_NAME}"
   exit 1
 fi
 
@@ -56,7 +57,7 @@ fi
 # corresponding zone name will appear in the following odd element.
 declare -a nodes_and_zones
 count=0
-for name in $(gcloud compute --project="${PROJECT_NAME}" instances list |
+for name in $(gcloud compute --project="${PROJECT_ID}" instances list |
               fgrep RUNNING | awk '{print $1, $2}'); do
   nodes_and_zones[${count}]="${name}"
   count=$((count+1))
@@ -64,26 +65,30 @@ done
 
 if [[ ${count} == 0 ]]; then
   echo "SCRIPT FAILED"
-  echo "No instances found in project ${PROJECT_NAME}"
+  echo "No instances found in project ${PROJECT_ID}"
   exit 1
 fi
 
 all_done_count=0
-nothing_done_count=0
 failure_count=0
 i=0
 
+master_instance_name=""
+master_zone_name=""
 while [[ ${i} -lt ${count} ]]; do
   instance_name="${nodes_and_zones[${i}]}"
   zone_name="${nodes_and_zones[$((i+1))]}"
-  echo "setup: project=${PROJECT_NAME} zone=${zone_name} instance=${instance_name}"
-  output="$(cat ${SCRIPT_NAME} | gcloud compute ssh --project=${PROJECT_NAME} --zone=${zone_name} ${instance_name})"
+  if [[ "${instance_name}" =~ "-master" ]]; then
+    master_instance_name="${instance_name}"
+    master_zone_name="${zone_name}"
+    i=$((i+2))
+    continue
+  fi
+  echo "setup: project=${PROJECT_ID} zone=${zone_name} instance=${instance_name}"
+  output="$(cat ${MINION_SCRIPT_NAME} | gcloud compute ssh --project=${PROJECT_ID} --zone=${zone_name} ${instance_name})"
   if [[ "${output}" =~ "ALL DONE" ]]; then
     all_done_count=$((all_done_count+1))
     echo "ALL DONE"
-  elif [[ "${output}" =~ "NOTHING DONE" ]]; then
-    echo "NOTHING DONE"
-    nothing_done_count=$((nothing_done_count+1))
   else
     echo "FAILED"
     failure_count=$((failure_count+1))
@@ -93,7 +98,6 @@ while [[ ${i} -lt ${count} ]]; do
 done 
 
 echo "all_done_count=${all_done_count}"
-echo "nothing_done_count=${nothing_done_count}"
 echo "failure_count=${failure_count}"
 
 if [[ ${failure_count} -gt 0 ]]; then
@@ -101,9 +105,25 @@ if [[ ${failure_count} -gt 0 ]]; then
   exit 1
 fi
 
-if [[ (${all_done_count} -le 0) && (${nothing_done_count} -le 0) ]]; then
+if [[ ${all_done_count} -le 0 ]]; then
   echo "SCRIPT FAILED"
   echo "internal error: invalid counter values"
+  exit 1
+fi
+
+if [[ ("${master_instance_name}" == "") || ("${master_zone_name}" == "") ]];then
+  echo "SCRIPT FAILED"
+  echo "did not find a master node"
+  exit 1
+fi
+
+echo "setup: project=${PROJECT_ID} zone=${master_zone_name} instance=${master_instance_name}"
+  output="$(cat ${MASTER_SCRIPT_NAME} | sed 's/NUM_MINIONS/'${all_done_count}'/' | gcloud compute ssh --project=${PROJECT_ID} --zone=${master_zone_name} ${master_instance_name})"
+if [[ "${output}" =~ "ALL DONE" ]]; then
+  echo "master ALL DONE"
+else
+  echo "${output}"
+  echo "SCRIPT FAILED"
   exit 1
 fi
 
