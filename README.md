@@ -96,7 +96,7 @@ It also accesses the Docker daemon on the master node via port 4243.
 In addition, it listens for external HTTP requests to its REST endpoint on port
 5555 of the master node, as shown in the figure below:
 
-![alt text](kubernetes-setup.png "cluster-insight service setup")
+![alt text](cluster-insight-architecture.png "cluster-insight service setup")
 
 
 ## REST API
