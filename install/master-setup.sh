@@ -39,24 +39,38 @@
 #
 # The script will print "ALL DONE" if it completed the setup successfully.
 # The script will print "FAILED" in case of a failure.
-set +xv
 IMAGE="kubernetes/cluster-insight"
 REP_CONTROLLER="cluster-insight/collector/cluster-insight-controller.json"
 
+# Execute the given command.
+# If its exit code is not zero, print an error message and exit with
+# a non-zero code.
+# Usage:
+#   exec_command command arg1 arg2 ...
+# You should pass the command name and its arguments separately.
+# For example:
+#   exec_command mkdir "${DIR}"
+# Do not pass the command name and its argments in the same parameter.
+function exec_command() {
+  if [[ $# -eq 0 ]]; then
+    echo "Usage: exec_command command arg1 arg2 ..."
+    exit 1
+  fi
+  echo "executing $@"
+  "$@"
+  if [[ $? -ne 0 ]]; then
+    echo "FAILED to execute: $@"
+    exit 1
+  fi
+}
+
 # extract the "cluster-insight" repository to a temporary directory
 TMP_DIR="/tmp/$$"
-mkdir ${TMP_DIR}
-if [[ $? != 0 ]]; then
-  echo "FAILED to create temporary directory ${TMP_DIR}"
-  exit 1
-fi
+exec_command mkdir ${TMP_DIR}
 
-cd ${TMP_DIR}
-if [[ $? != 0 ]]; then
-  echo "FAILED to change directory to ${TMP_DIR}"
-  exit 1
-fi
+exec_command cd ${TMP_DIR}
 
+# Extract the project source to ${TMP_DIR}/cluster_insight.
 echo "clone the project source from GitHub to get ${REP_CONTROLLER}"
 git clone https://github.com/google/cluster-insight.git
 if [[ $? != 0 ]]; then
@@ -66,50 +80,26 @@ fi
 
 # pull the latest Cluster-Insight container image from Docker Hub.
 echo "pulling latest Cluster-Insight container image from Docker Hub"
-sudo docker pull ${IMAGE}
-if [[ $? != 0 ]]; then
-  echo "FAILED to pull ${IMAGE} image from Docker Hub"
-  exit 1
-fi
+exec_command sudo docker pull ${IMAGE}
 
 # stop the Cluster-Insight collector master if it is running.
 MASTER_ID="$(sudo docker ps | fgrep ${IMAGE} | awk '{print $1}')"
 if [[ "${MASTER_ID}" != "" ]]; then
   echo "stop the Cluster-Insight master (Docker ID=${MASTER_ID})"
-  sudo docker stop ${MASTER_ID}
-  if [[ $? != 0 ]]; then
-    echo "FAILED to stop Cluster-Insight master"
-    exit 1
-  fi
-  sudo docker rm ${MASTER_ID}
-  if [[ $? != 0 ]]; then
-    echo "FAILED to remove Cluster-Insight master"
-    exit 1
-  fi
+  exec_command sudo docker stop ${MASTER_ID}
+  exec_command sudo docker rm ${MASTER_ID}
 fi
 
 # stop the Cluster-Insight minion collectors.
 echo "stop the Cluster-Insight replication controller and minions"
-kubectl stop -f ${REP_CONTROLLER}
-if [[ $? != 0 ]]; then
-  echo "FAILED to stop the Cluster-Insight replication controller"
-  exit 1
-fi
+exec_command kubectl stop -f ${REP_CONTROLLER}
 
 # start and resize the Cluster-Insight minion collectors.
 echo "start the Cluster-Insight replication controller on one minion"
-kubectl create -f ${REP_CONTROLLER}
-if [[ $? != 0 ]]; then
-  echo "FAILED to create the Cluster-Insight replication controller"
-  exit 1
-fi
+exec_command kubectl create -f ${REP_CONTROLLER}
 
 echo "resize the Cluster-Insight replication controller on NUM_MINIONS nodes"
-kubectl resize rc cluster-insight-controller --replicas=NUM_MINIONS
-if [[ $? != 0 ]]; then
-  echo "FAILED to resize the Cluster-Insight replication controller"
-  exit 1
-fi
+exec_command kubectl resize rc cluster-insight-controller --replicas=NUM_MINIONS
 
 echo "verify that the replication controller has the correct # of replicas"
 rc_output="$(kubectl get rc | fgrep ${IMAGE} | awk '{print $NF}')"
@@ -120,16 +110,12 @@ fi
 
 # start the Cluster-Insight master collector.
 echo "start the Cluster-Insight collector master"
-sudo docker run -d --net=host -p 5555:5555 --name cluster-insight -e CLUSTER_INSIGHT_MODE=master ${IMAGE}
-if [[ $? != 0 ]]; then
-  echo "FAILED to start the Cluster-Insight master collector"
-  exit 1
-fi
+exec_command sudo docker run -d --net=host -p 5555:5555 --name cluster-insight -e CLUSTER_INSIGHT_MODE=master ${IMAGE}
 
 # verify that the Cluster-Insight master is working.
 sleep 5
 echo "checking master health"
-health="$(curl http://localhost:5555/healthz)"
+health="$(curl http://localhost:5555/healthz 2>/dev/null)"
 if [[ "${health}" =~ "OK" ]]; then
   echo "master is alive"
 else
@@ -139,7 +125,7 @@ fi
 
 # cleanup after successful operation.
 cd
-rm -fr ${TMP_DIR}
+exec_command rm -fr ${TMP_DIR}
 
 echo "ALL DONE"
 exit 0
