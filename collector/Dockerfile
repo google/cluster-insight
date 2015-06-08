@@ -22,7 +22,7 @@
 
 # You should login to the node (VM instance) of the Kubernetes master with the
 # commands:
-#   gcloud config set project PROJECT_NAME
+#   gcloud config set project PROJECT_ID
 #   gcloud compute ssh MASTER_NODE_NAME
 #
 # You should then clone the Cluster-Insight GitHub repository to obtain the
@@ -41,7 +41,7 @@
 
 # To run a container from this image in dev/test mode as the master:
 # (Ctrl-C will stop and remove the container):
-#   sudo docker run --rm --net=host -p 5555:5555 --name cluster-insight kubernetes/cluster-insight python ./collector.py --debug
+#   sudo docker run --rm --net=host -p 5555:5555 --name cluster-insight -e CLUSTER_INSIGHT_MODE=master kubernetes/cluster-insight python ./collector.py --debug
 #
 # To run a container from this image in detached production mode as the master:
 #   sudo docker run -d --net=host -p 5555:5555 --name cluster-insight -e CLUSTER_INSIGHT_MODE=master kubernetes/cluster-insight

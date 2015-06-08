@@ -37,6 +37,7 @@
 
 MINION_SCRIPT_NAME="./node-setup.sh"
 MASTER_SCRIPT_NAME="./master-setup.sh"
+FIREWALL_RULE_NAME="cluster-insight-collector"
 
 if [ $# -ne 1 ]; then
   echo "SCRIPT FAILED"
@@ -56,26 +57,26 @@ fi
 # The node name will appear in the even elements of the array, and the
 # corresponding zone name will appear in the following odd element.
 declare -a nodes_and_zones
-count=0
+names_count=0
 for name in $(gcloud compute --project="${PROJECT_ID}" instances list |
               fgrep RUNNING | awk '{print $1, $2}'); do
-  nodes_and_zones[${count}]="${name}"
-  count=$((count+1))
+  nodes_and_zones[${names_count}]="${name}"
+  names_count=$((names_count+1))
 done
 
-if [[ ${count} == 0 ]]; then
+if [[ ${names_count} == 0 ]]; then
   echo "SCRIPT FAILED"
   echo "No instances found in project ${PROJECT_ID}"
   exit 1
 fi
 
-all_done_count=0
+minion_ok_count=0
 failure_count=0
-i=0
-
 master_instance_name=""
 master_zone_name=""
-while [[ ${i} -lt ${count} ]]; do
+
+i=0
+while [[ ${i} -lt ${names_count} ]]; do
   instance_name="${nodes_and_zones[${i}]}"
   zone_name="${nodes_and_zones[$((i+1))]}"
   if [[ "${instance_name}" =~ "-master" ]]; then
@@ -87,7 +88,7 @@ while [[ ${i} -lt ${count} ]]; do
   echo "setup: project=${PROJECT_ID} zone=${zone_name} instance=${instance_name}"
   output="$(cat ${MINION_SCRIPT_NAME} | gcloud compute ssh --project=${PROJECT_ID} --zone=${zone_name} ${instance_name})"
   if [[ "${output}" =~ "ALL DONE" ]]; then
-    all_done_count=$((all_done_count+1))
+    minion_ok_count=$((minion_ok_count+1))
     echo "ALL DONE"
   else
     echo "FAILED"
@@ -97,17 +98,18 @@ while [[ ${i} -lt ${count} ]]; do
   i=$((i+2))
 done 
 
-echo "all_done_count=${all_done_count}"
+echo "minion_ok_count=${minion_ok_count}"
 echo "failure_count=${failure_count}"
 
 if [[ ${failure_count} -gt 0 ]]; then
   echo "SCRIPT FAILED"
+  echo "failed to install on ${failure_count} minion nodes"
   exit 1
 fi
 
-if [[ ${all_done_count} -le 0 ]]; then
+if [[ ${minion_ok_count} -le 0 ]]; then
   echo "SCRIPT FAILED"
-  echo "internal error: invalid counter values"
+  echo "no minion nodes found"
   exit 1
 fi
 
@@ -118,13 +120,42 @@ if [[ ("${master_instance_name}" == "") || ("${master_zone_name}" == "") ]];then
 fi
 
 echo "setup: project=${PROJECT_ID} zone=${master_zone_name} instance=${master_instance_name}"
-  output="$(cat ${MASTER_SCRIPT_NAME} | sed 's/NUM_MINIONS/'${all_done_count}'/' | gcloud compute ssh --project=${PROJECT_ID} --zone=${master_zone_name} ${master_instance_name})"
+output="$(sed 's/NUM_MINIONS/'${minion_ok_count}'/' < ${MASTER_SCRIPT_NAME} | gcloud compute ssh --project=${PROJECT_ID} --zone=${master_zone_name} ${master_instance_name})"
 if [[ "${output}" =~ "ALL DONE" ]]; then
   echo "master ALL DONE"
 else
   echo "${output}"
   echo "SCRIPT FAILED"
   exit 1
+fi
+
+firewall_rules_list="$(gcloud compute firewall-rules list --project=${PROJECT_ID} | fgrep ${FIREWALL_RULE_NAME})"
+if [[ "${firewall_rules_list}" == "" ]]; then
+  echo "setup firewall rule"
+  gcloud compute firewall-rules create --project=${PROJECT_ID} ${FIREWALL_RULE_NAME} --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags ${master_instance_name}
+  if [[ $? -ne 0 ]]; then
+    echo "FAILED to create firewall rule"
+    exit 1
+  else
+    echo "created firewall rule successfully"
+  fi
+else
+  echo "firewall rule exists"
+fi
+
+echo "checking Cluster-Insight master health"
+master_instance_IP_address="$(gcloud compute --project="${PROJECT_ID}" instances list | fgrep ${master_instance_name} | awk '{print $5}')"
+if [[ "${master_instance_IP_address}" == "" ]]; then
+  echo "FAILED to find master instance ${master_instance_name} IP address"
+  exit 1
+fi
+
+health=$(curl http://${master_instance_IP_address}:5555/healthz 2> /dev/null)
+if [[ "${health}" =~ "OK" ]]; then
+  echo "master is alive"
+else
+  echo "FAILED to get master health response"
+  echo 1
 fi
 
 echo "SCRIPT ALL DONE"
