@@ -37,7 +37,8 @@ The `gcp-project-setup.sh` script will configure, install, and run the
 Cluster-Insight service
 on the given Kubernetes cluster running on GCP. You should run the script
 on your workstation. To run the script, follow the instruction below.
-If you run the script, then you can skip the rest of this section.
+If you run the script sucessfully, there is nothing else for you to do.
+
 * Clone the Cluster-Insight sources from Github into a local directory
   `./cluster-insight` with the command
   `git clone https://github.com/google/cluster-insight.git` .
@@ -45,8 +46,7 @@ If you run the script, then you can skip the rest of this section.
   `cd ./cluster-insight/install; ./gcp-project-setup.sh PROJECT_ID`.
   The script will fetch the latest version of the Cluster-Insight container
   from Docker Hub.
-  The script will print "SCRIPT ALL DONE" if it completed the operation
-  sucessfully.
+  The script will print "SCRIPT ALL DONE" if it completed sucessfully.
 * Note: the installation script may take up to a minute per node in case
   that the Cluster-Insight or its libraries are not pre-loaded on the
   node. Also, creating the firewall rule may take up to a minute.
@@ -144,7 +144,7 @@ the Docker daemons.
 The "master" Cluster-Insight service listens for external HTTP requests to
 its REST endpoint on port 5555 of the master node, as shown in the figure
 below.
-The "minion" Cluste-Insight service listens for requests on port 4243 and
+The "minion" Cluster-Insight service listens for requests on port 4243 and
 relays them to the local Docker daemon via a Unix-domain socket.
 Note that the Unix-domain socket is the default way of communicating with
 the Docker daemon.
