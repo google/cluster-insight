@@ -37,6 +37,7 @@
 
 MINION_SCRIPT_NAME="./node-setup.sh"
 MASTER_SCRIPT_NAME="./master-setup.sh"
+FIREWALL_RULE_NAME="cluster-insight-collector"
 
 if [ $# -ne 1 ]; then
   echo "SCRIPT FAILED"
@@ -126,6 +127,35 @@ else
   echo "${output}"
   echo "SCRIPT FAILED"
   exit 1
+fi
+
+firewall_rules_list="$(gcloud compute firewall-rules list --project=${PROJECT_ID} | fgrep ${FIREWALL_RULE_NAME})"
+if [[ "${firewall_rules_list}" == "" ]]; then
+  echo "setup firewall rule"
+  gcloud compute firewall-rules create --project=${PROJECT_ID} ${FIREWALL_RULE_NAME} --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags ${master_instance_name}
+  if [[ $? -ne 0 ]]; then
+    echo "FAILED to create firewall rule"
+    exit 1
+  else
+    echo "created firewall rule successfully"
+  fi
+else
+  echo "firewall rule exists"
+fi
+
+echo "checking Cluster-Insight master health"
+master_instance_IP_address="$(gcloud compute --project="${PROJECT_ID}" instances list | fgrep ${master_instance_name} | awk '{print $5}')"
+if [[ "${master_instance_IP_address}" == "" ]]; then
+  echo "FAILED to find master instance ${master_instance_name} IP address"
+  exit 1
+fi
+
+health=$(curl http://${master_instance_IP_address}:5555/healthz 2> /dev/null)
+if [[ "${health}" =~ "OK" ]]; then
+  echo "master is alive"
+else
+  echo "FAILED to get master health response"
+  echo 1
 fi
 
 echo "SCRIPT ALL DONE"
