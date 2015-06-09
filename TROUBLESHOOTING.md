@@ -21,13 +21,12 @@
     5. If the container `kubernetes/cluster-insight` is listed as running,
        then it is probably stuck.
        Read its log by the command:
-       `sudo docker log CONTAINER_ID`. Pay attention to the messages at the
-       tail of the log.
+       `sudo docker logs -f CONTAINER_ID` .
+       Pay attention to the messages at the tail of the log.
        The CONTAINER_ID is a 12-digit hexadecimal number. It is
        listed in the first column of the output of `sudo docker ps`.
-    6. Stop the running container with:
-       `sudo docker stop CONTAINER_ID` and then delete it with:
-       `sudo docker rm CONTAINER_ID`.
+    6. Stop and delete the running container with:
+       `sudo docker rm -f CONTAINER_ID`.
     7. Start the Cluster-Insight service. Please follow the instructions in
        the [README](README.md) file.
     8. Verify that the Cluster-Insight server is operational by accessing
@@ -48,7 +47,7 @@
     that the firewall rule got corrupt.
 
     List the firewall rules of the cluster on GCP with:
-    `gcloud compute --project=PROHECT_ID firewall-rules list`
+    `gcloud compute --project=PROJECT_ID firewall-rules list`
     You should find a rule called `cluster-insight-controller` that opens port
     5555 on the master node to all incoming TCP traffic.
     The output of the `gcloud compute firewall-rules list` command should
@@ -108,7 +107,7 @@ This may be caused by a genuine bug.
     2. Find the container ID of the Cluster-Insight server with the command:
        `sudo docker ps`
     3. Read the logs of the Cluster-Insight server with the command:
-       `sudo docker log CONTAINER_ID`
+       `sudo docker logs -f CONTAINER_ID` .
 
 2.  If the logs of the currently running server do not contain useful
     information,
