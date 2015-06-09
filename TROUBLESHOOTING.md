@@ -57,6 +57,43 @@
     If you cannot find such line, you have to create the missing firewall
     rule. Please follow the instructions in the [README](README.md) file.
 
+## The server fails with CollectorError exception
+
+The most common cause of this exception is a failure to communicate with
+the Docker daemons in the minion nodes. To verify that this is indeed the
+case, you should access the endpoints which show only Kubernetes data ()
+and the endpoints which show only Docker data().
+If only the endpoints which show Docker data fail, then the problem is with
+the Docker daemons or the Cluster-Insight minions running on the minion nodes.
+
+To fix the problem on the minion nodes, follow these instructions.
+
+1. Get the name of the failed minion from the error message that is shown
+   by the CollectorError exception.
+
+2. Login to that minion node.
+
+3. Verify that Docker is running on this node by the command:
+   `sudo docker ps`. If this command fails, you should restart the Docker
+   daemon by the command: `sudo service docker restart`.
+
+4. Verify that the Cluster-Insight minion is running by the command:
+   `sudo docker ps`. You should find a line containing the
+   `kubernetes/cluster-insight:latest` image name. 
+
+5. If the Cluster-Insight minion is not running, it is extremely strange,
+   because the Cluster-Insight minions are controlled by a replication
+   controller. Follow the instructions in the [README](README.md) file
+   to reinstall the Cluster-Insight service.
+
+6. Verify that the Cluster-Insight minion and the Docker daemon respond as
+   expected by running the command:
+   `curl http://localhost:4243/containers/json`.
+   You should see some JSON output.
+
+7. If the above `curl` command fails, you should follow the instructions in
+   the [README](README.md) file to reinstall the Cluster-Insight service.
+
 ## The server fails with a different run-time failure
 This may be caused by a genuine bug.
 
