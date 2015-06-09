@@ -23,16 +23,15 @@
        Read its log by the command:
        `sudo docker log CONTAINER_ID`. Pay attention to the messages at the
        tail of the log.
-       The CONTAINER_ID is the Docker ID of the running container. It is
+       The CONTAINER_ID is a 12-digit hexadecimal number. It is
        listed in the first column of the output of `sudo docker ps`.
-       The CONTAINER_ID is a 12-digit hexadecimal number.
     6. Stop the running container with:
        `sudo docker stop CONTAINER_ID` and then delete it with:
        `sudo docker rm CONTAINER_ID`.
     7. Start the Cluster-Insight service. Please follow the instructions in
        the [README](README.md) file.
     8. Verify that the Cluster-Insight server is operational by accessing
-       it. See item (1) above.
+       it. See item (ii) above.
 
 2.  Did the IP address of the master node change?
     If you are using an IP address to access the Cluster-Insight server, then
@@ -43,6 +42,7 @@
     or by the following command:
     `gcloud compute --project=PROJECT_ID instances list`.
     If the IP address changed, use the new one in your browser.
+
 3.  Is the firewall rule correct?
     If you have used this Cluster-Insight server in the past, it is unlikely
     that the firewall rule got corrupt.
@@ -63,8 +63,8 @@ This may be caused by a genuine bug.
 1.  Read the log of the running Cluster-Insight server and look for additional
     information about the failure. Follow these instructions:
     1. Login to the master node running the Cluster-Insight server.
-    2 .Find the container ID of the Cluster-Insight server with the command:
-      `sudo docker ps`
+    2. Find the container ID of the Cluster-Insight server with the command:
+       `sudo docker ps`
     3. Read the logs of the Cluster-Insight server with the command:
        `sudo docker log CONTAINER_ID`
 
