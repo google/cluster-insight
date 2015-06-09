@@ -61,12 +61,17 @@
 
 The most common cause of this exception is a failure to communicate with
 the Docker daemons in the minion nodes. To verify that this is indeed the
-case, you should access the endpoints which show only Kubernetes data ()
-and the endpoints which show only Docker data().
+case, you should access the endpoints which show only Kubernetes data
+(`/cluster/resources/nodes`, `/cluster/resources/pods`,
+`/cluster/resources/services`, `/cluster/resources/rcontrollers`)
+and the endpoints which show only Docker data
+(`/cluster/resources/containers`, `/cluster/resources/processes`,
+`/cluster/resources/images`).
 If only the endpoints which show Docker data fail, then the problem is with
-the Docker daemons or the Cluster-Insight minions running on the minion nodes.
+the Docker daemons or the Cluster-Insight minions that proxy the requests to
+the Docker daemons.
 
-To fix the problem on the minion nodes, follow these instructions.
+To fix the problem on the minion nodes, follow these instructions:
 
 1. Get the name of the failed minion from the error message that is shown
    by the CollectorError exception.
