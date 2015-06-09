@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright 2015 The Cluster-Insight Authors. All Rights Reserved
 #
@@ -90,16 +90,21 @@ if [[ "${MASTER_ID}" != "" ]]; then
   exec_command sudo docker rm ${MASTER_ID}
 fi
 
-# stop the Cluster-Insight minion collectors.
-echo "stop the Cluster-Insight replication controller and minions"
-exec_command kubectl stop -f ${REP_CONTROLLER}
+# stop the Cluster-Insight replication controller if it is running.
+rc_output="$(kubectl get rc | fgrep ${IMAGE})"
+if [[ -n "${rc_output}" ]] ; then
+  echo "stop the Cluster-Insight replication controller"
+  exec_command kubectl stop -f ${REP_CONTROLLER}
+else
+  echo "the Cluster-Insight replication controller is not running"
+fi
 
 # start and resize the Cluster-Insight minion collectors.
 echo "start the Cluster-Insight replication controller on one minion"
 exec_command kubectl create -f ${REP_CONTROLLER}
 
 echo "resize the Cluster-Insight replication controller on NUM_MINIONS nodes"
-exec_command kubectl resize rc cluster-insight-controller --replicas=NUM_MINIONS
+exec_command kubectl scale rc cluster-insight-controller --replicas=NUM_MINIONS
 
 echo "verify that the replication controller has the correct # of replicas"
 rc_output="$(kubectl get rc | fgrep ${IMAGE} | awk '{print $NF}')"
