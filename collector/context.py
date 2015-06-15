@@ -93,11 +93,13 @@ class ContextGraph(object):
     self._current_relations_to_timestamps = {}
 
   def get_relations_to_timestamps(self):
-    return self._current_relations_to_timestamps
+    with self._lock:
+      return self._current_relations_to_timestamps
 
   def set_relations_to_timestamps(self, d):
     assert isinstance(d, types.DictType)
-    self._previous_relations_to_timestamps = d
+    with self._lock:
+      self._previous_relations_to_timestamps = d
 
   def add_resource(self, rid, annotations, rtype, timestamp, obj):
     """Adds a resource to the context graph."""
