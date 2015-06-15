@@ -71,6 +71,15 @@ def valid_hex_id(x):
   return valid_string(x) and (len(x) >= 32) and re.match('^[0-9a-fA-F]+$', x)
 
 
+def now():
+  """Returns the current date/time in ISO 8601 format.
+
+  Returns:
+  An ISO 8601 date/time value, which is YYYY-MM-DDTHH:MM:SS[.mmmmmm].
+  """
+  return datetime.datetime.now().isoformat()
+
+
 def global_state_arg(func):
   """A decorator for a function that should be given a global state argument.
   """
@@ -285,7 +294,7 @@ def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
   return wrapped_obj
 
 
-def is_wrapped_object(obj, expected_type):
+def is_wrapped_object(obj, expected_type=None):
   """Returns True iff 'obj' is a wrapped object of the expected type.
 
   A wraped object is the result of caling wrap_objected() on a given object.
@@ -298,14 +307,15 @@ def is_wrapped_object(obj, expected_type):
     obj: any object. If the object does not have the expected type or structure,
       is_wrapped_object() will return False.
     expected_type: the expected value of obj['type'].
+      If it is None, then any non-empty object type is accepted.
 
   Returns:
   True iff 'obj' is a wrapped object of the expected type.
   """
-  assert valid_string(expected_type)
+  assert valid_optional_string(expected_type)
   return (valid_string(get_attribute(obj, ['id'])) and
           valid_string(get_attribute(obj, ['type'])) and
-          (obj['type'] == expected_type) and
+          ((expected_type is None) or (obj['type'] == expected_type)) and
           valid_string(get_attribute(obj, ['timestamp'])) and
           isinstance(get_attribute(obj, ['properties']), types.DictType))
 
@@ -575,7 +585,7 @@ def make_response(value, attribute_name):
   """
   assert valid_string(attribute_name)
   return {'success': True,
-          'timestamp': datetime.datetime.now().isoformat(),
+          'timestamp': now(),
           attribute_name: value}
 
 
@@ -592,5 +602,5 @@ def make_error(error_message):
   """
   assert valid_string(error_message)
   return {'success': False,
-          'timestamp': datetime.datetime.now().isoformat(),
+          'timestamp': now(),
           'error_message': error_message}
