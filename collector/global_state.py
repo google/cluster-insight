@@ -75,6 +75,10 @@ class GlobalState(object):
     # pointers to synchronization constructs.
     self._bounded_semaphore = None
 
+    # pointers to shared dictionaries.
+    self._relations_lock = threading.Lock()
+    self._relations_to_timestamps = {}
+
   def init_caches_and_synchronization(self):
     """Initializes all caches."""
     self._nodes_cache = simple_cache.SimpleCache(
@@ -194,3 +198,12 @@ class GlobalState(object):
   def logger_exception(self, *args):
     with self._logger_lock:
       self._logger.exception(*args)
+
+  def get_relations_to_timestamps(self):
+    with self._relations_lock:
+      return self._relations_to_timestamps
+
+  def set_relations_to_timestamps(self, v):
+    assert isinstance(v, types.DictType)
+    with self._relations_lock:
+      self._relations_to_timestamps = v

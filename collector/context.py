@@ -89,6 +89,17 @@ class ContextGraph(object):
     self._context_relations = []
     self._version = None
     self._id_set = set()
+    self._previous_relations_to_timestamps = {}
+    self._current_relations_to_timestamps = {}
+
+  def get_relations_to_timestamps(self):
+    with self._lock:
+      return self._current_relations_to_timestamps
+
+  def set_relations_to_timestamps(self, d):
+    assert isinstance(d, types.DictType)
+    with self._lock:
+      self._previous_relations_to_timestamps = d
 
   def add_resource(self, rid, annotations, rtype, timestamp, obj):
     """Adds a resource to the context graph."""
@@ -129,17 +140,26 @@ class ContextGraph(object):
     assert (metadata is None) or isinstance(metadata, types.DictType)
 
     with self._lock:
+      # The timestamp of the relation should be inherited from the previous
+      # context graph.
+      key = (source, target, kind)
+      timestamp = self._previous_relations_to_timestamps.get(key)
+      if not utilities.valid_string(timestamp):
+        timestamp = utilities.now()
+
       # Add the relation to the context graph data structure.
       relation = {
           'source': source,
           'target': target,
           'type': kind,
+          'timestamp': timestamp
       }
+      self._current_relations_to_timestamps[key] = timestamp
 
       # Add annotations as needed.
       relation['annotations'] = {}
       if metadata is not None:
-        relation['annotations']['metadata'] = metadata
+        relation['annotations']['metadata'] = copy.deep_copy(metadata)
 
       relation['annotations']['label'] = label if label is not None else kind
       if self._version is not None:
@@ -162,13 +182,52 @@ class ContextGraph(object):
     with self._lock:
       self._graph_metadata = metadata
 
+  def _max_resources_timestamp(self, initial_value):
+    """Computes the maximal timestamp of all resources and 'initial_value'.
+
+    Must be called while holding self._lock.
+
+    Args:
+      initial_value: the result should be greater or equal to this value.
+
+    Returns:
+    Maximum timestamp of all resources and 'initial_value'.
+    """
+    assert utilities.valid_string(initial_value)
+    max_timestamp = initial_value
+    for r in self._context_resources:
+      if r['timestamp'] > max_timestamp:
+        max_timestamp = r['timestamp']
+
+    return max_timestamp
+
+  def _max_relations_timestamp(self, initial_value):
+    """Computes the maximal timestamp of all relations and 'initial_value'.
+
+    Must be called while holding self._lock.
+
+    Args:
+      initial_value: the result should be greater or equal to this value.
+
+    Returns:
+    Maximum timestamp of all relations and 'initial_value'.
+    """
+    assert utilities.valid_string(initial_value)
+    max_timestamp = initial_value
+    for r in self._context_relations:
+      if r['timestamp'] > max_timestamp:
+        max_timestamp = r['timestamp']
+
+    return max_timestamp
+
   def to_context_graph(self):
     """Returns the context graph in cluster-insight context graph format."""
     # return graph in Cluster-Insight context graph format.
     with self._lock:
       context_graph = {
           'success': True,
-          'timestamp': datetime.datetime.now().isoformat(),
+          'timestamp': self._max_relations_timestamp(
+              self._max_resources_timestamp(utilities.now())),
           'resources': self._context_resources,
           'relations': self._context_relations
       }
@@ -179,7 +238,7 @@ class ContextGraph(object):
     with self._lock:
       resources = {
           'success': True,
-          'timestamp': datetime.datetime.now().isoformat(),
+          'timestamp': self._max_resources_timestamp(utilities.now()),
           'resources': self._context_resources,
       }
       return resources
@@ -266,9 +325,9 @@ def _make_error(error_message):
     An error response in the cluster-insight context graph format.
   """
   assert isinstance(error_message, types.StringTypes) and error_message
-  return {'_success': False,
-          '_timestamp': datetime.datetime.now().isoformat(),
-          '_error_message': error_message}
+  return {'success': False,
+          'timestamp': utilities.now(),
+          'error_message': error_message}
 
 
 def _do_compute_node(gs, input_queue, cluster_guid, node, g):
@@ -497,12 +556,23 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
 
   g = ContextGraph()
   g.set_version(docker.get_version(gs))
-  g.set_metadata({'timestamp': datetime.datetime.now().isoformat()})
+  g.set_metadata({'timestamp': utilities.now()})
+  g.set_relations_to_timestamps(gs.get_relations_to_timestamps())
 
   # Nodes
   nodes_list = kubernetes.get_nodes_with_metrics(gs)
   if not nodes_list:
     return g.dump(gs, output_format)
+
+  # Find the timestamp of the oldest node. This will be the timestamp of
+  # the cluster.
+  oldest_timestamp = utilities.now()
+  for node in nodes_list:
+    assert utilities.is_wrapped_object(node, 'Node')
+    # note: we cannot call min(oldest_timestamp, node['timestamp']) here
+    # because min(string) returnes the smallest character in the string.
+    if node['timestamp'] < oldest_timestamp:
+      oldest_timestamp = node['timestamp']
 
   # Get the cluster name from the first node.
   # The cluster name is an approximation. It is not a big deal if it
@@ -511,7 +581,7 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
   cluster_guid = 'Cluster:' + cluster_name
   g.set_title(cluster_name)
   g.add_resource(cluster_guid, {'label': cluster_name}, 'Cluster',
-                 nodes_list[0]['timestamp'], {})
+                 oldest_timestamp, {})
 
   # Nodes
   for node in nodes_list:
@@ -547,6 +617,9 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
     msg = output_queue.get_nowait()  # should not fail.
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
+
+  # Keep the relations_to_timestamps mapping for next call.
+  gs.set_relations_to_timestamps(g.get_relations_to_timestamps())
 
   # Dump the resulting graph
   return g.dump(gs, output_format)

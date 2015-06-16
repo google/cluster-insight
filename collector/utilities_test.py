@@ -26,6 +26,43 @@ import unittest
 # local imports
 import utilities
 
+CONTAINER = {
+    'annotations': {
+        'label': 'php-redis/c6bf48e9b60c',
+    },
+    'id': 'k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default',
+    'properties': {
+        'Id': 'deadbeef',
+        'Image': '01234567',
+        'Name': '/k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default'
+    },
+    'timestamp': '2015-05-29T18:42:52.217499',
+    'type': 'Container'
+}
+
+PARENT_POD = {
+    'annotations': {
+        'label': 'guestbook-controller-14zj2'
+    },
+    'id': 'guestbook-controller-14zj2',
+    'properties': {
+        'status': {
+            'containerStatuses': [
+                {
+                    'containerID': 'docker://deadbeef',
+                    'image': 'brendanburns/php-redis',
+                    'name': 'php-redis'
+                }
+            ],
+            'hostIP': '104.154.34.132',
+            'phase': 'Running',
+            'podIP': '10.64.0.5'
+        }
+    },
+    'timestamp': '2015-05-29T18:37:04.852412',
+    'type': 'Pod'
+}
+
 
 class TestUtilities(unittest.TestCase):
 
@@ -134,7 +171,7 @@ class TestUtilities(unittest.TestCase):
 
     # 'b1' and 'b2' differs just by the value of the 'lastProbeTime' attribute.
     b1 = {'uid': 'B', 'lastProbeTime': '2015-03-13T22:32:15Z'}
-    b2 = {'uid': 'B', 'lastProbeTime': datetime.datetime.now().isoformat()}
+    b2 = {'uid': 'B', 'lastProbeTime': utilities.now()}
 
     # 'wrapped_xxx' objects look like the objects we normally keep in the cache.
     # The difference between 'wrapped_a1' and 'wrapped_a2' is the value of the
@@ -166,44 +203,24 @@ class TestUtilities(unittest.TestCase):
 
   def test_get_short_container_name(self):
     """Tests get_short_container_name()."""
-    container = {
-        'annotations': {
-            'label': 'php-redis/c6bf48e9b60c',
-        },
-        'id': 'k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default',
-        'properties': {
-            'Id': 'deadbeef',
-            'Image': '01234567',
-            'Name': '/k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default'
-        },
-        'timestamp': '2015-05-29T18:42:52.217499',
-        'type': 'Container'
-    }
-    parent_pod = {
-        'annotations': {
-            'label': 'guestbook-controller-14zj2'
-        },
-        'id': 'guestbook-controller-14zj2',
-        'properties': {
-            'status': {
-                'containerStatuses': [
-                    {
-                        'containerID': 'docker://deadbeef',
-                        'image': 'brendanburns/php-redis',
-                        'name': 'php-redis'
-                    }
-                ],
-                'hostIP': '104.154.34.132',
-                'phase': 'Running',
-                'podIP': '10.64.0.5'
-            }
-        },
-        'timestamp': '2015-05-29T18:37:04.852412',
-        'type': 'Pod'
-    }
     self.assertEqual(
         'php-redis',
-        utilities.get_short_container_name(container, parent_pod))
+        utilities.get_short_container_name(CONTAINER, PARENT_POD))
+
+  def test_is_wrapped_object(self):
+    """Tests is_wrapped_object()."""
+    self.assertTrue(utilities.is_wrapped_object(CONTAINER, 'Container'))
+    self.assertTrue(utilities.is_wrapped_object(CONTAINER))
+    self.assertFalse(utilities.is_wrapped_object(CONTAINER, 'Pod'))
+
+    self.assertTrue(utilities.is_wrapped_object(PARENT_POD, 'Pod'))
+    self.assertTrue(utilities.is_wrapped_object(PARENT_POD))
+    self.assertFalse(utilities.is_wrapped_object(PARENT_POD, 'Container'))
+
+    self.assertFalse(utilities.is_wrapped_object({}))
+    self.assertFalse(utilities.is_wrapped_object({}, 'Pod'))
+    self.assertFalse(utilities.is_wrapped_object(None))
+    self.assertFalse(utilities.is_wrapped_object('hello, world'))
 
 
 if __name__ == '__main__':

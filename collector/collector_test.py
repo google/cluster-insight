@@ -146,7 +146,7 @@ class TestCollector(unittest.TestCase):
 
     n = 0
     for r in output.get('resources'):
-      assert isinstance(r, types.DictType)
+      assert utilities.is_wrapped_object(r)
       if r.get('type') == type_name:
         n += 1
 
@@ -166,8 +166,10 @@ class TestCollector(unittest.TestCase):
 
     return n
 
-  def verify_resources(self, result):
+  def verify_resources(self, result, start_time, end_time):
     assert isinstance(result, types.DictType)
+    assert utilities.valid_string(start_time)
+    assert utilities.valid_string(end_time)
     self.assertEqual(1, self.count_resources(result, 'Cluster'))
     self.assertEqual(3, self.count_resources(result, 'Node'))
     self.assertEqual(6, self.count_resources(result, 'Service'))
@@ -181,16 +183,18 @@ class TestCollector(unittest.TestCase):
 
     # Verify that all resources are valid wrapped objects.
     assert isinstance(result.get('resources'), types.ListType)
-
-    for r in result.get('resources'):
-      # The type of resource must be defined.
-      assert utilities.valid_string(r.get('type'))
-      assert utilities.is_wrapped_object(r, r.get('type'))
+    for r in result['resources']:
+      # all resources must be valid.
+      assert utilities.is_wrapped_object(r)
+      assert start_time <= r['timestamp'] <= end_time
 
   def test_resources(self):
+    """Test the '/resources' endpoint."""
+    start_time = utilities.now()
     ret_value = self.app.get('/cluster/resources')
+    end_time = utilities.now()
     result = json.loads(ret_value.data)
-    self.verify_resources(result)
+    self.verify_resources(result, start_time, end_time)
 
     self.assertEqual(0, self.count_relations(result, 'contains'))
     self.assertEqual(0, self.count_relations(result, 'createdFrom'))
@@ -198,14 +202,23 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(0, self.count_relations(result, 'monitors'))
     self.assertEqual(0, self.count_relations(result, 'runs'))
 
+    # The overall timestamp must be in the expected range.
+    self.assertTrue(utilities.valid_string(result.get('timestamp')))
+    self.assertTrue(start_time <= result['timestamp'] <= end_time)
+
     json_output = json.dumps(result, sort_keys=True)
     self.assertEqual(2, json_output.count('"alternateLabel": '))
     self.assertEqual(36, json_output.count('"createdBy": '))
 
   def test_cluster(self):
+    """Test the '/cluster' endpoint."""
+    start_time = utilities.now()
+    # Execrcise the collector. Read data from golden files and compute
+    # a context graph.
     ret_value = self.app.get('/cluster')
+    end_time = utilities.now()
     result = json.loads(ret_value.data)
-    self.verify_resources(result)
+    self.verify_resources(result, start_time, end_time)
 
     self.assertEqual(23, self.count_relations(result, 'contains'))
     self.assertEqual(3, self.count_relations(result, 'createdFrom'))
@@ -213,15 +226,30 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(6, self.count_relations(result, 'monitors'))
     self.assertEqual(10, self.count_relations(result, 'runs'))
 
+    # Verify that all relations contain a timestamp in the range
+    # [start_time, end_time].
+    self.assertTrue(isinstance(result.get('relations'), types.ListType))
+    for r in result['relations']:
+      self.assertTrue(isinstance(r, types.DictType))
+      timestamp = r.get('timestamp')
+      self.assertTrue(utilities.valid_string(timestamp))
+      self.assertTrue(start_time <= timestamp <= end_time)
+
+    # The overall timestamp must be in the expected range.
+    self.assertTrue(utilities.valid_string(result.get('timestamp')))
+    self.assertTrue(start_time <= result['timestamp'] <= end_time)
+
     json_output = json.dumps(result, sort_keys=True)
     self.assertEqual(2, json_output.count('"alternateLabel": '))
     self.assertEqual(85, json_output.count('"createdBy": '))
 
   def test_debug(self):
+    """Test the '/debug' endpoint."""
     ret_value = self.app.get('/debug')
     self.compare_to_golden(ret_value.data, 'debug')
 
   def test_version(self):
+    """Test the '/version' endpoint."""
     ret_value = self.app.get('/version')
     result = json.loads(ret_value.data)
     self.assertTrue(result.get('success'))
@@ -235,6 +263,7 @@ class TestCollector(unittest.TestCase):
     self.assertEqual('_unknown_', version)
 
   def test_healthz(self):
+    """Test the '/healthz' endpoint."""
     ret_value = self.app.get('/healthz')
     result = json.loads(ret_value.data)
     self.assertTrue(result.get('success'))

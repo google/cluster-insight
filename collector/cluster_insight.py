@@ -15,9 +15,7 @@
 # limitations under the License.
 
 
-"""Chooses which top level module to run, based on the mode passed in
-the CLUSTER_INSIGHT_MODE environment variable
-"""
+"""Select the module to run specified by CLUSTER_INSIGHT_MODE env. variable."""
 
 import argparse
 import os
@@ -53,5 +51,5 @@ if __name__ == '__main__':
     docker_proxy.main()
   else:
     raise collector_error.CollectorError(
-	'CLUSTER_INSIGHT_MODE environment variable is %s. Valid values are %s '
-	'or %s' % (mode, constants.MODE_MINION, constants.MODE_MASTER))
+        'CLUSTER_INSIGHT_MODE environment variable is %s. Valid values are %s '
+        'or %s' % (mode, constants.MODE_MINION, constants.MODE_MASTER))
