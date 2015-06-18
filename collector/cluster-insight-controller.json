@@ -45,6 +45,11 @@
                            }
                         ],
 			"image": "kubernetes/cluster-insight",
+			"securityContext": {
+			    "seLinuxOptions": {
+			        "type": "docker_t"
+			    }
+			},
 			"resources": {},
 			"volumeMounts": [
 			    {
