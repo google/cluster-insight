@@ -150,6 +150,28 @@ def _make_gcm_metrics(project_id, labels_dict):
   }}
 
 
+def annotate_container_error(container, message):
+  """Annotate the given container with an error message in lieu of metrics.
+
+  Args:
+    container: the container object to annotate.
+    message: a message explaining why this container was not annotated with
+      metrics.
+
+  Raises:
+    AssertionError: if the input arguments are invalid.
+  """
+  assert utilities.is_wrapped_object(container, 'Container')
+  assert utilities.valid_string(message)
+  if container.get('annotations') is None:
+    container['annotations'] = {}
+  container['annotations']['metrics'] = {
+      'gcm': {
+          'error_message': message
+      }
+  }
+
+
 def annotate_container(project_id, container, parent_pod):
   """Annotate the given container with Heapster GCM metric information.
 
