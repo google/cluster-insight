@@ -345,8 +345,8 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
   pod_ids = set()
   docker_hosts = set()
 
-  # Process pods sequentially. Calls to _do_compute_pod() do not call
-  # lower-level services.
+  # Process pods sequentially because calls to _do_compute_pod() do not call
+  # lower-level services or wait.
   for pod in kubernetes.get_pods(gs, node_id):
     _do_compute_pod(gs, input_queue, node_guid, pod, g)
     pod_ids.add(pod['id'])
@@ -354,6 +354,15 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
         pod, ['properties', 'spec', 'host'])
     if utilities.valid_string(docker_host):
       docker_hosts.add(docker_host)
+
+  # 'docker_hosts' should contain a single Docker host, because all of
+  # the pods run in the same Node. However, if it is not the case, we
+  # cannot fix the situation, so we just log an error message and continue.
+  if len(docker_hosts) > 1:
+    gs.logger_error(
+        'corrupt pod data in node=%s: '
+        '"docker_hosts" contain more than one entry: %s',
+        node_guid, str(docker_hosts))
 
   # Process containers concurrently.
   for docker_host in docker_hosts:
