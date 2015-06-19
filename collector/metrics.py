@@ -165,11 +165,7 @@ def annotate_container_error(container, message):
   assert utilities.valid_string(message)
   if container.get('annotations') is None:
     container['annotations'] = {}
-  container['annotations']['metrics'] = {
-      'gcm': {
-          'error_message': message
-      }
-  }
+  container['annotations']['metrics'] = {'gcmError': message}
 
 
 def annotate_container(project_id, container, parent_pod):
