@@ -48,7 +48,6 @@ context.compute_graph(gs, output_format)
 """
 
 import copy
-import datetime
 import Queue  # "Queue" was renamed "queue" in Python 3.
 import re
 import sys
@@ -343,46 +342,50 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
                  node['properties'])
   g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
   # Pods in a Node
-  # Do not compute the pods by worker threads in test mode because the order
-  # of the output will be different than the golden files due to the effects
-  # of queuing the work.
+  pod_ids = set()
+  docker_hosts = set()
+
+  # Process pods sequentially because calls to _do_compute_pod() do not call
+  # lower-level services or wait.
   for pod in kubernetes.get_pods(gs, node_id):
-    if gs.get_testing():
-      _do_compute_pod(gs, input_queue, node_guid, pod, g)
-    else:
-      input_queue.put((
-          gs.get_random_priority(),
-          _do_compute_pod,
-          {'gs': gs, 'input_queue': input_queue, 'node_guid': node_guid,
-           'pod': pod, 'g': g}))
+    _do_compute_pod(gs, input_queue, node_guid, pod, g)
+    pod_ids.add(pod['id'])
+    docker_host = utilities.get_attribute(
+        pod, ['properties', 'spec', 'host'])
+    if utilities.valid_string(docker_host):
+      docker_hosts.add(docker_host)
 
+  # 'docker_hosts' should contain a single Docker host, because all of
+  # the pods run in the same Node. However, if it is not the case, we
+  # cannot fix the situation, so we just log an error message and continue.
+  if len(docker_hosts) > 1:
+    gs.logger_error(
+        'corrupt pod data in node=%s: '
+        '"docker_hosts" contain more than one entry: %s',
+        node_guid, str(docker_hosts))
 
-def _container_in_pod(gs, container, pod):
-  """Returns True when 'container' is a part of 'pod'.
+  # Process containers concurrently.
+  for docker_host in docker_hosts:
+    for container in docker.get_containers_with_metrics(gs, docker_host):
+      parent_pod_id = utilities.get_parent_pod_id(container)
+      if utilities.valid_string(parent_pod_id) and (parent_pod_id in pod_ids):
+        # This container is contained in a pod.
+        parent_guid = 'Pod:' + parent_pod_id
+      else:
+        # This container is not contained in a pod.
+        parent_guid = node_guid
 
-  Args:
-    gs: global state.
-    container: a wrapped container object.
-    pod: a wrapped pod object.
-
-  Raises:
-    CollectorError: if the 'container' or the 'pod' are missing essential
-    attributes.
-
-  Returns:
-  True iff container 'container' is a part of 'pod'.
-  """
-  assert isinstance(gs, global_state.GlobalState)
-  assert utilities.is_wrapped_object(container, 'Container')
-  assert utilities.is_wrapped_object(pod, 'Pod')
-
-  parent_pod_id = utilities.get_parent_pod_id(container)
-  if not utilities.valid_string(parent_pod_id):
-    msg = 'could not find parent pod ID in container %s' % container['id']
-    gs.logger_error(msg)
-    raise collector_error.CollectorError(msg)
-
-  return parent_pod_id == pod['id']
+      # Do not compute the containers by worker threads in test mode
+      # because the order of the output will be different than the golden
+      # files due to the effects of queuing the work.
+      if gs.get_testing():
+        _do_compute_container(gs, docker_host, parent_guid, container, g)
+      else:
+        input_queue.put((
+            gs.get_random_priority(),
+            _do_compute_container,
+            {'gs': gs, 'docker_host': docker_host, 'parent_guid': parent_guid,
+             'container': container, 'g': g}))
 
 
 def _do_compute_pod(gs, input_queue, node_guid, pod, g):
@@ -406,28 +409,11 @@ def _do_compute_pod(gs, input_queue, node_guid, pod, g):
                  pod['properties'])
   g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
 
-  # Containers in a Pod
-  for container in docker.get_containers_with_metrics(gs, docker_host):
-    if not _container_in_pod(gs, container, pod):
-      continue
 
-    # Do not compute the containers by worker threads in test mode because the
-    # order of the output will be different than the golden files due to the
-    # effects of queuing the work.
-    if gs.get_testing():
-      _do_compute_container(gs, docker_host, pod_guid, container, g)
-    else:
-      input_queue.put((
-          gs.get_random_priority(),
-          _do_compute_container,
-          {'gs': gs, 'docker_host': docker_host, 'pod_guid': pod_guid,
-           'container': container, 'g': g}))
-
-
-def _do_compute_container(gs, docker_host, pod_guid, container, g):
+def _do_compute_container(gs, docker_host, parent_guid, container, g):
   assert isinstance(gs, global_state.GlobalState)
   assert utilities.valid_string(docker_host)
-  assert utilities.valid_string(pod_guid)
+  assert utilities.valid_string(parent_guid)
   assert utilities.is_wrapped_object(container, 'Container')
   assert isinstance(g, ContextGraph)
 
@@ -438,8 +424,8 @@ def _do_compute_container(gs, docker_host, pod_guid, container, g):
                  'Container', container['timestamp'],
                  container['properties'])
 
-  # Pod contains Container
-  g.add_relation(pod_guid, container_guid, 'contains')
+  # The parent (Pod or Node) contains Container.
+  g.add_relation(parent_guid, container_guid, 'contains')
 
   # Processes in a Container
   for process in docker.get_processes(gs, docker_host, container_id):

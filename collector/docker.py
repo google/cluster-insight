@@ -316,14 +316,14 @@ def get_containers_with_metrics(gs, docker_host):
     if not utilities.valid_string(parent_pod_id):
       msg = ('missing or invalid parent pod ID in container %s' %
              container['id'])
-      gs.logger_error(msg)
-      raise collector_error.CollectorError(msg)
+      metrics.annotate_container_error(container, msg)
+      continue
 
     if parent_pod_id not in pod_id_to_pod:
       msg = ('could not locate parent pod %s for container %s' %
              (parent_pod_id, container['id']))
-      gs.logger_error(msg)
-      raise collector_error.CollectorError(msg)
+      metrics.annotate_container_error(container, msg)
+      continue
 
     # Note that the project ID may be '_unknown_'.
     # This is not a big deal, because the aggregator knows the project ID.
