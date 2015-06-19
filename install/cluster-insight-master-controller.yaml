@@ -1,0 +1,35 @@
+kind: ReplicationController
+apiVersion: v1
+metadata: 
+  name: cluster-insight-master-controller-v1
+  namespace: default
+  labels: 
+    k8s-app: cluster-insight
+    version: v1
+spec: 
+  replicas: 1
+  selector: 
+    k8s-app: cluster-insight
+    cluster-insight-mode: master
+    version: v1
+  template: 
+    metadata: 
+      labels: 
+        k8s-app: cluster-insight
+        cluster-insight-mode: master
+        version: v1
+    spec: 
+      containers: 
+        - 
+          name: cluster-insight
+          image: kubernetes/cluster-insight:latest
+          imagePullPolicy: Always
+          ports: 
+            - 
+              name: cluster-insight
+              containerPort: 5555
+              protocol: TCP
+          env: 
+            - 
+              name: CLUSTER_INSIGHT_MODE
+              value: master

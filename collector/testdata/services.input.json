@@ -9,7 +9,7 @@
           "name": "guestbook", 
           "namespace": "default", 
           "resourceVersion": "401", 
-          "selfLink": "/api/v1beta3/namespaces/default/services/guestbook", 
+          "selfLink": "/api/v1/namespaces/default/services/guestbook", 
           "uid": "440262d1-03bd-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -44,7 +44,7 @@
           "name": "kube-dns", 
           "namespace": "default", 
           "resourceVersion": "48", 
-          "selfLink": "/api/v1beta3/namespaces/default/services/kube-dns", 
+          "selfLink": "/api/v1/namespaces/default/services/kube-dns", 
           "uid": "177f363c-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -80,7 +80,7 @@
           "name": "kubernetes", 
           "namespace": "default", 
           "resourceVersion": "5", 
-          "selfLink": "/api/v1beta3/namespaces/default/services/kubernetes"
+          "selfLink": "/api/v1/namespaces/default/services/kubernetes"
         }, 
         "spec": {
           "portalIP": "10.67.240.2", 
@@ -107,7 +107,7 @@
           "name": "kubernetes-ro", 
           "namespace": "default", 
           "resourceVersion": "7", 
-          "selfLink": "/api/v1beta3/namespaces/default/services/kubernetes-ro"
+          "selfLink": "/api/v1/namespaces/default/services/kubernetes-ro"
         }, 
         "spec": {
           "portalIP": "10.67.240.1", 
@@ -134,7 +134,7 @@
           "name": "redis-master", 
           "namespace": "default", 
           "resourceVersion": "238", 
-          "selfLink": "/api/v1beta3/namespaces/default/services/redis-master", 
+          "selfLink": "/api/v1/namespaces/default/services/redis-master", 
           "uid": "cff416f8-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -165,7 +165,7 @@
           "name": "redis-worker", 
           "namespace": "default", 
           "resourceVersion": "301", 
-          "selfLink": "/api/v1beta3/namespaces/default/services/redis-worker", 
+          "selfLink": "/api/v1/namespaces/default/services/redis-worker", 
           "uid": "052e132e-03bd-11e5-94dd-42010af099dd"
         }, 
         "spec": {

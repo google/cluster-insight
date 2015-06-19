@@ -25,6 +25,7 @@ import json
 import sys
 import time
 import types
+import os
 
 import requests
 
@@ -36,8 +37,61 @@ import utilities
 
 ## Kubernetes APIs
 
-KUBERNETES_API = 'http://127.0.0.1:8080/api/v1beta3'
+KUBERNETES_API = 'https://%s:%s/api/v1'
 
+def get_kubernetes_base_url():
+  """
+  Computes the base URL for the Kubernetes master from the environment 
+  variables for the kubernetes service.
+
+  Returns:
+    The base URL for the Kubernetes master, including the api prefix.
+
+  Raises:
+    CollectorError: if the environment variable KUBERNETES_SERVICE_HOST 
+    or KUBERNETES_SERVICE_PORT is not defined or empty.
+  """
+  service_host = os.environ.get('KUBERNETES_SERVICE_HOST')
+  if not service_host:
+    raise collector_error.CollectorError(
+        'KUBERNETES_SERVICE_HOST environment variable is not set')
+
+  service_port = os.environ.get('KUBERNETES_SERVICE_PORT')
+  if not service_port:
+    raise collector_error.CollectorError(
+        'KUBERNETES_SERVICE_PORT environment variable is not set')
+
+  return KUBERNETES_API % (service_host, service_port)
+
+KUBERNETES_BEARER_TOKEN = ""
+KUBERNETES_BEARER_TOKEN_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+def get_kubernetes_bearer_token():
+  """
+  Reads the bearer token required to call the Kubernetes master from a file
+  The file is installed in every container within a Kubernetes pod by the kubelet. 
+  The path to the file is documented at https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/accessing-the-cluster.md.
+
+  Returns:
+    The contents of the token file as a string for use in the Authorization header 
+    as a bearer token: 'Authorization: Bearer <token>'
+
+  Raises:
+    IOError: if cannot open the token file.
+    CollectorError: if the file is empty.
+  """
+  global KUBERNETES_BEARER_TOKEN
+  if not KUBERNETES_BEARER_TOKEN:
+    with open (KUBERNETES_BEARER_TOKEN_FILE, "r") as token_file:
+      KUBERNETES_BEARER_TOKEN = token_file.read()
+    if not KUBERNETES_BEARER_TOKEN:
+      raise collector_error.CollectorError(
+        'Cannot read Kubernetes bearer token from %s' % (KUBERNETES_BEARER_TOKEN_FILE))
+
+  return KUBERNETES_BEARER_TOKEN
+
+def get_kubernetes_headers():
+  return {'Authorization': 'Bearer %s' % (get_kubernetes_bearer_token())}
 
 @utilities.global_state_string_args
 def fetch_data(gs, url):
@@ -46,8 +100,8 @@ def fetch_data(gs, url):
   The file name is derived from the URL in the following way:
   The file name is 'testdata/' + last element of the URL + '.input.json'.
 
-  For example, if the URL is 'http://ab/cd/ef', then the file name is
-  'testdata/ef.input.json'.
+  For example, if the URL is 'https://host:port/api/v1/path/to/resource', then the 
+  file name is 'testdata/resource.input.json'.
 
   The input is always JSON. It is converted to an internal representation
   by this routine.
@@ -73,8 +127,8 @@ def fetch_data(gs, url):
     return json.loads(open(fname, 'r').read())
   else:
     # Send the request to Kubernetes
-    return requests.get(url).json()
-
+    headers = get_kubernetes_headers()
+    return requests.get(url, headers=headers, verify=False).json()
 
 @utilities.global_state_arg
 def get_nodes(gs):
@@ -98,7 +152,7 @@ def get_nodes(gs):
     return nodes
 
   nodes = []
-  url = '{kubernetes}/nodes'.format(kubernetes=KUBERNETES_API)
+  url = get_kubernetes_base_url() + '/nodes'
   try:
     result = fetch_data(gs, url)
   except:
@@ -184,7 +238,7 @@ def get_pods(gs, node_id=None):
     return pods
 
   pods = []
-  url = '{kubernetes}/pods'.format(kubernetes=KUBERNETES_API)
+  url = get_kubernetes_base_url() + '/pods'
   try:
     result = fetch_data(gs, url)
   except:
@@ -364,7 +418,7 @@ def get_services(gs):
     return services
 
   services = []
-  url = '{kubernetes}/services'.format(kubernetes=KUBERNETES_API)
+  url = get_kubernetes_base_url() + '/services'
   try:
     result = fetch_data(gs, url)
   except:
@@ -415,7 +469,8 @@ def get_rcontrollers(gs):
     return rcontrollers
 
   rcontrollers = []
-  url = '{kubernetes}/replicationcontrollers'.format(kubernetes=KUBERNETES_API)
+  url = get_kubernetes_base_url() + '/replicationcontrollers'
+
   try:
     result = fetch_data(gs, url)
   except:
