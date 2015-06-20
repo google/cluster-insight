@@ -1,4 +1,6 @@
-[{"Command":"/bin/sh -c /run.sh","Created":1426602624,
+[
+{"Status": "Up 4 minutes", "Created": 1434643469, "Image": "kubernetes/cluster-insight:latest", "Labels": {}, "Ports": [], "Command": "python ./cluster_insight.py", "Names": ["/cluster-insight"], "Id": "f2d8dea9ba29bd91343f19fd4e27cb6240c684a7ff60b1a22d9da1c0eaf3a666"},
+{"Command":"/bin/sh -c /run.sh","Created":1426602624,
 "Id":"56ebf71bec95cc8625593d2e070bd71fa93eeb8d0d39dd3eff3031538bde96ba",
 "Image":"brendanburns/php-redis:latest",
 "Names":["/k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8"],

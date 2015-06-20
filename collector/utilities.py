@@ -52,6 +52,9 @@ NODE_ID_PATTERN = '^(Node:)?([^.]+)[.]c[.]([^.]+).*[.]internal$'
 # dashes. Thus the cluster name matched by this pattern may be inaccurate.
 HOST_NAME_PATTERN = '^(Node:)?k8s-([^-]+)-.*'
 
+# A pattern that matches non-empty hex numbers.
+HEX_PATTERN = r'^[0-9a-fA-F]+$'
+
 # Optional 'Node:' prefix of node ID.
 NODE_PREFIX = 'Node:'
 
@@ -68,7 +71,7 @@ def valid_optional_string(x):
 
 def valid_hex_id(x):
   """Returns True iff 'x' is a valid full-length hexadecimal ID."""
-  return valid_string(x) and (len(x) >= 32) and re.match('^[0-9a-fA-F]+$', x)
+  return valid_string(x) and (len(x) >= 32) and re.match(HEX_PATTERN, x)
 
 
 def now():
@@ -248,6 +251,16 @@ def two_dict_args(func):
   return inner
 
 
+def three_string_args(func):
+  """A decorator for a function with exactly three valid string arguments.
+  """
+  def inner(arg1, arg2, arg3):
+    assert valid_string(arg1) and valid_string(arg2) and valid_string(arg3)
+    return func(arg1, arg2, arg3)
+
+  return inner
+
+
 def range_limit(x, low, high):
   """Limits the input value 'x' to the range [low, high].
 
@@ -361,7 +374,7 @@ def object_to_hex_id(obj):
   id_value = get_attribute(obj, ['Id'])
   if not valid_string(id_value):
     return None
-  if not re.match('^[0-9a-fA-F]+$', id_value):
+  if not re.match(HEX_PATTERN, id_value):
     return None
   if len(id_value) < 12:
     return None
@@ -369,6 +382,27 @@ def object_to_hex_id(obj):
   return id_value[:12]
 
 
+def contains_long_hex_number(s):
+  """Returns True iff 's' contains at least one hexadecimal number of 8+ digits.
+
+  Fields are separated by '.', '_', or '-' delimiters.
+
+  Args:
+    s: the string to be parsed.
+
+  Returns:
+  True iff 's' contains at least one field that is completed made from
+  hexadecimal digits and it is at least 8 digits long.
+  """
+  assert isinstance(s, types.StringTypes)
+  for field in re.split(r'[-_.]', s):
+    if len(field) >= 8 and re.match(HEX_PATTERN, field):
+      return True
+
+  return False
+
+
+@one_string_arg
 def node_id_to_project_id(node_id):
   """Returns the project ID of the node ID.
 
@@ -389,6 +423,7 @@ def node_id_to_project_id(node_id):
     return '_unknown_'
 
 
+@one_string_arg
 def node_id_to_host_name(node_id):
   """Returns the host name part of the given node ID.
 
@@ -407,7 +442,10 @@ def node_id_to_host_name(node_id):
   """
   # Remove the optional 'Node:' prefix.
   if node_id.startswith(NODE_PREFIX):
-    return node_id_to_host_name(node_id[len(NODE_PREFIX):])
+    if len(node_id) > len(NODE_PREFIX):
+      return node_id_to_host_name(node_id[len(NODE_PREFIX):])
+    else:
+      raise ValueError('Cannot parse node ID to obtain host name: %s' % node_id)
 
   if valid_string(node_id) and node_id.find('.') < 0:
     return node_id
@@ -419,6 +457,7 @@ def node_id_to_host_name(node_id):
     raise ValueError('Cannot parse node ID to obtain host name: %s' % node_id)
 
 
+@one_string_arg
 def node_id_to_cluster_name(node_id):
   """Returns the cluster name part of the given node ID.
 
@@ -437,6 +476,73 @@ def node_id_to_cluster_name(node_id):
     return m.group(2)
   else:
     return '_unknown_'
+
+
+def get_container_name(container):
+  """Returns the container name of the given container.
+
+  The container name is stored in container['properties']['Name'] if it exists.
+  The first character in container['properties']['Name'] must be a '/'.
+  The container name is NOT the same as the container ID, which is stored
+  in container['id'].
+  The container name should be used to access the container's resources
+  using the Docker API.
+
+  Args:
+    container: a wrapped container.
+
+  Returns:
+  The container name (after the '/' prefix) or
+  an empty string in case of an error.
+  """
+  assert is_wrapped_object(container, 'Container')
+  name = get_attribute(container, ['properties', 'Name'])
+  if not isinstance(name, types.StringTypes):
+    return ''
+
+  if (len(name) >= 1) and (name[0] == '/'):
+    return name[1:]
+  else:
+    return ''
+
+
+@three_string_args
+def container_id_to_fname(docker_host, label, container_id):
+  """Convert Docker host name and container ID to a file name for testing.
+
+  The file name should contain the data simulating the result of reading
+  this information from Docker.
+
+  A typical value of 'docker_host' is:
+  k8s-guestbook-node-3.c.rising-apricot-840.internal
+
+  A typical value of 'label' is 'container' or 'processes'.
+
+  A typical value of 'container_id' is:
+  k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
+     or "cluster-insight".
+
+  Args:
+    docker_host: the Docker host running this container.
+    label: the middle component of the generated file name.
+    container_id: the container ID. Typical values are:
+
+  Returns:
+  "{host}-{label}-{id}"
+  For example:
+  k8s-guestbook-node-1-container-0e0f9003
+  -or-
+  k8s-guestbook-node-1-processes-eb67684a
+  """
+  # The 'host' part of the generated file name is the first period-separated
+  # component of 'docker_host'.
+  # The 'id' part of the generated file name is the last underscore-separated
+  # component of 'container_id' if 'container_id' as any underscores.
+  # Otherwise it is the full 'container_id'.
+  return '{host}-{label}-{id}'.format(
+      host=docker_host.split('.')[0],
+      label=label,
+      id=container_id.split('_')[-1] if '_' in container_id else container_id)
 
 
 def get_attribute(obj, names_list):
@@ -492,6 +598,7 @@ def get_parent_pod_id(container):
   k8s_heapster.59702a6a_monitoring-heapster-controller-hquxc_default_9cc2c9ac-dd5a-11e4-8a61-42010af0c46c_5193f65d
   k8s_fluentd-es.2a803504_fluentd-to-elasticsearch-kubernetes-minion-a7lt.c.gce-monitoring.internal_default_c5973403e9c9de201f684c38aa8a7588_4dfe38b6
   k8s_php-redis.b317029a_guestbook-controller-hh2gd.default.api_f991f13c-b949-11e4-8246-42010af0c3dd_eb67684a
+  cluster-insight
 
   Args:
     container: a wrapped container object.
@@ -589,6 +696,7 @@ def make_response(value, attribute_name):
           attribute_name: value}
 
 
+@one_string_arg
 def make_error(error_message):
   """Makes the JSON response indicating an error.
 
