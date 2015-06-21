@@ -493,17 +493,17 @@ def get_container_name(container):
 
   Returns:
   The container name (after the '/' prefix) or
-  an empty string in case of an error.
+  None in case of an error.
   """
   assert is_wrapped_object(container, 'Container')
   name = get_attribute(container, ['properties', 'Name'])
   if not isinstance(name, types.StringTypes):
-    return ''
+    return None
 
   if (len(name) >= 1) and (name[0] == '/'):
     return name[1:]
   else:
-    return ''
+    return None
 
 
 @three_string_args

@@ -80,7 +80,7 @@ def fetch_data(gs, url, base_name, expect_missing=False):
       if expect_missing:
         raise ValueError
       else:
-        msg = 'failed to read %s' % fname
+        msg = 'failed to read %s' % fname  # DEBUG
         gs.logger_exception(msg)
         raise collector_error.CollectorError(msg)
     except:
@@ -124,6 +124,11 @@ def _inspect_container(gs, docker_host, container_id):
     raise
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
+  if not isinstance(result, types.DictType):
+    msg = 'fetching %s returns invalid data' % url
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
@@ -445,7 +450,8 @@ def get_processes(gs, docker_host, container_id):
   # Docker API
   # Note that the {container_id} in the URL must be the internal container
   # name in container['properties']['Name'][1:]
-  # and not the disambiguated container name in container['id'].
+  # and not the container name in container['id'] which may contain an extra
+  # suffix.
   url = ('http://{docker_host}:{port}/containers/{container_name}/top?'
          'ps_args=aux'.format(docker_host=docker_host,
                               port=gs.get_docker_port(),

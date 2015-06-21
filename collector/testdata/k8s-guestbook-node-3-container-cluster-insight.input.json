@@ -1,4 +1,4 @@
-[{
+{
     "AppArmorProfile": "",
     "Args": [
         "./cluster_insight.py"
@@ -133,4 +133,4 @@
         "/var/run/docker.sock": false
     }
 }
-]
+

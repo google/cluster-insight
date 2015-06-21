@@ -167,10 +167,12 @@ class TestUtilities(unittest.TestCase):
       pod_id = utilities.get_parent_pod_id(container)
       pod_ids_list.append(pod_id)
 
+    # One of the contains has no parent pod.
     self.assertEqual(
         ['guestbook-controller-14zj2',
          'redis-master',
          'guestbook-controller-myab8',
+         None,
          'redis-worker-controller-4qg33'],
         pod_ids_list)
 
