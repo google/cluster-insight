@@ -80,7 +80,7 @@ def fetch_data(gs, url, base_name, expect_missing=False):
       if expect_missing:
         raise ValueError
       else:
-        msg = 'failed to read %s' % fname  # DEBUG
+        msg = 'failed to read %s' % fname
         gs.logger_exception(msg)
         raise collector_error.CollectorError(msg)
     except:
@@ -442,7 +442,7 @@ def get_processes(gs, docker_host, container_id):
 
   container_name = utilities.get_container_name(container)
   if not utilities.valid_string(container_name):
-    msg = 'Invalid container Name attribute in container %s' % container_id
+    msg = 'Invalid container "Name" attribute in container %s' % container_id
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
 
