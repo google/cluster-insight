@@ -15,12 +15,12 @@
 # limitations under the License.
 
 
-"""Runs the cluster insight data collector in master mode. Collects context
-metadata from multiple places and computes a graph from it.
+"""Runs the cluster insight data collector in master mode.
+
+Collects context metadata from multiple places and computes a graph from it.
 """
 
 import argparse
-import datetime
 import logging
 import sys
 

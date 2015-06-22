@@ -23,7 +23,6 @@ minion nodes.
 """
 
 import json
-import re
 import sys
 import time
 import types
@@ -113,14 +112,8 @@ def _inspect_container(gs, docker_host, container_id):
   url = 'http://{docker_host}:{port}/containers/{container_id}/json'.format(
       docker_host=docker_host, port=gs.get_docker_port(),
       container_id=container_id)
-  # A typical value of 'docker_host' is:
-  # k8s-guestbook-node-3.c.rising-apricot-840.internal
-  # Use only the first period-seperated element for the test file name.
-  # The typical value of 'container_id' is:
-  # k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
-  # Use just the tail of the container ID after the last '_' sign.
-  fname = '{host}-container-{id}'.format(
-      host=docker_host.split('.')[0], id=container_id.split('_')[-1])
+  fname = utilities.container_id_to_fname(
+      docker_host, 'container', container_id)
   try:
     result = fetch_data(gs, url, fname, expect_missing=True)
   except ValueError:
@@ -131,6 +124,11 @@ def _inspect_container(gs, docker_host, container_id):
     raise
   except:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
+    gs.logger_exception(msg)
+    raise collector_error.CollectorError(msg)
+
+  if not isinstance(result, types.DictType):
+    msg = 'fetching %s returns invalid data' % url
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
@@ -213,7 +211,7 @@ def get_containers(gs, docker_host):
       continue
 
     if not utilities.valid_string(container.get('Name')):
-      msg = ('missing or invalid Name attribute in container %s' %
+      msg = ('missing or invalid "Name" attribute in container %s' %
              container_id)
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
@@ -224,16 +222,36 @@ def get_containers(gs, docker_host):
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
 
-    short_hex_id = utilities.object_to_hex_id(container)
-    if short_hex_id is None:
+    # The 'container_id' is most often unique, because it contains long
+    # unique hex numbers. However, in some cases the 'container_id' is simply
+    # the image name, such as "cluster-insight". In this case 'container_id'
+    # is not unique in the context graph, so we make it unique by appending
+    # the a prefix of the Docker ID of the container.
+    hex_id = utilities.object_to_hex_id(container)
+    if hex_id is None:
       msg = 'Could not compute short hex ID of container %s' % container_id
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
 
+    if utilities.contains_long_hex_number(container_id):
+      short_label = hex_id
+      unique_id = container_id
+    else:
+      # The short label is descriptive when 'container_id' does not contain
+      # long hex numbers.
+      short_label = container_id
+      unique_id = '{container_id}-{hex_id}'.format(
+          container_id=container_id, hex_id=hex_id)
+
     wrapped_container = utilities.wrap_object(
-        container, 'Container', container_id, ts, label=short_hex_id)
+        container, 'Container', unique_id, ts, label=short_label)
     containers.append(wrapped_container)
     timestamps.append(ts)
+
+    # If the container's label does not contain long hex fields, it is
+    # good enough. It should not be replaced with anything else.
+    if not utilities.contains_long_hex_number(short_label):
+      continue
 
     # Modify the container's label after the wrapped container was added
     # to the containers list.
@@ -251,7 +269,7 @@ def get_containers(gs, docker_host):
     if not utilities.valid_string(short_container_name):
       continue
     wrapped_container['annotations']['label'] = (short_container_name + '/' +
-                                                 short_hex_id)
+                                                 hex_id)
 
   ret_value = gs.get_containers_cache().update(
       docker_host, containers,
@@ -340,6 +358,8 @@ def get_one_container(gs, docker_host, container_id):
   Note that the 'container_id' is the value in container['id'].
   It is a symbolic name, such as:
   k8s_POD.cc4afd21_kibana-logging-controller-fn98y_default_06b28f3f-dd5a-11e4-8a61-42010af0c46c_a1a2515e
+  -or-
+  cluster-insight-9c1e7820fd4c
   This should not be confused with the Docker ID of the container, which
   is a long hexadecimal string. It is stored in container['properties']['Id'].
 
@@ -420,20 +440,24 @@ def get_processes(gs, docker_host, container_id):
     # looking for it.
     return []
 
+  container_name = utilities.get_container_name(container)
+  if not utilities.valid_string(container_name):
+    msg = 'Invalid container "Name" attribute in container %s' % container_id
+    gs.logger_error(msg)
+    raise collector_error.CollectorError(msg)
+
   # NOTE: there is no trailing /json in this URL - this looks like a bug in the
   # Docker API
-  url = ('http://{docker_host}:{port}/containers/{container_id}/top?'
+  # Note that the {container_id} in the URL must be the internal container
+  # name in container['properties']['Name'][1:]
+  # and not the container name in container['id'] which may contain an extra
+  # suffix.
+  url = ('http://{docker_host}:{port}/containers/{container_name}/top?'
          'ps_args=aux'.format(docker_host=docker_host,
                               port=gs.get_docker_port(),
-                              container_id=container_id))
-  # A typical value of 'docker_host' is:
-  # k8s-guestbook-node-3.c.rising-apricot-840.internal
-  # Use only the first period-seperated element for the test file name.
-  # The typical value of 'container_id' is:
-  # k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
-  # Use just the tail of the container ID after the last '_' sign.
-  fname = '{host}-processes-{id}'.format(
-      host=docker_host.split('.')[0], id=container_id.split('_')[-1])
+                              container_name=container_name))
+  fname = utilities.container_id_to_fname(
+      docker_host, 'processes', container_name)
 
   try:
     # TODO(vasbala): what should we do in cases where the container is gone
