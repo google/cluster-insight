@@ -258,6 +258,29 @@ class TestUtilities(unittest.TestCase):
         'cluster-insight',
         utilities.get_container_name(ANOTHER_CONTAINER))
 
+  def test_container_id_to_fname(self):
+    """Tests container_id_to_fname()."""
+    self.assertEqual(
+        'k8s-guestbook-node-3-container-8dcdfec8',
+        utilities.container_id_to_fname(
+            'k8s-guestbook-node-3.c.rising-apricot-840.internal',
+            'container',
+            'k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_'
+            'f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8'))
+    self.assertEqual(
+        'k8s-guestbook-node-3-container-cluster-insight',
+        utilities.container_id_to_fname(
+            'k8s-guestbook-node-3.c.rising-apricot-840.internal',
+            'container',
+            'cluster-insight'))
+    self.assertEqual(
+        'k8s-guestbook-node-3-processes-8dcdfec8',
+        utilities.container_id_to_fname(
+            'k8s-guestbook-node-3',
+            'processes',
+            'k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_'
+            'f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8'))
+
 
 if __name__ == '__main__':
   unittest.main()

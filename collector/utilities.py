@@ -520,7 +520,8 @@ def container_id_to_fname(docker_host, label, container_id):
 
   A typical value of 'container_id' is:
   k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8
-     or "cluster-insight".
+  -or-
+  "cluster-insight".
 
   Args:
     docker_host: the Docker host running this container.
@@ -530,9 +531,11 @@ def container_id_to_fname(docker_host, label, container_id):
   Returns:
   "{host}-{label}-{id}"
   For example:
-  k8s-guestbook-node-1-container-0e0f9003
+  k8s-guestbook-node-3-container-8dcdfec8
   -or-
-  k8s-guestbook-node-1-processes-eb67684a
+  k8s-guestbook-node-3-container-cluster-insight
+  -or-
+  k8s-guestbook-node-3-processes-8dcdfec8
   """
   # The 'host' part of the generated file name is the first period-separated
   # component of 'docker_host'.
