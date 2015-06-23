@@ -216,10 +216,11 @@ The observed data is immutable.
 The `annotations` field in resources and relations contains key-value pairs
 inserted by the Cluster-Insight logic.
 
-Each of the resources and relations has a `timestamp` attribute, indicating when
-it was first observed or inferred, respectively. The `timestamp` field should
-remain static as long as the corresponding resource or relation did not change
+Resources and relations have a `timestamp` attribute, indicating when
+they were first observed or inferred, respectively. The `timestamp` value should
+remain constant as long as the corresponding resource or relation did not change
 substantially.
+
 When comparing resource values, we compute the hash of the JSON representation
 after removing the attributes `timestamp`, `lastHeartbeatTime` and `resourceVersion`,
 because their values are ephemeral and do not indicate a substantial change in the
@@ -231,4 +232,4 @@ The entire context graph has a separate timestamp which is the maximum of the
 timestamps of the resources and relations contained in the graph.
 If the timestamp of the entire context graph did not change, then there was
 no substantial change in any of the resources and relations inside it.
-See the previous paragraph for the definition of a substantial change.
+See the previous paragraph for the definition of a "substantial change".
