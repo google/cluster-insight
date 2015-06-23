@@ -17,7 +17,7 @@
 """A cache of recent values of objects.
 
 SimpleCache stores a dictionary from object labels to the tuple
-(update_time, creation_time, value)
+(update_time, create_time, value)
 
 The lookup() method returns the value associated with the given
 label and its creation time if the value is defined and it was most recently
