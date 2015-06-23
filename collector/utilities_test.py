@@ -251,10 +251,9 @@ class TestUtilities(unittest.TestCase):
     self.assertEqual(
         utilities.timeless_json_hash(
             {'success': True, 'timestamp': utilities.now(), 'resources':
-                [CONTAINER]}),
+             [CONTAINER]}),
         utilities.timeless_json_hash(resp))
     self.assertEqual(CONTAINER['timestamp'], resp['timestamp'])
-    
 
   def test_is_wrapped_object(self):
     """Tests is_wrapped_object()."""
