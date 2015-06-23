@@ -181,9 +181,15 @@ class TestUtilities(unittest.TestCase):
     """
     a = {'uid': 'A', 'creationTimestamp': '2015-02-20T21:39:34Z'}
 
-    # 'b1' and 'b2' differs just by the value of the 'lastProbeTime' attribute.
-    b1 = {'uid': 'B', 'lastProbeTime': '2015-03-13T22:32:15Z'}
-    b2 = {'uid': 'B', 'lastProbeTime': utilities.now()}
+    # 'b1' and 'b2' differs just by the value of the 'lastHearbeatTime'
+    # attribute.
+    b1 = {'uid': 'B', 'lastHeartbeatTime': '2015-03-13T22:32:15Z'}
+    b2 = {'uid': 'B', 'lastHeartbeatTime': utilities.now()}
+
+    # 'c1' and 'c2' differs just by the value of the 'resourceVersion'
+    # attribute.
+    c1 = {'uid': 'C', 'resourceVersion': '13'}
+    c2 = {'uid': 'C', 'resourceVersion': '42'}
 
     # 'wrapped_xxx' objects look like the objects we normally keep in the cache.
     # The difference between 'wrapped_a1' and 'wrapped_a2' is the value of the
@@ -192,11 +198,17 @@ class TestUtilities(unittest.TestCase):
     wrapped_a2 = utilities.wrap_object(a, 'Node', 'aaa', time.time() + 100)
 
     # The difference between the 'wrapped_b1', 'wrapped_b2' and 'wrapped_b3'
-    # objects are the values of the 'timestamp' and 'lastProbeTime' attributes.
+    # objects are the values of the 'timestamp' and 'lastHeartbeatTime'
+    # attributes.
     now = time.time()
     wrapped_b1 = utilities.wrap_object(b1, 'Node', 'bbb', now)
     wrapped_b2 = utilities.wrap_object(b2, 'Node', 'bbb', now)
     wrapped_b3 = utilities.wrap_object(b2, 'Node', 'bbb', now + 100)
+
+    # The difference between 'wrapped_c1' and 'wrapped_c2' objects are
+    # the values of the 'timestamp' and 'resourceVersion' attributes.
+    wrapped_c1 = utilities.wrap_object(c1, 'Node', 'bbb', now)
+    wrapped_c2 = utilities.wrap_object(c2, 'Node', 'bbb', now + 100)
 
     self.assertEqual(utilities.timeless_json_hash(wrapped_a1),
                      utilities.timeless_json_hash(wrapped_a2))
@@ -204,6 +216,8 @@ class TestUtilities(unittest.TestCase):
                      utilities.timeless_json_hash(wrapped_b2))
     self.assertEqual(utilities.timeless_json_hash(wrapped_b1),
                      utilities.timeless_json_hash(wrapped_b3))
+    self.assertEqual(utilities.timeless_json_hash(wrapped_c1),
+                     utilities.timeless_json_hash(wrapped_c2))
 
     # Verify that the hash values of lists of objects behaves as expected.
     self.assertEqual(utilities.timeless_json_hash([wrapped_a1, wrapped_b3]),

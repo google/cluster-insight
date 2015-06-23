@@ -74,6 +74,19 @@ def valid_hex_id(x):
   return valid_string(x) and (len(x) >= 32) and re.match(HEX_PATTERN, x)
 
 
+def seconds_to_timestamp(seconds):
+  """Converts a timestamp in seconds since the epoch to ISO 8601 format.
+
+  Args:
+    seconds: timestamp in seconds since the epoch.
+
+  Returns:
+  An ISO 8601 date/time value, which is YYYY-MM-DDTHH:MM:SS[.mmmmmm].
+  """
+  assert isinstance(seconds, (types.IntType, types.LongType, types.FloatType))
+  return datetime.datetime.fromtimestamp(seconds).isoformat()
+
+
 def now():
   """Returns the current date/time in ISO 8601 format.
 
@@ -295,8 +308,7 @@ def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
 
   wrapped_obj = {
       'id': obj_id, 'type': obj_type,
-      'timestamp':
-          datetime.datetime.fromtimestamp(timestamp_seconds).isoformat(),
+      'timestamp': seconds_to_timestamp(timestamp_seconds),
       'properties': obj}
 
   wrapped_obj['annotations'] = {}
@@ -341,7 +353,7 @@ def timeless_json_hash(obj):
 
   Returns:
   The SHA1 digest of the JSON representation of 'obj' after removing the
-  'timestamp', 'lastProbeTime', and 'resourceVersion' attributes and their
+  'timestamp', 'lastHeartbeatTime', and 'resourceVersion' attributes and their
   values. The values of these attributes change continously and they do not
   add much to the semantics of the object. Ignoring the values of these
   attributes prevent false positive indications that the object changed.
@@ -350,8 +362,8 @@ def timeless_json_hash(obj):
   """
   s = json.dumps(obj, sort_keys=True)
   m = hashlib.sha1()
-  s = re.sub('"(timestamp|lastProbeTime)": "[-0-9:.TZ]+"', '', s)
-  s = re.sub('"resourceVersion": [0-9]+', '', s)
+  s = re.sub(r'"(timestamp|lastHeartbeatTime)": "[-0-9:.TZ]+"', '', s)
+  s = re.sub(r'"resourceVersion": "[0-9]+"', '', s)
   m.update(s)
   return m.digest()
 
@@ -694,9 +706,19 @@ def make_response(value, attribute_name):
     attribute name and value.
   """
   assert valid_string(attribute_name)
-  return {'success': True,
-          'timestamp': now(),
-          attribute_name: value}
+  # Compute the maximum timestamp of the values in the list 'value'.
+  if (isinstance(value, types.ListType) and
+      all([is_wrapped_object(x) for x in value])):
+    ts = None
+    for x in value:
+      if (ts is None) or (x['timestamp'] > ts):
+        ts = x['timestamp']
+    if ts is None:
+      ts = now()
+  else:
+    # 'value' is not a list or it does not contain wrapped objects.
+    ts = now()
+  return {'success': True, 'timestamp': ts, attribute_name: value}
 
 
 @one_string_arg

@@ -18,7 +18,7 @@
 
 # global imports
 
-import datetime
+import json
 import sys
 import time
 import types
@@ -26,6 +26,7 @@ import unittest
 
 # local imports
 import simple_cache
+import utilities
 
 
 # Global constants
@@ -59,10 +60,10 @@ class TestSimpleCache(unittest.TestCase):
     self._cache.update(KEY, BLOB_ID_KEY, now)
     self.assertEqual(2, self._cache.size())
     value, timestamp = self._cache.lookup('', now + 1)
-    self.assertEqual(str(value), str(BLOB_ID_EMPTY))
+    self.assertEqual(str(BLOB_ID_EMPTY), str(value))
     self.assertEqual(now, timestamp)
     value, timestamp = self._cache.lookup(KEY, now + 1)
-    self.assertEqual(str(value), str(BLOB_ID_KEY))
+    self.assertEqual(str(BLOB_ID_KEY), str(value))
     self.assertEqual(now, timestamp)
 
     # Wait a long time and fetch the elements. It should fail.
@@ -75,9 +76,21 @@ class TestSimpleCache(unittest.TestCase):
     self._cache.update('', BLOB_ID_EMPTY, now + MAX_DATA_AGE_SECONDS + 2)
     self.assertEqual(2, self._cache.size())
     value, timestamp = self._cache.lookup('', now + MAX_DATA_AGE_SECONDS + 3)
-    self.assertEqual(str(value), str(BLOB_ID_EMPTY))
-    self.assertEqual(now + MAX_DATA_AGE_SECONDS + 2, timestamp)
+    self.assertEqual(str(BLOB_ID_EMPTY), str(value))
+    # The creation timestamp of BLOB_ID_EMPTY did not change, because we
+    # stored exactly the same value there.
+    self.assertEqual(now, timestamp)
     value, timestamp = self._cache.lookup(KEY, now + MAX_DATA_AGE_SECONDS + 3)
+    self.assertTrue((value is None) and (timestamp is None))
+
+    # Update one element again with a different value. The creation time
+    # should change as well.
+    self._cache.update('', BLOB_ID_KEY, now + MAX_DATA_AGE_SECONDS + 4)
+    self.assertEqual(2, self._cache.size())
+    value, timestamp = self._cache.lookup('', now + MAX_DATA_AGE_SECONDS + 5)
+    self.assertEqual(str(BLOB_ID_KEY), str(value))
+    self.assertEqual(now + MAX_DATA_AGE_SECONDS + 4, timestamp)
+    value, timestamp = self._cache.lookup(KEY, now + MAX_DATA_AGE_SECONDS + 5)
     self.assertTrue((value is None) and (timestamp is None))
 
   def make_blob(self, i):
@@ -110,7 +123,7 @@ class TestSimpleCache(unittest.TestCase):
     # cache.
     for i in range(2 * DATA_CLEANUP_AGE_SECONDS):
       value, timestamp = self._cache.lookup('id%d' % i, now)
-      if i > (2 * DATA_CLEANUP_AGE_SECONDS) - MAX_DATA_AGE_SECONDS:
+      if i > ((2 * DATA_CLEANUP_AGE_SECONDS) - MAX_DATA_AGE_SECONDS):
         self.assertEqual(str(self.make_blob(i)), str(value))
         self.assertEqual(start_time + i, timestamp)
       else:
@@ -130,8 +143,7 @@ class TestSimpleCache(unittest.TestCase):
     assert isinstance(name, types.StringTypes)
     assert isinstance(timestamp_seconds, types.FloatType)
     return {'id': name,
-            'timestamp':
-                datetime.datetime.fromtimestamp(timestamp_seconds).isoformat(),
+            'timestamp': utilities.seconds_to_timestamp(timestamp_seconds),
             'value': value}
 
   def test_update(self):
@@ -142,17 +154,23 @@ class TestSimpleCache(unittest.TestCase):
     """
     start_time = time.time()
     now = start_time
-    first_blob_a = None
+    expected_blob_a = None
+    expected_blob_a_timestamp = None
 
-    for i in range(2 * MAX_DATA_AGE_SECONDS):
+    for i in range(2 * DATA_CLEANUP_AGE_SECONDS):
       blob_a = self.make_fancy_blob('a', now, 0)
-      if first_blob_a is None:
-        first_blob_a = blob_a
+      if (i % DATA_CLEANUP_AGE_SECONDS) == 0:
+        # store new data every DATA_CLEANUP_AGE_SECONDS seconds.
+        # intermediate updates are ignored because the 'a' blob is the same.
+        expected_blob_a = blob_a
+        expected_blob_a_timestamp = now
+
       ret_value = self._cache.update('a', blob_a, now)
-      # The return value should be the first blob_a value, because all
+      # The return value should be the 'expected_blob_a', because all
       # stored values should be identical after removal of the 'timestamp'
-      # attribute.
-      self.assertEqual(str(first_blob_a), str(ret_value))
+      # attribute. A new value is stored after data cleanup, which occurs
+      # in the 'DATA_CLEANUP_AGE_SECONDS' iteration.
+      self.assertEqual(str(expected_blob_a), str(ret_value))
 
       blob_b = self.make_fancy_blob('b', now, i)
       ret_value = self._cache.update('b', blob_b, now)
@@ -161,12 +179,12 @@ class TestSimpleCache(unittest.TestCase):
       # attribute.
       self.assertEqual(str(blob_b), str(ret_value))
 
-      # The lookup value of 'a' is the first 'blob_a', because all
+      # The lookup value of 'a' is 'expected_blob_a', because all
       # versions of this blob are identical after removal of the 'timestamp'
       # value.
       value, timestamp = self._cache.lookup('a', now + 0.5)
-      self.assertEqual(str(first_blob_a), str(value))
-      self.assertEqual(now, timestamp)
+      self.assertEqual(str(expected_blob_a), str(value))
+      self.assertEqual(expected_blob_a_timestamp, timestamp)
 
       # The lookup value of 'b' is the latest 'blob_b', because all
       # versions of this blob are different after removal of the 'timestamp'
@@ -175,7 +193,7 @@ class TestSimpleCache(unittest.TestCase):
       self.assertEqual(str(blob_b), str(value))
       self.assertEqual(now, timestamp)
 
-      now += 1
+      now += 1.001
 
   def test_forever(self):
     """Verify that data entered into the 'forever_cache' remains there forever.
@@ -198,6 +216,66 @@ class TestSimpleCache(unittest.TestCase):
       value, timestamp = self._forever_cache.lookup(KEY, now)
       self.assertEqual(str(value), str(BLOB_ID_KEY))
       self.assertEqual(update_time, timestamp)
+
+  def make_same_node(self, seconds):
+    """Makes the same wrapped node object with the given timestamp.
+
+    Args:
+      seconds: timestamp in seconds since the epoch.
+
+    Returns:
+    A wrapped Node object with the given 'timestamp' and 'lastHeartbeatTime'.
+    """
+    assert isinstance(seconds, (types.IntType, types.LongType, types.FloatType))
+    return utilities.wrap_object(
+        {'uid': KEY,
+         'lastHeartbeatTime': utilities.seconds_to_timestamp(seconds)},
+        'Node', KEY, seconds)
+
+  def test_continuous_access_same_object(self):
+    """Verify continuous access of the same object."""
+    start_timestamp = time.time()
+    last_update_seconds = None
+    last_update_value = None
+    for i in range(2 * DATA_CLEANUP_AGE_SECONDS):
+      now = start_timestamp + (i * 1.001)
+      value, ts = self._cache.lookup(KEY, now)
+      if ((i % MAX_DATA_AGE_SECONDS) == 0 or
+          (i % DATA_CLEANUP_AGE_SECONDS) == 0):
+        # expect a cache miss
+        self.assertTrue(value is None and ts is None)
+        new_value = self.make_same_node(now)
+        if (i % DATA_CLEANUP_AGE_SECONDS) == 0:
+          # only the value stored every DATA_CLEANUP_AGE_SECONDS seconds
+          # is kept in the cache. Other values are essentially the same
+          # as the current contents of the cache, so they are not kept.
+          last_update_value = new_value
+          last_update_seconds = now
+        ret_value = self._cache.update(KEY, new_value, now)
+        self.assertEqual(json.dumps(last_update_value, sort_keys=True),
+                         json.dumps(ret_value, sort_keys=True))
+      else:
+        # expect a cache hit
+        self.assertFalse(last_update_seconds is None)
+        self.assertFalse(value is None)
+        self.assertEqual(json.dumps(last_update_value, sort_keys=True),
+                         json.dumps(value, sort_keys=True))
+        self.assertEqual(last_update_seconds, ts)
+
+  def make_different_node(self, seconds):
+    """Makes the a different wrapped node object with the given timestamp.
+
+    Args:
+      seconds: timestamp in seconds since the epoch.
+
+    Returns:
+    A wrapped Node object with the given 'timestamp' and 'creationTimestamp'.
+    """
+    assert isinstance(seconds, (types.IntType, types.LongType, types.FloatType))
+    return utilities.wrap_object(
+        {'uid': KEY,
+         'creationTimestamp': utilities.seconds_to_timestamp(seconds)},
+        'Node', KEY, seconds)
 
 
 if __name__ == '__main__':
