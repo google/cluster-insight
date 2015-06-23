@@ -233,6 +233,29 @@ class TestUtilities(unittest.TestCase):
         'php-redis',
         utilities.get_short_container_name(CONTAINER, PARENT_POD))
 
+  def test_make_response(self):
+    """Tests make_response()."""
+    # The timestamp of the first response is the current time.
+    start_time = utilities.now()
+    resp = utilities.make_response([], 'resources')
+    end_time = utilities.now()
+    # Note that timless_json_hash() ignores the value of the timestamp.
+    self.assertEqual(
+        utilities.timeless_json_hash(
+            {'success': True, 'timestamp': utilities.now(), 'resources': []}),
+        utilities.timeless_json_hash(resp))
+    self.assertTrue(start_time <= resp.get('timestamp') <= end_time)
+
+    # The timestamp of the second response is the timestamp of the container.
+    resp = utilities.make_response([CONTAINER], 'resources')
+    self.assertEqual(
+        utilities.timeless_json_hash(
+            {'success': True, 'timestamp': utilities.now(), 'resources':
+                [CONTAINER]}),
+        utilities.timeless_json_hash(resp))
+    self.assertEqual(CONTAINER['timestamp'], resp['timestamp'])
+    
+
   def test_is_wrapped_object(self):
     """Tests is_wrapped_object()."""
     self.assertTrue(utilities.is_wrapped_object(CONTAINER, 'Container'))

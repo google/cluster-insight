@@ -707,14 +707,12 @@ def make_response(value, attribute_name):
   """
   assert valid_string(attribute_name)
   # Compute the maximum timestamp of the values in the list 'value'.
-  if (isinstance(value, types.ListType) and
+  if (isinstance(value, types.ListType) and value and
       all([is_wrapped_object(x) for x in value])):
-    ts = None
+    ts = value[0]['timestamp']  # we know that the list is not empty
     for x in value:
-      if (ts is None) or (x['timestamp'] > ts):
+      if x['timestamp'] > ts:
         ts = x['timestamp']
-    if ts is None:
-      ts = now()
   else:
     # 'value' is not a list or it does not contain wrapped objects.
     ts = now()
