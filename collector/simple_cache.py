@@ -114,8 +114,7 @@ class SimpleCache(object):
     This method must be called when '_lock' is held.
 
     Args:
-      now: current time in seconds since the Epoch or None. If the value is
-        None, then _cleanup() is using the wallclock time.
+      now: current time in seconds since the Epoch.
     """
     assert isinstance(now, types.FloatType)
     threshold = now - self._data_cleanup_age_seconds

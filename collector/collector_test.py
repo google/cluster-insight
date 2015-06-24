@@ -216,7 +216,7 @@ class TestCollector(unittest.TestCase):
     start_time = utilities.now()
     end_time = None
     for _ in range(2):
-      # Execrcise the collector. Read data from golden files and compute
+      # Exercise the collector. Read data from golden files and compute
       # a context graph.
       # The second iteration should read from the cache.
       ret_value = self.app.get('/cluster')
@@ -260,7 +260,7 @@ class TestCollector(unittest.TestCase):
       self.assertTrue(utilities.now() > end_time)
 
     # Change the timestamp of the nodes in the cache.
-    late_timestamp = utilities.now()
+    timestamp_before_update = utilities.now()
     gs = collector.app.context_graph_global_state
     nodes, timestamp_seconds = gs.get_nodes_cache().lookup('')
     self.assertTrue(isinstance(nodes, types.ListType))
@@ -276,16 +276,16 @@ class TestCollector(unittest.TestCase):
     nodes[0]['properties']['newAttribute123'] = 'the quick brown fox jumps over'
     nodes[0]['timestamp'] = utilities.now()
     gs.get_nodes_cache().update('', nodes)
-    latest_timestamp = utilities.now()
+    timestamp_after_update = utilities.now()
     _, timestamp_seconds = gs.get_nodes_cache().lookup('')
-    self.assertTrue(late_timestamp <=
+    self.assertTrue(timestamp_before_update <=
                     utilities.seconds_to_timestamp(timestamp_seconds) <=
-                    latest_timestamp)
+                    timestamp_after_update)
 
     # Build the context graph again.
     ret_value = self.app.get('/cluster')
     result = json.loads(ret_value.data)
-    self.verify_resources(result, start_time, latest_timestamp)
+    self.verify_resources(result, start_time, timestamp_after_update)
 
     # Verify that all relations contain a timestamp in the range
     # [start_time, end_time].
@@ -298,7 +298,8 @@ class TestCollector(unittest.TestCase):
 
     # The overall timestamp must be in the expected range.
     self.assertTrue(utilities.valid_string(result.get('timestamp')))
-    self.assertTrue(late_timestamp <= result['timestamp'] <= latest_timestamp)
+    self.assertTrue(timestamp_before_update <= result['timestamp'] <=
+                    timestamp_after_update)
 
   def test_debug(self):
     """Test the '/debug' endpoint."""
