@@ -5,7 +5,7 @@
           "creationTimestamp": "2015-05-26T15:30:08Z", 
           "name": "k8s-guestbook-node-1", 
           "resourceVersion": "101140", 
-          "selfLink": "/api/v1beta3/nodes/k8s-guestbook-node-1", 
+          "selfLink": "/api/v1/nodes/k8s-guestbook-node-1", 
           "uid": "1755084f-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -52,7 +52,7 @@
           "creationTimestamp": "2015-05-26T15:30:08Z", 
           "name": "k8s-guestbook-node-2", 
           "resourceVersion": "101138", 
-          "selfLink": "/api/v1beta3/nodes/k8s-guestbook-node-2", 
+          "selfLink": "/api/v1/nodes/k8s-guestbook-node-2", 
           "uid": "1754f676-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -99,7 +99,7 @@
           "creationTimestamp": "2015-05-26T15:30:08Z", 
           "name": "k8s-guestbook-node-3", 
           "resourceVersion": "101139", 
-          "selfLink": "/api/v1beta3/nodes/k8s-guestbook-node-3", 
+          "selfLink": "/api/v1/nodes/k8s-guestbook-node-3", 
           "uid": "1754da89-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {

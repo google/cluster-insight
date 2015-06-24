@@ -9,7 +9,7 @@
           "name": "guestbook-controller", 
           "namespace": "default", 
           "resourceVersion": "698", 
-          "selfLink": "/api/v1beta3/namespaces/default/replicationcontrollers/guestbook-controller", 
+          "selfLink": "/api/v1/namespaces/default/replicationcontrollers/guestbook-controller", 
           "uid": "173439b0-03bd-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -70,7 +70,7 @@
           "name": "kube-dns", 
           "namespace": "default", 
           "resourceVersion": "694", 
-          "selfLink": "/api/v1beta3/namespaces/default/replicationcontrollers/kube-dns", 
+          "selfLink": "/api/v1/namespaces/default/replicationcontrollers/kube-dns", 
           "uid": "1801b580-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -205,7 +205,7 @@
           "name": "redis-worker-controller", 
           "namespace": "default", 
           "resourceVersion": "695", 
-          "selfLink": "/api/v1beta3/namespaces/default/replicationcontrollers/redis-worker-controller", 
+          "selfLink": "/api/v1/namespaces/default/replicationcontrollers/redis-worker-controller", 
           "uid": "e3e6b374-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {

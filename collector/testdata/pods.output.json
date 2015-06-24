@@ -15,7 +15,7 @@
           "name": "etcd-server-k8s-guestbook-master", 
           "namespace": "default", 
           "resourceVersion": "767", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/etcd-server-k8s-guestbook-master", 
+          "selfLink": "/api/v1/namespaces/default/pods/etcd-server-k8s-guestbook-master", 
           "uid": "157d9a58-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -139,7 +139,7 @@
           "name": "fluentd-cloud-logging-k8s-guestbook-node-1", 
           "namespace": "default", 
           "resourceVersion": "771", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-1", 
+          "selfLink": "/api/v1/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-1", 
           "uid": "159ac10c-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -278,7 +278,7 @@
           "name": "fluentd-cloud-logging-k8s-guestbook-node-2", 
           "namespace": "default", 
           "resourceVersion": "806", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-2", 
+          "selfLink": "/api/v1/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-2", 
           "uid": "15e32526-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -417,7 +417,7 @@
           "name": "fluentd-cloud-logging-k8s-guestbook-node-3", 
           "namespace": "default", 
           "resourceVersion": "801", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-3", 
+          "selfLink": "/api/v1/namespaces/default/pods/fluentd-cloud-logging-k8s-guestbook-node-3", 
           "uid": "15461a8e-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -549,7 +549,7 @@
       "properties": {
         "metadata": {
           "annotations": {
-            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"312\"}}"
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1\",\"resourceVersion\":\"312\"}}"
           }, 
           "creationTimestamp": "2015-05-26T15:37:17Z", 
           "generateName": "guestbook-controller-", 
@@ -559,7 +559,7 @@
           "name": "guestbook-controller-14zj2", 
           "namespace": "default", 
           "resourceVersion": "775", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/guestbook-controller-14zj2", 
+          "selfLink": "/api/v1/namespaces/default/pods/guestbook-controller-14zj2", 
           "uid": "1736c5f9-03bd-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -639,7 +639,7 @@
       "properties": {
         "metadata": {
           "annotations": {
-            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"312\"}}"
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1\",\"resourceVersion\":\"312\"}}"
           }, 
           "creationTimestamp": "2015-05-26T15:37:17Z", 
           "generateName": "guestbook-controller-", 
@@ -649,7 +649,7 @@
           "name": "guestbook-controller-5lmj9", 
           "namespace": "default", 
           "resourceVersion": "777", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/guestbook-controller-5lmj9", 
+          "selfLink": "/api/v1/namespaces/default/pods/guestbook-controller-5lmj9", 
           "uid": "1736980f-03bd-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -729,7 +729,7 @@
       "properties": {
         "metadata": {
           "annotations": {
-            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"312\"}}"
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"guestbook-controller\",\"uid\":\"173439b0-03bd-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1\",\"resourceVersion\":\"312\"}}"
           }, 
           "creationTimestamp": "2015-05-26T15:37:17Z", 
           "generateName": "guestbook-controller-", 
@@ -739,7 +739,7 @@
           "name": "guestbook-controller-myab8", 
           "namespace": "default", 
           "resourceVersion": "807", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/guestbook-controller-myab8", 
+          "selfLink": "/api/v1/namespaces/default/pods/guestbook-controller-myab8", 
           "uid": "1736dffd-03bd-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -826,7 +826,7 @@
           "name": "kube-apiserver-k8s-guestbook-master", 
           "namespace": "default", 
           "resourceVersion": "765", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-apiserver-k8s-guestbook-master", 
+          "selfLink": "/api/v1/namespaces/default/pods/kube-apiserver-k8s-guestbook-master", 
           "uid": "1572f235-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -1117,7 +1117,7 @@
           "name": "kube-controller-manager-k8s-guestbook-master", 
           "namespace": "default", 
           "resourceVersion": "768", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-controller-manager-k8s-guestbook-master", 
+          "selfLink": "/api/v1/namespaces/default/pods/kube-controller-manager-k8s-guestbook-master", 
           "uid": "1577fff6-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -1381,7 +1381,7 @@
       "properties": {
         "metadata": {
           "annotations": {
-            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"kube-dns\",\"uid\":\"1801b580-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"56\"}}"
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"kube-dns\",\"uid\":\"1801b580-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1\",\"resourceVersion\":\"56\"}}"
           }, 
           "creationTimestamp": "2015-05-26T15:30:09Z", 
           "generateName": "kube-dns-", 
@@ -1392,7 +1392,7 @@
           "name": "kube-dns-bqw5e", 
           "namespace": "default", 
           "resourceVersion": "101183", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-dns-bqw5e", 
+          "selfLink": "/api/v1/namespaces/default/pods/kube-dns-bqw5e", 
           "uid": "18061efc-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -1594,7 +1594,7 @@
           "name": "kube-scheduler-k8s-guestbook-master", 
           "namespace": "default", 
           "resourceVersion": "766", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/kube-scheduler-k8s-guestbook-master", 
+          "selfLink": "/api/v1/namespaces/default/pods/kube-scheduler-k8s-guestbook-master", 
           "uid": "157fd04f-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -1694,7 +1694,7 @@
           "name": "redis-master", 
           "namespace": "default", 
           "resourceVersion": "773", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/redis-master", 
+          "selfLink": "/api/v1/namespaces/default/pods/redis-master", 
           "uid": "78d43440-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -1773,7 +1773,7 @@
       "properties": {
         "metadata": {
           "annotations": {
-            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"redis-worker-controller\",\"uid\":\"e3e6b374-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"249\"}}"
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"redis-worker-controller\",\"uid\":\"e3e6b374-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1\",\"resourceVersion\":\"249\"}}"
           }, 
           "creationTimestamp": "2015-05-26T15:35:51Z", 
           "generateName": "redis-worker-controller-", 
@@ -1784,7 +1784,7 @@
           "name": "redis-worker-controller-1ow70", 
           "namespace": "default", 
           "resourceVersion": "804", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/redis-worker-controller-1ow70", 
+          "selfLink": "/api/v1/namespaces/default/pods/redis-worker-controller-1ow70", 
           "uid": "e3e92219-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {
@@ -1864,7 +1864,7 @@
       "properties": {
         "metadata": {
           "annotations": {
-            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1beta3\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"redis-worker-controller\",\"uid\":\"e3e6b374-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1beta3\",\"resourceVersion\":\"249\"}}"
+            "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicationController\",\"namespace\":\"default\",\"name\":\"redis-worker-controller\",\"uid\":\"e3e6b374-03bc-11e5-94dd-42010af099dd\",\"apiVersion\":\"v1\",\"resourceVersion\":\"249\"}}"
           }, 
           "creationTimestamp": "2015-05-26T15:35:51Z", 
           "generateName": "redis-worker-controller-", 
@@ -1875,7 +1875,7 @@
           "name": "redis-worker-controller-4qg33", 
           "namespace": "default", 
           "resourceVersion": "799", 
-          "selfLink": "/api/v1beta3/namespaces/default/pods/redis-worker-controller-4qg33", 
+          "selfLink": "/api/v1/namespaces/default/pods/redis-worker-controller-4qg33", 
           "uid": "e3e945ff-03bc-11e5-94dd-42010af099dd"
         }, 
         "spec": {

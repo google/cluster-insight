@@ -1,0 +1,46 @@
+kind: ReplicationController
+apiVersion: v1
+metadata: 
+  name: cluster-insight-minion-controller-v1
+  namespace: default
+  labels: 
+    k8s-app: cluster-insight
+    version: v1
+spec: 
+  replicas: 1
+  selector: 
+    k8s-app: cluster-insight
+    cluster-insight-mode: minion
+    version: v1
+  template: 
+    metadata: 
+      labels: 
+        k8s-app: cluster-insight
+        cluster-insight-mode: minion
+        version: v1
+    spec: 
+      volumes: 
+        - 
+          name: docker-unix-socket
+          hostPath: 
+            path: /var/run/docker.sock
+      containers: 
+        - 
+          name: cluster-insight
+          image: kubernetes/cluster-insight:latest
+          imagePullPolicy: Always
+          ports: 
+            - 
+              name: http-docker
+              containerPort: 4243
+              hostPort: 4243
+              protocol: TCP
+          env: 
+            - 
+              name: CLUSTER_INSIGHT_MODE
+              value: minion
+          volumeMounts: 
+            - 
+              name: docker-unix-socket
+              readOnly: true
+              mountPath: /var/run/docker.sock

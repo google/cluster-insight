@@ -1,184 +1,73 @@
 # Cluster Insight: a context graph generator for Kubernetes clusters
 
-Cluster Insight is a user-installable service that collects runtime metadata
-about resources in a Kubernetes managed cluster, and infers relationships
-between those resources to create a *context graph*. The nodes of the context
-graph are cluster resources (e.g. nodes, pods, services,
-replication-controllers, containers, processes, and images), and the edges are
-inferred relationships between those resources (e.g. contains, runs, monitors,
-loadBalances, createdFrom).
+Cluster Insight (cluster-insight) is a Kubernetes service that collects runtime metadata about resources in a Kubernetes cluster, and infers relationships between them to create a *context graph*.
 
-The context graph represents a point-in-time snapshot of the cluster’s state.
-Subsequent snapshots may produce different context graphs, reflecting the
-inherent dynamicity in the Kubernetes cluster.
+A context graph is a point-in-time snapshot of the cluster’s state. Clients of the cluster-insight service, such as UIs, can retrieve context graphs through the service's REST API. Each call may produce a different context graph, reflecting the inherent dynamicity in the Kubernetes cluster. 
 
-Clients of the Cluster-Insight service, such as UIs, can retrieve context graph
-snapshots through a REST API. The context graph provides valuable contextual
-data that can be combined with resource level monitoring data to enable
-enhanced visual navigation of the dynamic state of a Kubernetes cluster.
+A context graph provides contextual information that can be combined with resource level monitoring data to enable visual navigation of the dynamic state of a Kubernetes cluster.
 
+The nodes of the context graph are cluster resources (e.g. nodes, pods, services, replication-controllers, containers, processes, and images), and the edges are the inferred relationships (e.g. contains, runs, monitors, loadBalances, createdFrom).
 
-## How to install and activate this service
+## How to install and access the service
 
-The Cluster Insight service is a self-contained Docker image. It runs in two
-modes: in the "master" mode it collects data from Kubernetes and from the
-Docker daemons running on the minion modes. In the "minion" mode it acts
-as a proxy for the local Docker daemon. The Cluster-Insight "master" should
-run on the Kubernetes master, whereas the Cluster-Insight "minion" should run
-on every Kubernetes minion node in the cluster.
-The provided installation script will configure, install, and run the
-Cluster-Insight service on any Kubernetes cluster.
-The Cluster-Insight service does not require any change to the Docker
-daemon configuration or require restarting the Docker daemons.
+The cluster-insight service uses a Docker container, available [here](https://registry.hub.docker.com/u/kubernetes/cluster-insight/) on DockerHub. The container runs in one of two modes, specified by an environment variable:
 
-### Easy installation: run the `gcp-project-setup.sh` script
+* In "master" mode, it collects data from Kubernetes and from the Docker daemons running on the cluster nodes through proxies. 
+* In "minion" mode, it acts as a proxy for the local Docker daemon.
 
-The `gcp-project-setup.sh` script will configure, install, and run the
-Cluster-Insight service
-on the given Kubernetes cluster running on GCP. You should run the script
-on your workstation. To run the script, follow the instruction below.
-If you run the script sucessfully, there is nothing else for you to do.
+An instance of the container in "master" mode should run on at least one node in the cluster, and an instance in "minion" mode should run on every node.
 
-* Clone the Cluster-Insight sources from Github into a local directory
-  `./cluster-insight` with the command
-  `git clone https://github.com/google/cluster-insight.git` .
-* Run the installation script with the command
-  `cd ./cluster-insight/install; ./gcp-project-setup.sh PROJECT_ID`.
-  The script will fetch the latest version of the Cluster-Insight container
-  from Docker Hub.
-  The script will print "SCRIPT ALL DONE" if it completed sucessfully.
-* Note: the installation script may take up to a minute per node in case
-  that the Cluster-Insight or its libraries are not pre-loaded on the
-  node. Also, creating the firewall rule may take up to a minute.
+The cluster-insight service does not require any changes to the cluster, and should run correctly on any valid  cluster without modification. Note, however, that it has only been tested on GCE clusters running Debian GNU/Linux 7 (wheezy) and vagrant clusters running Ubuntu 14.04.
 
+The provided installation script will configure, install, and run cluster-insight. You should be able to run it on any Linux or MacOSX machine. Note, however, that it has only been tested on Ubuntu 14.04 and MacOSX Yosemite.
 
-### Manual installation (for example, on AWS)
+### Easy installation: run the provided installation script
 
-You can either install a pre-built image or build a Docker image from the
-source code.
-To build a Docker image from the source code, follow these instructions:
+The provided installation script, `cluster-insight-setup.sh`, will install and run the service on a cluster. You can run it as often as you like to update the service (e.g., when the container image or any of the configuration files in the `.install` directory have changed). To run the script:
 
-* Login to the master host.
-* Check if the Docker service is running: `sudo docker ps`. If this gives
-  an error, you must install and start the Docker service on this machine
-  with the command: `sudo service docker start` .
-* Clone the Cluster-Insight sources from Github into a local directory
-  `./cluster-insight` with the command
-  `git clone https://github.com/google/cluster-insight.git` .
-* Change directory to `./cluster-insight/collector` .
-* Run: `sudo docker build -t kubernetes/cluster-insight . `
-  Note the terminating period which is a part of the command.
-* Verify that the new image is available by the command: `sudo docker images`.
-  You should see an image named `kubernetes/cluster-insight`.
+* Clone the cluster-insight sources from Github into a local directory named `./cluster-insight`, using a command like `git clone https://github.com/google/cluster-insight.git`.
+* Run the installation script from the local directory, using a command like `./cluster-insight/install/cluster-insight-setup.sh <path/to/kubernetes>`, where `<path/to/kubernetes>` is the path to your kubernetes binary directory.
 
-To install and activate this service, follow these instructions:
+The installation script starts the cluster-insight service and two replication controllers, one for the master and one for the minions. By default, the master replication controller runs one replica, and the minion replication controller runs a replica for every node in the cluster. Both replications controllers pull the latest version of the cluster-insight container image from Docker Hub when necessary.
 
-To set up the minion nodes, do the following on every minion node:
-  * Pull the Cluster-Insight binary from Docker Hub or compile it from
-    the sources in every minion node. To pull the pre-built binary image from
-    Docker Hub use the following command:
-   `sudo docker pull kubernetes/cluster-insight`.
-  * To compile the binary from the source code, follow the instruction
-    above for compiling the binary on the master node.
-  * *IMPORTANT:* You must have the same binary image of the Cluster-Insight
-    service
-    in each minion node prior to starting the Cluster-Insight service.
-    You can do it by either fetching the image from Docker Hub or compiling
-    it from the latest sources. See above.
+### Easy access: use the REST API
 
-Perform the following on the master node to complete the set up of the minion nodes:
-  * Clone the Cluster-Insight sources from Github into a local directory
-    if you have not done so already. See above for the command.
-  * Run cluster-insight in "minion" mode on all the minions to enable access
-    to the docker daemon on port 4243. We provide a script for a replication
-    controller, so this is easy to set up. Run the following `kubectl`
-    commands on the master host to set this up:
-    * `kubectl create -f cluster-insight/collector/cluster-insight-controller.json`
-    * `kubectl resize rc cluster-insight-controller --replicas=<num-minions>`
-    * Here `<num-minions>` is the number of minion nodes in your cluster. Since the container binds to a specific port on the host, this will ensure that exactly one cluster-insight container runs on each minion.
-    * All the minion nodes will have a cluster-insight container node running on them, and will provide limited read access to their docker daemon via port 4243. Try this out by running the following command based on the internal-ip of one of your minions: `curl http://<minion-node-internal-ip>:4243/containers/json`. 
+To access the service, use the REST API described below, which is exposed at the service endpoint. There are multiple ways to reach a service endpoint in Kubernetes, and any of them can be used to access cluster-insight, since it is just an ordinary Kubernetes service. Here are two common scenarios to help you get started:
 
-To set up the Cluster-Insight service on master node, do the following:
-   * Login to the master host.
-   * Check if the Docker service is running: `sudo docker ps`. If this gives
-     an error, you must install and start the Docker service on this machine
-     with the command: `sudo service docker start` .
-   * Download or build the Docker image `kubernetes/cluster-insight`:
-       * If you want to use a pre-built image, use `sudo docker pull kubernetes/cluster-insight`
-         to download it from Docker Hub.
-       * If you want to build the Docker image from the sources, please
-         follow the instructions above.
-       * In both cases, you should be able to see the
-         `kubernetes/cluster-insight` in the list of images reported by
-         `sudo docker images`.
+#### Using kubectl proxy and the proxy verb
 
-   * Start the Cluster-Insight service like this:
-     `sudo docker run -d --net=host -p 5555:5555 --name cluster-insight -e CLUSTER_INSIGHT_MODE=master  kubernetes/cluster-insight`.
-   * The Cluster-Insight service should now be listening for REST
-     API requests on port 5555 in the Kubernetes master. Check this by typing:
-     `sudo docker ps` - you should see a running container with the name
-     cluster-insight.
-   * To start the Cluster-Insight service in debug mode, append the `-d` or
-     `--debug` flags to the end of the command line like this:
-     `sudo docker run -d --net=host -p 5555:5555 --name cluster-insight -e CLUSTER_INSIGHT_MODE=master kubernetes/cluster-insight python ./collector.py --debug`.
-     Please excercise caution when enabling the debug mode, because it enables
-     a significant security hole. Any user who triggers a failure in the
-     Cluster-Insight service will have unrestricted access to the debugger
-     and will be able to issue arbitrary commands.
+To access cluster-insight using kubectl proxy and the proxy verb:
 
-* If you plan to access this service externally over HTTP, you must create a
-  firewall rule on your platform to enable HTTP access to port 5555 on the
-  Kubernetes master host.
-   * On the Google Cloud Platform, you can do this using the gcloud command
-     line tool: `gcloud compute firewall-rules create FIREWALL_RULE_NAME --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags KUBERNETES_MASTER_NAME`.
-     For example: 
-     `gcloud compute firewall-rules create cluster-insight-collector --allow tcp:5555 --network "default" --source-ranges "0.0.0.0/0" --target-tags k8s-guestbook-master`.
+* Run kubectl proxy to expose the cluster on a local port, as described 
+[here](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/kubectl_proxy.md). 
+* Assuming that you exposed the cluster on local port 8001 and that you're using API version v1, you should be able to find the cluster-insight service at `http://localhost:8001/api/v1/namespaces/default/services/cluster-insight`.
+* With the same assumptions, you should be able to access the service through the api-server using the proxy verb, at `http://localhost:8001/api/v1/proxy/namespaces/default/services/cluster-insight:cluster-insight/`.
 
+#### Using a load balancer
+
+To access cluster-insight using a load balancer, set the service type to LoadBalancer in `./cluster-insight/install/cluster-insight-service.yaml`, as described [here](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/services.md#type--loadbalancer), and run the installation script. Depending on the platform, you may also have to create a firewall rule to allow HTTP access to the load balancer on the service port, which defaults to 5555.
 
 ## Data collection details
 
-The Cluster-Insight service runs in "master" mode on the Kubernetes master
-node, and accesses the Docker daemons on all of the minion nodes via the
-Cluster-Insight service which runs in "minion" mode and acts as a proxy to
-the Docker daemons.
-The "master" Cluster-Insight service listens for external HTTP requests to
-its REST endpoint on port 5555 of the master node, as shown in the figure
-below.
-The "minion" Cluster-Insight service listens for requests on port 4243 and
-relays them to the local Docker daemon via a Unix-domain socket.
-Note that the Unix-domain socket is the default way of communicating with
-the Docker daemon.
+In "master" mode, the cluster-insight container listens for HTTP requests on local port 5555, as shown in the figure below. In "minion" mode, it listens on local port 4243, and relays requests to the local Docker daemon via the default Unix-domain socket, as described [here](https://docs.docker.com/articles/basics/).
 
-![alt text](cluster-insight-architecture.png "cluster-insight service setup")
-
+![alt text](cluster-insight-architecture.png "cluster-insight service architecture")
 
 ## REST API
 
-These are the APIs that clients of Cluster Insight can use to get the context
-graph snapshot and raw resource-specific metadata:
+These are the APIs that clients can use to get context graphs and raw resource metadata:
 
-* `/cluster` - returns a context graph snapshot with a timestamp. The context
-  graph is a JSON document consisting of `resources` and `relations` keys. The
-  format of this JSON document is described later.
-* `/cluster/resources/TYPE` - returns the raw metadata for cluster resources
-  of type TYPE, where TYPE must be one of {Node, Pod, Service,
-  ReplicationController, Container, Image, Process}.
-* `/debug` - returns a rendering of the context graph in DOT format for
-  debugging purposes.
-* `/version` - returns the name of the currently running Docker image,
-  the image identifier, and its compilation date.
+* `/cluster` returns a context graph. The format of the context graph is described below.
+* `/cluster/resources/TYPE` returns the raw metadata for all cluster resources of type TYPE, where TYPE is one of { Node, Pod, Service, ReplicationController, Container, Image, Process }.
+* `/debug` returns a rendering of the current context graph in DOT format for debugging purposes.
+* `/version` returns the name of the currently running cluster-insight Docker image, its identifier, and its compilation date.
 
-In order to minimize monitoring overhead on the Kubernetes cluster, the context
-graph is computed from cached metadata about the cluster resources. The cache
-is internal to the Cluster Insight service, and its update frequency is fixed
-in this release (10 seconds). In a future release, the cache will update
-automatically in response to Kubernetes API events, ensuring that the resource
-data is always up to date. The context graph is computed on demand using the
-resource metadata from the cache.
+In order to minimize overhead on the target cluster, the context graph is computed on demand from cached metadata describing the cluster resources. The cache is internal to the Cluster Insight service. Its update frequency is fixed in this release at once every 10 seconds. In a future release, the cache may update automatically in response to Kubernetes API events, ensuring that the resource data is always up to date.
 
 ## Context graph format
 
 The context graph is a JSON document with the following format:
+
 ```js
 {
   "timestamp": SNAPSHOT-TIME,
@@ -209,27 +98,11 @@ The context graph is a JSON document with the following format:
 }
 ```
 
-The `properties` field in the resource is the observed runtime data for the
-corresponding resource that was collected from the Kubernetes master or
-the Docker daemons on its minion nodes.
-The observed data is immutable.
-The `annotations` field in resources and relations contains key-value pairs
-inserted by the Cluster-Insight logic.
+The `properties` field in `resources` is the observed runtime data for the corresponding resource that was collected from the Kubernetes master or from the Docker daemons on the minion nodes. The `annotations` field in `resources` and `relations` contains key-value pairs inserted by the Cluster Insight logic.
 
-Resources and relations have a `timestamp` attribute, indicating when
-they were first observed or inferred, respectively. The `timestamp` value should
-remain constant as long as the corresponding resource or relation did not change
-substantially.
+Resources and relations have a `timestamp` attribute, indicating when they were first observed or inferred, respectively. The `timestamp` value should remain constant as long as the corresponding resource or relation did not change substantially.
 
-When comparing resource values, we compute the hash of the JSON representation
-after removing the attributes `timestamp`, `lastHeartbeatTime` and `resourceVersion`,
-because their values are ephemeral and do not indicate a substantial change in the
-corresponding resource. All data older than 1 hour is deleted automatically
-from the Cluster-Insight collector cache. Thus the value of the `timestamp` 
-attribute will remain constant for at most one hour.
+When comparing resource values, we compute the hash of the JSON representation after removing the attributes `timestamp`, `lastHeartbeatTime` and `resourceVersion`, because their values are ephemeral and do not indicate a substantial change in the corresponding resource. All data older than 1 hour is deleted automatically from the cache. The value of the `timestamp` attribute will therefore remain constant for at most one hour.
 
-The entire context graph has a separate timestamp which is the maximum of the
-timestamps of the resources and relations contained in the graph.
-If the timestamp of the entire context graph did not change, then there was
+The entire context graph has a separate timestamp, which is the maximum of the timestamps of the resources and relations contained in the graph. If the timestamp of the entire context graph did not change, then there was
 no substantial change in any of the resources and relations inside it.
-See the previous paragraph for the definition of a "substantial change".
