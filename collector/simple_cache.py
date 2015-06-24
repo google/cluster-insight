@@ -17,22 +17,29 @@
 """A cache of recent values of objects.
 
 SimpleCache stores a dictionary from object labels to the tuple
-(update_time, value)
+(update_time, create_time, value)
 
-The lookup() method returns the most recent value associated with the given
-label if the value is defined and it was most recently updated less than
-_max_data_age_seconds ago. If no such value exists or it is too old,
-lookup() will fail.
+The lookup() method returns the value associated with the given
+label and its creation time if the value is defined and it was most recently
+updated less than _max_data_age_seconds ago. If no such value exists or it is
+too old, lookup() will fail.
+Note that lookup() success depends on the last update time and not on the
+data's creation time.
 
 The update() method stores a value associated with the given label in the cache.
 The value's most recent update time is passed as a parameter. If the given label
 existed before and the associated value without its 'timestamp' attribute did
 not change, then the data stored in the cache will not change. Only the most
-recent update time will be changed in the cache. Otherwise both the value
-and the most recent update time will be changed.
+recent update time will be changed in the cache. Otherwise the value, the most
+recent update time and the creation time will be changed.
+
+In other words, the creation time is updated whenever the value is also changed
+in the cache. Calling update() always changes the update time, but it may
+not change the value or the creation time.
 
 Old data is removed from the cache as a side effect of calling the update()
-operation. Old data is removed when it is older than DATA_CLEANUP_AGE_SECONDS.
+operation. Old data is removed when it was created more than
+DATA_CLEANUP_AGE_SECONDS seconds ago.
 There is no cleanup as the result of the lookup() to avoid slowing
 down cache hits. In this way ephemeral data does not stay in the cache
 indefinitely as long as new data is inserted into the cache.
@@ -96,7 +103,7 @@ class SimpleCache(object):
     self._data_cleanup_age_seconds = data_cleanup_age_seconds
     self._label_to_tuple = {}
     self._namedtuple = collections.namedtuple(
-        'Tuple', ['update_timestamp', 'value'])
+        'Tuple', ['create_timestamp', 'update_timestamp', 'value'])
 
   def _cleanup(self, now):
     """Removes all data older than _data_cleanup_age_seconds from the cache.
@@ -107,16 +114,14 @@ class SimpleCache(object):
     This method must be called when '_lock' is held.
 
     Args:
-      now: current time in seconds since the Epoch or None. If the value is
-        None, then _cleanup() is using the wallclock time.
+      now: current time in seconds since the Epoch.
     """
-    assert (now is None) or isinstance(now, types.FloatType)
-    ts = time.time() if now is None else now
-    threshold = ts - self._data_cleanup_age_seconds
+    assert isinstance(now, types.FloatType)
+    threshold = now - self._data_cleanup_age_seconds
     # Scan the cache using a list of keys instead of iterating on the cache
     # directly because we are deleting elements from the cache while iterating.
     for key in self._label_to_tuple.keys():
-      if self._label_to_tuple[key].update_timestamp <= threshold:
+      if self._label_to_tuple[key].create_timestamp <= threshold:
         # delete current entry from the cache
         del self._label_to_tuple[key]
 
@@ -130,9 +135,9 @@ class SimpleCache(object):
         is compared with the value of 'now'.
 
     Returns:
-    When the given label has recent data in the cache (less than
-    self._max_data_age_seconds seconds old), returns a tuple
-    (deep copy of cached value, update_timestamp_of_cached_data).
+    When the given label has recent data in the cache ('update_timestamp'
+    less than self._max_data_age_seconds seconds old), returns a tuple
+    (deep copy of cached value, create_timestamp_of_cached_data).
     When the given label was not found in the cache or its data is too old,
     returns the tuple (None, None).
     """
@@ -147,7 +152,7 @@ class SimpleCache(object):
       # a cache hit
       assert self._label_to_tuple[label].value is not None
       value, timestamp = (copy.deepcopy(self._label_to_tuple[label].value),
-                          self._label_to_tuple[label].update_timestamp)
+                          self._label_to_tuple[label].create_timestamp)
 
     else:
       value, timestamp = (None, None)
@@ -189,21 +194,23 @@ class SimpleCache(object):
     self._lock.acquire()
     # Cleanup only when inserting new values into the cache in order to
     # avoid penalizing the cache hit operation.
-    self._cleanup(update_timestamp)
+    ts = time.time() if update_timestamp is None else update_timestamp
+    self._cleanup(ts)
     if ((label in self._label_to_tuple) and
         (utilities.timeless_json_hash(value) ==
          utilities.timeless_json_hash(self._label_to_tuple[label].value))):
-      # cannot update just the one attribute in the named tuple.
-      keep_value = self._label_to_tuple[label].value
-      ret_value = copy.deepcopy(keep_value)
+      # cannot update just one field in a named tuple.
+      create_ts = self._label_to_tuple[label].create_timestamp
+      update_value = self._label_to_tuple[label].value
+      ret_value = copy.deepcopy(update_value)
     else:
-      keep_value = copy.deepcopy(value)
+      create_ts = ts
+      update_value = copy.deepcopy(value)
       ret_value = value
 
-    ts = time.time() if update_timestamp is None else update_timestamp
+    # cannot update just one field in a named tuple.
     self._label_to_tuple[label] = self._namedtuple(
-        update_timestamp=ts, value=keep_value)
-
+        update_timestamp=ts, create_timestamp=create_ts, value=update_value)
     self._lock.release()
     return ret_value
 

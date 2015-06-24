@@ -19,6 +19,7 @@
 # global imports
 import json
 import re
+import time
 import types
 import unittest
 
@@ -30,7 +31,7 @@ import utilities
 
 # A regular expression that matches the 'timestamp' attribute and value
 # in JSON data.
-TIMESTAMP_REGEXP = '"timestamp": "[-0-9:.TZ]+"'
+TIMESTAMP_REGEXP = r'"timestamp": "[-0-9:.TZ]+"'
 
 
 class TestCollector(unittest.TestCase):
@@ -213,18 +214,78 @@ class TestCollector(unittest.TestCase):
   def test_cluster(self):
     """Test the '/cluster' endpoint."""
     start_time = utilities.now()
-    # Execrcise the collector. Read data from golden files and compute
-    # a context graph.
-    ret_value = self.app.get('/cluster')
-    end_time = utilities.now()
-    result = json.loads(ret_value.data)
-    self.verify_resources(result, start_time, end_time)
+    end_time = None
+    for _ in range(2):
+      # Exercise the collector. Read data from golden files and compute
+      # a context graph.
+      # The second iteration should read from the cache.
+      ret_value = self.app.get('/cluster')
+      if end_time is None:
+        end_time = utilities.now()
+      result = json.loads(ret_value.data)
+      # The timestamps of the second iteration should be the same as in the
+      # first iteration, because the data of the 2nd iteration should be
+      # fetched from the cache, and it did not change.
+      # Even if fetching the data caused an explicit reading from the files
+      # in the second iteration, the data did not change, so it should keep
+      # its original timestamp.
+      self.verify_resources(result, start_time, end_time)
 
-    self.assertEqual(24, self.count_relations(result, 'contains'))
-    self.assertEqual(3, self.count_relations(result, 'createdFrom'))
-    self.assertEqual(7, self.count_relations(result, 'loadBalances'))
-    self.assertEqual(6, self.count_relations(result, 'monitors'))
-    self.assertEqual(10, self.count_relations(result, 'runs'))
+      self.assertEqual(24, self.count_relations(result, 'contains'))
+      self.assertEqual(3, self.count_relations(result, 'createdFrom'))
+      self.assertEqual(7, self.count_relations(result, 'loadBalances'))
+      self.assertEqual(6, self.count_relations(result, 'monitors'))
+      self.assertEqual(10, self.count_relations(result, 'runs'))
+
+      # Verify that all relations contain a timestamp in the range
+      # [start_time, end_time].
+      self.assertTrue(isinstance(result.get('relations'), types.ListType))
+      for r in result['relations']:
+        self.assertTrue(isinstance(r, types.DictType))
+        timestamp = r.get('timestamp')
+        self.assertTrue(utilities.valid_string(timestamp))
+        self.assertTrue(start_time <= timestamp <= end_time)
+
+      # The overall timestamp must be in the expected range.
+      self.assertTrue(utilities.valid_string(result.get('timestamp')))
+      self.assertTrue(start_time <= result['timestamp'] <= end_time)
+
+      json_output = json.dumps(result, sort_keys=True)
+      self.assertEqual(2, json_output.count('"alternateLabel": '))
+      self.assertEqual(87, json_output.count('"createdBy": '))
+
+      # Wait a little to ensure that the current time is greater than
+      # end_time
+      time.sleep(1)
+      self.assertTrue(utilities.now() > end_time)
+
+    # Change the timestamp of the nodes in the cache.
+    timestamp_before_update = utilities.now()
+    gs = collector.app.context_graph_global_state
+    nodes, timestamp_seconds = gs.get_nodes_cache().lookup('')
+    self.assertTrue(isinstance(nodes, types.ListType))
+    self.assertTrue(start_time <=
+                    utilities.seconds_to_timestamp(timestamp_seconds) <=
+                    end_time)
+    # Change the first node to force the timestamp in the cache to change.
+    # We have to change both the properties of the first node and its
+    # timestamp, so the cache will store the new value (including the new
+    # timestamp).
+    self.assertTrue(len(nodes) >= 1)
+    self.assertTrue(utilities.is_wrapped_object(nodes[0], 'Node'))
+    nodes[0]['properties']['newAttribute123'] = 'the quick brown fox jumps over'
+    nodes[0]['timestamp'] = utilities.now()
+    gs.get_nodes_cache().update('', nodes)
+    timestamp_after_update = utilities.now()
+    _, timestamp_seconds = gs.get_nodes_cache().lookup('')
+    self.assertTrue(timestamp_before_update <=
+                    utilities.seconds_to_timestamp(timestamp_seconds) <=
+                    timestamp_after_update)
+
+    # Build the context graph again.
+    ret_value = self.app.get('/cluster')
+    result = json.loads(ret_value.data)
+    self.verify_resources(result, start_time, timestamp_after_update)
 
     # Verify that all relations contain a timestamp in the range
     # [start_time, end_time].
@@ -237,11 +298,8 @@ class TestCollector(unittest.TestCase):
 
     # The overall timestamp must be in the expected range.
     self.assertTrue(utilities.valid_string(result.get('timestamp')))
-    self.assertTrue(start_time <= result['timestamp'] <= end_time)
-
-    json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(87, json_output.count('"createdBy": '))
+    self.assertTrue(timestamp_before_update <= result['timestamp'] <=
+                    timestamp_after_update)
 
   def test_debug(self):
     """Test the '/debug' endpoint."""
@@ -259,7 +317,7 @@ class TestCollector(unittest.TestCase):
     # cluster-insight master cannot read from the local Docker daemon.
     # See issue https://github.com/google/cluster-insight/issues/76 .
     # self.assertEqual(
-    #     'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
+    #    'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
     self.assertEqual('_unknown_', version)
 
   def test_healthz(self):

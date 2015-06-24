@@ -181,43 +181,25 @@ class ContextGraph(object):
     with self._lock:
       self._graph_metadata = metadata
 
-  def _max_resources_timestamp(self, initial_value):
-    """Computes the maximal timestamp of all resources and 'initial_value'.
+  def max_resources_and_relations_timestamp(self):
+    """Computes the maximal timestamp of all resources and relations.
 
     Must be called while holding self._lock.
-
-    Args:
-      initial_value: the result should be greater or equal to this value.
+    If there are no resources and no relations, return the current time.
 
     Returns:
-    Maximum timestamp of all resources and 'initial_value'.
+    Maximum timestamp of all resources and relations.
     """
-    assert utilities.valid_string(initial_value)
-    max_timestamp = initial_value
+    max_timestamp = None
     for r in self._context_resources:
-      if r['timestamp'] > max_timestamp:
+      if (max_timestamp is None) or (r['timestamp'] > max_timestamp):
         max_timestamp = r['timestamp']
 
-    return max_timestamp
-
-  def _max_relations_timestamp(self, initial_value):
-    """Computes the maximal timestamp of all relations and 'initial_value'.
-
-    Must be called while holding self._lock.
-
-    Args:
-      initial_value: the result should be greater or equal to this value.
-
-    Returns:
-    Maximum timestamp of all relations and 'initial_value'.
-    """
-    assert utilities.valid_string(initial_value)
-    max_timestamp = initial_value
     for r in self._context_relations:
-      if r['timestamp'] > max_timestamp:
+      if (max_timestamp is None) or (r['timestamp'] > max_timestamp):
         max_timestamp = r['timestamp']
 
-    return max_timestamp
+    return utilities.now() if max_timestamp is None else max_timestamp
 
   def to_context_graph(self):
     """Returns the context graph in cluster-insight context graph format."""
@@ -225,8 +207,7 @@ class ContextGraph(object):
     with self._lock:
       context_graph = {
           'success': True,
-          'timestamp': self._max_relations_timestamp(
-              self._max_resources_timestamp(utilities.now())),
+          'timestamp': self.max_resources_and_relations_timestamp(),
           'resources': self._context_resources,
           'relations': self._context_relations
       }
@@ -237,7 +218,7 @@ class ContextGraph(object):
     with self._lock:
       resources = {
           'success': True,
-          'timestamp': self._max_resources_timestamp(utilities.now()),
+          'timestamp': self.max_resources_and_relations_timestamp(),
           'resources': self._context_resources,
       }
       return resources
@@ -542,7 +523,6 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
 
   g = ContextGraph()
   g.set_version(docker.get_version(gs))
-  g.set_metadata({'timestamp': utilities.now()})
   g.set_relations_to_timestamps(gs.get_relations_to_timestamps())
 
   # Nodes
@@ -606,6 +586,7 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
 
   # Keep the relations_to_timestamps mapping for next call.
   gs.set_relations_to_timestamps(g.get_relations_to_timestamps())
+  g.set_metadata({'timestamp': g.max_resources_and_relations_timestamp()})
 
   # Dump the resulting graph
   return g.dump(gs, output_format)
