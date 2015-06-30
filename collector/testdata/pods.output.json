@@ -68,8 +68,8 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-master", 
           "hostNetwork": true, 
+          "nodeName": "k8s-guestbook-master", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -178,7 +178,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-1", 
+          "nodeName": "k8s-guestbook-node-1", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -317,7 +317,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-2", 
+          "nodeName": "k8s-guestbook-node-2", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -456,7 +456,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-3", 
+          "nodeName": "k8s-guestbook-node-3", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -589,7 +589,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-1", 
+          "nodeName": "k8s-guestbook-node-1", 
           "restartPolicy": "Always", 
           "volumes": null
         }, 
@@ -679,7 +679,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-1", 
+          "nodeName": "k8s-guestbook-node-1", 
           "restartPolicy": "Always", 
           "volumes": null
         }, 
@@ -769,7 +769,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-2", 
+          "nodeName": "k8s-guestbook-node-2", 
           "restartPolicy": "Always", 
           "volumes": null
         }, 
@@ -920,8 +920,8 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-master", 
           "hostNetwork": true, 
+          "nodeName": "k8s-guestbook-master", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -1191,8 +1191,8 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-master", 
           "hostNetwork": true, 
+          "nodeName": "k8s-guestbook-master", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -1480,7 +1480,7 @@
             }
           ], 
           "dnsPolicy": "Default", 
-          "host": "k8s-guestbook-node-3", 
+          "nodeName": "k8s-guestbook-node-3", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -1623,8 +1623,8 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-master", 
           "hostNetwork": true, 
+          "nodeName": "k8s-guestbook-master", 
           "restartPolicy": "Always", 
           "volumes": [
             {
@@ -1723,7 +1723,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-1", 
+          "nodeName": "k8s-guestbook-node-1", 
           "restartPolicy": "Always", 
           "volumes": null
         }, 
@@ -1814,7 +1814,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-2", 
+          "nodeName": "k8s-guestbook-node-2", 
           "restartPolicy": "Always", 
           "volumes": null
         }, 
@@ -1905,7 +1905,7 @@
             }
           ], 
           "dnsPolicy": "ClusterFirst", 
-          "host": "k8s-guestbook-node-3", 
+          "nodeName": "k8s-guestbook-node-3", 
           "restartPolicy": "Always", 
           "volumes": null
         }, 

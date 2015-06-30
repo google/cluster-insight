@@ -1,5 +1,5 @@
 # Template for running the cluster-insight minion in debug mode.
-# Always pull the latest image from Docker Hub.
+# Pull the image from Docker Hub only if it is missing on the local host.
 kind: ReplicationController
 apiVersion: v1
 metadata: 
@@ -31,7 +31,7 @@ spec:
           # The cluster-insight minion responds to requests on port 4243.
           name: cluster-insight
           image: kubernetes/cluster-insight:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports: 
             - 
               name: http-docker
@@ -47,3 +47,7 @@ spec:
               name: docker-unix-socket
               readOnly: true
               mountPath: /var/run/docker.sock
+          command:
+            - "python"
+            - "./cluster_insight.py"
+            - "--debug"

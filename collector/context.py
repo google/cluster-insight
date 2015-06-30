@@ -332,7 +332,7 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
     _do_compute_pod(gs, input_queue, node_guid, pod, g)
     pod_ids.add(pod['id'])
     docker_host = utilities.get_attribute(
-        pod, ['properties', 'spec', 'host'])
+        pod, ['properties', 'spec', 'nodeName'])
     if utilities.valid_string(docker_host):
       docker_hosts.add(docker_host)
 
@@ -379,9 +379,9 @@ def _do_compute_pod(gs, input_queue, node_guid, pod, g):
   pod_id = pod['id']
   pod_guid = 'Pod:' + pod_id
   docker_host = utilities.get_attribute(
-      pod, ['properties', 'spec', 'host'])
+      pod, ['properties', 'spec', 'nodeName'])
   if not utilities.valid_string(docker_host):
-    msg = ('Docker host (pod.properties.spec.host) '
+    msg = ('Docker host (pod.properties.spec.nodeName) '
            'not found in pod ID %s' % pod_id)
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)

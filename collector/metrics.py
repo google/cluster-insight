@@ -66,7 +66,7 @@ def _get_container_labels(container, parent_pod):
     return None
 
   hostname = utilities.get_attribute(
-      parent_pod, ['properties', 'spec', 'host'])
+      parent_pod, ['properties', 'spec', 'nodeName'])
   if not utilities.valid_string(hostname):
     return None
 

@@ -18,6 +18,7 @@
 
 # global imports
 import json
+import os
 import re
 import time
 import types
@@ -38,6 +39,8 @@ class TestCollector(unittest.TestCase):
   """Test harness."""
 
   def setUp(self):
+    os.environ['KUBERNETES_SERVICE_HOST'] = 'localhost'
+    os.environ['KUBERNETES_SERVICE_PORT'] = '443'
     gs = global_state.GlobalState()
     gs.init_caches_and_synchronization()
     gs.set_testing(True)
@@ -313,9 +316,7 @@ class TestCollector(unittest.TestCase):
     self.assertTrue(result.get('success'))
     version = result.get('version')
     self.assertTrue(isinstance(version, types.StringTypes))
-    # The version string is temporarily broken because the
-    # cluster-insight master cannot read from the local Docker daemon.
-    # See issue https://github.com/google/cluster-insight/issues/76 .
+    # TODO(eran): restore this test once the /version endpoint is fixed.
     # self.assertEqual(
     #    'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
     self.assertEqual('_unknown_', version)
