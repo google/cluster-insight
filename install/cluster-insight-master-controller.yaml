@@ -39,6 +39,3 @@ spec:
             - 
               name: CLUSTER_INSIGHT_MODE
               value: master
-          command:
-            - "python"
-            - "./cluster_insight.py"

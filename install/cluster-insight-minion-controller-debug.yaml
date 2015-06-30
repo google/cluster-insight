@@ -47,3 +47,7 @@ spec:
               name: docker-unix-socket
               readOnly: true
               mountPath: /var/run/docker.sock
+          command:
+            - "python"
+            - "./cluster_insight.py"
+            - "--debug"
