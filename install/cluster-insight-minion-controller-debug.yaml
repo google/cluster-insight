@@ -1,7 +1,7 @@
 # Template for running the cluster-insight minion in debug mode.
 # Pull the image from Docker Hub only if it is missing on the local host.
 kind: ReplicationController
-apiVersion: v1beta3
+apiVersion: v1
 metadata: 
   name: cluster-insight-minion-controller-v1
   namespace: default

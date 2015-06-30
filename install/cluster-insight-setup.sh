@@ -58,6 +58,11 @@ readonly NUM_MASTERS=1
 readonly SERVICE_FILE="${INSTALL_PATH}/${SERVICE_NAME}-service.yaml"
 readonly DOCKER_IMAGE="kubernetes/${SERVICE_NAME}"
 
+# Run the given command. If the command failed (exits with a non-zero code),
+# print a detailed error message and exit with a non-zero code.
+#
+# Usage:
+# run_command command arg1 arg2 arg3 ...
 function run_command() {
   if [[ $# -eq 0 ]]; then
     echo "Usage: run_command cmd arg1 arg2 arg3 ..."
@@ -169,7 +174,7 @@ function verify_service_health() {
     exit 1
   fi
   for i in $(seq 1 60); do
-    health="$(curl http://localhost:${1}/api/v1beta3/proxy/namespaces/default/services/${SERVICE_NAME}:${SERVICE_PORT}/healthz 2>/dev/null)"
+    health="$(curl http://localhost:${1}/api/v1/proxy/namespaces/default/services/${SERVICE_NAME}:${SERVICE_PORT}/healthz 2>/dev/null)"
     if [[ "${health}" =~ "OK" ]]; then
       return 0
     fi

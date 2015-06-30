@@ -37,7 +37,7 @@ import utilities
 
 ## Kubernetes APIs
 
-KUBERNETES_API = 'https://%s:%s/api/v1beta3'
+KUBERNETES_API = 'https://%s:%s/api/v1'
 
 def get_kubernetes_base_url():
   """
@@ -265,10 +265,9 @@ def get_pods(gs, node_id=None):
       continue
     wrapped_pod = utilities.wrap_object(pod, 'Pod', name, now)
     if node_id:
-      # pod['spec']['host'] / pod['spec']['nodeName'] may be missing if the pod
+      # pod['spec']['nodeName'] may be missing if the pod
       # is in "Waiting" status.
-      if (utilities.get_attribute(pod, ['spec', 'nodeName']) == node_id or
-          utilities.get_attribute(pod, ['spec', 'host']) == node_id):
+      if utilities.get_attribute(pod, ['spec', 'nodeName']) == node_id:
         pods.append(wrapped_pod)
     else:
       # append pod to output if 'node_id' is not specified.
@@ -391,7 +390,7 @@ def get_pod_host(gs, pod_id):
       # Found an invalid pod without a pod ID.
       continue
 
-    pod_host = utilities.get_attribute(pod, ['properties', 'spec', 'host'])
+    pod_host = utilities.get_attribute(pod, ['properties', 'spec', 'nodeName'])
     if pod['id'] == pod_id and utilities.valid_string(pod_host):
       # 'pod_host' may be missing if the pod is in "Waiting" state.
       return pod_host

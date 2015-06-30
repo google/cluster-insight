@@ -316,7 +316,7 @@ def get_containers_with_metrics(gs, docker_host):
     if project_id != '_unknown_':
       continue
     pod_hostname = utilities.get_attribute(
-        pod, ['properties', 'spec', 'host'])
+        pod, ['properties', 'spec', 'nodeName'])
     if utilities.valid_string(pod_hostname):
       project_id = utilities.node_id_to_project_id(pod_hostname)
 

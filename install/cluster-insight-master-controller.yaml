@@ -5,7 +5,7 @@
 # See cluster-insight-master-controller-debug.yaml for running the
 # cluster-insight master in debug mode.
 kind: ReplicationController
-apiVersion: v1beta3
+apiVersion: v1
 metadata: 
   name: cluster-insight-master-controller-v1
   namespace: default
