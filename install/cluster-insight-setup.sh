@@ -23,10 +23,22 @@
 # running on Google Cloud Platform (GCP) and vagrant running Ubuntu 14.04.
 #
 # *** IMPORTANT ***
-# This script must be run from the Kubernetes base directory.
+# This script must be run from directory where you cloned the cluster-insight
+# repository, so ./cluster-insight/install/cluster-insight-setup.sh is
+# the path to the installation script.
 # 
-# To set the number of minions, you should set the env var NUM_MINIONS 
-# or pass the number of minions as a parameter.
+# To explicitly set the number of minions, you should set the environment
+# variable NUM_MINIONS. The default is to set NUM_MINIONS to the number
+# of nodes in your cluster as reported by Kubernetes.
+#
+# You may specify an explicit path to Kubernetes binaries, which is an optional
+# parameter of this script.
+#
+# This script will restart the cluster-insight collector using the latest
+# container pulled from Docker Hub. If you want to restart the collector
+# using the latest binary from each instance (for example, when you build
+# the container from the sources), you should run this script in debug mode
+# by specifying the "-d" or "--debug" as the first argument of this script.
 #
 # The script will print "ALL DONE" if it completed the setup successfully.
 # The script will print "FAILED" in case of a failure.
