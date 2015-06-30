@@ -37,7 +37,7 @@ import utilities
 
 ## Kubernetes APIs
 
-KUBERNETES_API = 'https://%s:%s/api/v1'
+KUBERNETES_API = 'https://%s:%s/api/v1beta3'
 
 def get_kubernetes_base_url():
   """
@@ -63,14 +63,16 @@ def get_kubernetes_base_url():
 
   return KUBERNETES_API % (service_host, service_port)
 
-KUBERNETES_BEARER_TOKEN = ""
-KUBERNETES_BEARER_TOKEN_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+KUBERNETES_BEARER_TOKEN = ''
+KUBERNETES_BEARER_TOKEN_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 
 def get_kubernetes_bearer_token():
   """
   Reads the bearer token required to call the Kubernetes master from a file
-  The file is installed in every container within a Kubernetes pod by the kubelet. 
-  The path to the file is documented at https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/accessing-the-cluster.md.
+  The file is installed in every container within a Kubernetes pod by the Kubelet. 
+  The path to the file is documented at
+  https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/accessing-the-cluster.md.
 
   Returns:
     The contents of the token file as a string for use in the Authorization header 
@@ -80,18 +82,22 @@ def get_kubernetes_bearer_token():
     IOError: if cannot open the token file.
     CollectorError: if the file is empty.
   """
+  # TODO(eran): add a lock around the global KUBERNETES_BEARER_TOKEN.
   global KUBERNETES_BEARER_TOKEN
   if not KUBERNETES_BEARER_TOKEN:
-    with open (KUBERNETES_BEARER_TOKEN_FILE, "r") as token_file:
+    with open(KUBERNETES_BEARER_TOKEN_FILE, 'r') as token_file:
       KUBERNETES_BEARER_TOKEN = token_file.read()
     if not KUBERNETES_BEARER_TOKEN:
       raise collector_error.CollectorError(
-        'Cannot read Kubernetes bearer token from %s' % (KUBERNETES_BEARER_TOKEN_FILE))
+          'Cannot read Kubernetes bearer token from %s' %
+          KUBERNETES_BEARER_TOKEN_FILE)
 
   return KUBERNETES_BEARER_TOKEN
 
+
 def get_kubernetes_headers():
   return {'Authorization': 'Bearer %s' % (get_kubernetes_bearer_token())}
+
 
 @utilities.global_state_string_args
 def fetch_data(gs, url):
@@ -100,8 +106,8 @@ def fetch_data(gs, url):
   The file name is derived from the URL in the following way:
   The file name is 'testdata/' + last element of the URL + '.input.json'.
 
-  For example, if the URL is 'https://host:port/api/v1/path/to/resource', then the 
-  file name is 'testdata/resource.input.json'.
+  For example, if the URL is 'https://host:port/api/v1beta3/path/to/resource',
+  then the file name is 'testdata/resource.input.json'.
 
   The input is always JSON. It is converted to an internal representation
   by this routine.
@@ -259,9 +265,10 @@ def get_pods(gs, node_id=None):
       continue
     wrapped_pod = utilities.wrap_object(pod, 'Pod', name, now)
     if node_id:
-      # pod['spec']['host'] may be missing if the pod is in "Waiting"
-      # status.
-      if utilities.get_attribute(pod, ['spec', 'host']) == node_id:
+      # pod['spec']['host'] / pod['spec']['nodeName'] may be missing if the pod
+      # is in "Waiting" status.
+      if (utilities.get_attribute(pod, ['spec', 'nodeName']) == node_id or
+          utilities.get_attribute(pod, ['spec', 'host']) == node_id):
         pods.append(wrapped_pod)
     else:
       # append pod to output if 'node_id' is not specified.

@@ -207,6 +207,7 @@ def worker(cache):
 # 2. /containers/json
 # 3. /containers/{container_id}/top?ps_args=aux
 # 4. /images/{image_id}/json
+# 5. /version
 
 
 @app.route('/containers/json', methods=['GET'])
@@ -235,6 +236,13 @@ def get_one_container_processes(container_id):
 
   return get_response(
       '/containers/{cid}/top?ps_args=aux'.format(cid=container_id))
+
+
+@app.route('/version', methods=['GET'])
+def get_version():
+  return flask.make_response(
+      '{"version": "unknown for now"}',
+      200, {'Content-Type': 'application/json'})
 
 
 # Starts the web server and listen on all external IPs associated with this

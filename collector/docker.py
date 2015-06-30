@@ -23,6 +23,7 @@ minion nodes.
 """
 
 import json
+import re
 import sys
 import time
 import types
@@ -654,9 +655,9 @@ def get_version(gs):
     CollectorError: in case of any error to compute the running image
       information.
   """
-  # TODO(EranGabber): Edit this code to get the version from one of the minions.
-  # Return unknown for now, so we don't have to access the docker API on master.
-  """
+  return '_unknown_'
+  # TODO(eran): fix the error
+  # could not find an entry for \"cpu:/docker/...\" in /proc/self/cgroup
   version, timestamp_secs = gs.get_version_cache().lookup('')
   if timestamp_secs is not None:
     assert utilities.valid_string(version)
@@ -726,6 +727,3 @@ def get_version(gs):
   ret_value = gs.get_version_cache().update('', version)
   gs.logger_info('get_version() returns: %s', ret_value)
   return ret_value
-  """
-  return '_unknown_'
-

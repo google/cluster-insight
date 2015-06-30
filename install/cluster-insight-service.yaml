@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v1beta3
 kind: Service
 metadata: 
   name: cluster-insight

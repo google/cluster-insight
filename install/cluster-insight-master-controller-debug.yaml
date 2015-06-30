@@ -1,9 +1,9 @@
-# Template file for cluster-insight master in production mode.
-# Always pull the latest binary from Docker Hub.
-# Always run the master in production mode.
-# Expose the master only as a service.
-# See cluster-insight-master-controller-debug.yaml for running the
-# cluster-insight master in debug mode.
+# Template file for cluster-insight master in debug mode.
+# Pull the binary from Docker Hub only if it missing on the local machine.
+# Always run the master in debug mode.
+# Expose the master as a service and also on local port 5555.
+# See cluster-insight-master-controller.yaml for running the
+# cluster-insight master in production mode.
 kind: ReplicationController
 apiVersion: v1beta3
 metadata: 
@@ -29,11 +29,12 @@ spec:
         - 
           name: cluster-insight
           image: kubernetes/cluster-insight:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports: 
             - 
               name: cluster-insight
               containerPort: 5555
+              hostPort: 5555
               protocol: TCP
           env: 
             - 
@@ -42,3 +43,4 @@ spec:
           command:
             - "python"
             - "./cluster_insight.py"
+            - "--debug"
