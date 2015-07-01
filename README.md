@@ -10,7 +10,8 @@ The nodes of the context graph are cluster resources (e.g. nodes, pods, services
 
 ## How to install and access the service
 
-The cluster-insight service uses a Docker container, available [here](https://registry.hub.docker.com/u/kubernetes/cluster-insight/) on DockerHub. The container runs in one of two modes, specified by an environment variable:
+The cluster-insight service uses a Docker container, available [here](https://registry.hub.docker.com/u/kubernetes/cluster-insight/) on Docker Hub.
+The container runs in one of two modes, specified by an environment variable:
 
 * In "master" mode, it collects data from Kubernetes and from the Docker daemons running on the cluster nodes through proxies. 
 * In "minion" mode, it acts as a proxy for the local Docker daemon.
@@ -21,14 +22,58 @@ The cluster-insight service does not require any changes to the cluster, and sho
 
 The provided installation script will configure, install, and run cluster-insight. You should be able to run it on any Linux or MacOSX machine. Note, however, that it has only been tested on Ubuntu 14.04 and MacOSX Yosemite.
 
+### Kubernetes API version
+
+The cluster-insight service currently supports only Kubernetes API version "v1".
+To check which API versions are supported by your cluster, run the following command on any machine in your cluster:
+```
+$ kubectl api-versions`
+```
+The output should look like:
+```
+Available Server Api Versions: v1beta3,v1
+```
+If API version "v1" is not supported on your cluster, you have to upgrate your Kubernetes installation before you can install and use
+Cluster-Insight.
+
 ### Easy installation: run the provided installation script
 
-The provided installation script, `cluster-insight-setup.sh`, will install and run the service on a cluster. You can run it as often as you like to update the service (e.g., when the container image or any of the configuration files in the `.install` directory have changed). To run the script:
+The provided installation script, `cluster-insight-setup.sh`, will install and run the service on a cluster.
+You can run it as often as you like to update the service (e.g., when the container image in Docker Hub or any of the configuration files in the
+`./cluster-insight/install` directory have changed).
+The script pulls the latest released version of the image from Docker Hub only if it does not exist yet in the nodes of your cluster.
+To run the script:
 
-* Clone the cluster-insight sources from Github into a local directory named `./cluster-insight`, using a command like `git clone https://github.com/google/cluster-insight.git`.
-* Run the installation script from the local directory, using a command like `./cluster-insight/install/cluster-insight-setup.sh <path/to/kubernetes>`, where `<path/to/kubernetes>` is the path to your kubernetes binary directory.
+* Clone the cluster-insight sources from Github into a local directory named `./cluster-insight`, using a command like
+`git clone https://github.com/google/cluster-insight.git`.
+* Run the installation script from the local directory, using a command like
+`./cluster-insight/install/cluster-insight-setup.sh [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
+your kubernetes binary directory.
 
 The installation script starts the cluster-insight service and two replication controllers, one for the master and one for the minions. By default, the master replication controller runs one replica, and the minion replication controller runs a replica for every node in the cluster. Both replications controllers pull the latest version of the cluster-insight container image from Docker Hub when necessary.
+
+### Behind the scenes: released image tags
+
+The Cluster-Insight images on Docker Hub are tagged by the date they were built. For example, the tag may be `2015-07-01` for the image built on
+July 1st, 2015.
+The template files in `./cluster-insight/install/cluster-insight-{master,minion}-controller.yaml` mention the latest released image by its tag.
+We will update the image tag in these template files whenever we push a new released image to Docker Hub.
+
+### For experts only: run the Cluster-Insight in debug mode
+
+The provided installation script, `cluster-insight-setup.sh`, can also install the latest `kubernetes/cluster-insight` image in each node
+(as opposed to the latest released version from Docker Hub), and run then in debug mode.
+To install and run the latest image in each node you should:
+* Clone the cluster-insight sources from Github into a local directory named `./cluster-insight`, using a command like
+`git clone https://github.com/google/cluster-insight.git`.
+* Build the Cluster-Insight image in every node of your cluster.
+You should follow the instructions in the `./cluster-insight/collector/Dockerfile` to build the image.
+* Run the installation script from the local directory, using a command like
+`./cluster-insight/install/cluster-insight-setup.sh -d [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
+your kubernetes binary directory.
+
+Running the cluster-insight in debug mode enables extensive logging (good), but also enables the built-in debugger that allows any client
+to access the internals of the running cluster-insight master after a failure (a security hole).
 
 ### Easy access: use the REST API
 
