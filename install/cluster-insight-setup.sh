@@ -46,7 +46,7 @@
 set -o nounset
 set -o pipefail
 
-# This script and the Cluster-Insight code issues request to this version
+# This script and the Cluster-Insight code issues requests to this version
 # of the Kubernetes API.
 readonly API_VERSION="v1"
 
@@ -205,7 +205,7 @@ function verify_service_health() {
     exit 1
   fi
   for i in $(seq 1 60); do
-    health="$(curl ${SERVICE_URL}/healthz 2>/dev/null)"
+    health="$(curl $1/healthz 2>/dev/null)"
     if [[ "${health}" =~ "OK" ]]; then
       return 0
     fi
@@ -237,7 +237,7 @@ function verify_service_correctness() {
     echo "Usage: verify_service_correctness SERVICE_URL"
     exit 1
   fi
-  debug="$(curl ${SERVICE_URL}/debug 2>/dev/null)"
+  debug="$(curl $1/debug 2>/dev/null)"
   for resource in "Cluster" "Node" "Pod" "ReplicationController" "Service" \
       "Container" "Process" "Image"
   do
