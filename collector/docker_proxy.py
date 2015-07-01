@@ -153,22 +153,23 @@ def fill_cache(cache):
     exc_type, value, _ = sys.exc_info()
     msg = ('Failed to fetch /containers/json with exception %s: %s' %
            (exc_type, value))
-    print msg
+    app.logger.error(msg)
     return
 
   if r.status_code != 200:
-    print 'failed to fetch /container/json with code %d' % r.status_code
+    app.logger.error('failed to fetch /container/json with code %d',
+                     r.status_code)
     return
 
   try:
     containers_list = r.json()
 
   except ValueError:
-    print 'invalid response format from "/containers/json"'
+    app.logger.error('invalid response format from "/containers/json"')
     return
 
   if not isinstance(containers_list, types.ListType):
-    print 'invalid response format from "/containers/json"'
+    app.logger.error('invalid response format from "/containers/json"')
     return
 
   for container_info in containers_list:
@@ -177,8 +178,7 @@ def fill_cache(cache):
             container_info['Names'] and
             utilities.valid_string(container_info['Names'][0]) and
             container_info['Names'][0][0] == '/'):
-      msg = 'invalid containers data format'
-      print msg
+      app.logger.error('invalid containers data format')
       return
 
     container_id = container_info['Names'][0][1:]
@@ -188,9 +188,10 @@ def fill_cache(cache):
       result = r.json()
       cleanup(result)
       cache.update(req, json.dumps(result))
-      print 'caching result of request=%s' % req
+      app.logger.info('caching result of request=%s', req)
     else:
-      print 'failed to fetch request=%s with code %d' % (req, r.status_code)
+      app.logger.error('failed to fetch request=%s with code %d',
+                       req, r.status_code)
 
 
 def worker(cache):
