@@ -46,7 +46,9 @@ To run the script:
 
 * Clone the cluster-insight sources from Github into a local directory named `./cluster-insight` on the master node of your cluster
 using a command like `git clone https://github.com/google/cluster-insight.git`.
-* Run the installation script from the local directory on the master node of your cluster using a command like
+If you do not have a master node (for example, you run on GKE), clone the sources into a directory on your workstation.
+* Run the installation script from the local directory on the master node of your cluster (or from a local directory on your workstation
+when running on GKE) using a command like
 `./cluster-insight/install/cluster-insight-setup.sh [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
 your kubernetes binary directory.
 
@@ -70,7 +72,8 @@ To install and run the latest image you should:
 `./cluster-insight` using a command like `git clone https://github.com/google/cluster-insight.git`.
 * On every minion node of your cluster you should build the Cluster-Insight image.
 You should follow the instructions in the `./cluster-insight/collector/Dockerfile` to build the image.
-* On the master node of your cluster you should run the installation script from the local directory using a command like
+* On the master node of your cluster or on your workstation in case you do not have a master node (for example, when you run on GKE)
+you should run the installation script from the local directory using a command like
 `./cluster-insight/install/cluster-insight-setup.sh -d [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
 your kubernetes binary directory.
 
