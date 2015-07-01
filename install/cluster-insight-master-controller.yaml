@@ -28,8 +28,11 @@ spec:
       containers: 
         - 
           name: cluster-insight
-          image: kubernetes/cluster-insight:latest
-          imagePullPolicy: Always
+          # Change the tag to the latest released image.
+          image: kubernetes/cluster-insight:2015-07-01
+          # Do not change the image pull policy to "Always" because Docker Hub
+          # may not be able to respond in time.
+          imagePullPolicy: IfNotPresent
           ports: 
             - 
               name: cluster-insight
