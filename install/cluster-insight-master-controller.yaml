@@ -28,8 +28,8 @@ spec:
       containers: 
         - 
           name: cluster-insight
-          image: kubernetes/cluster-insight:latest
-          imagePullPolicy: Always
+          image: kubernetes/cluster-insight:2015-07-01
+          imagePullPolicy: IfNotPresent
           ports: 
             - 
               name: cluster-insight

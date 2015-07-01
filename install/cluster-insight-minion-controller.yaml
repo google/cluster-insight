@@ -30,8 +30,8 @@ spec:
         - 
           # The cluster-insight minion responds to requests on port 4243.
           name: cluster-insight
-          image: kubernetes/cluster-insight:latest
-          imagePullPolicy: Always
+          image: kubernetes/cluster-insight:2015-07-01
+          imagePullPolicy: IfNotPresent
           ports: 
             - 
               name: http-docker
