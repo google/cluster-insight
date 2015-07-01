@@ -46,10 +46,13 @@
 set -o nounset
 set -o pipefail
 
+# This script and the Cluster-Insight code issues requests to this version
+# of the Kubernetes API.
+readonly API_VERSION="v1"
+
 readonly SERVICE_NAME="cluster-insight"
 readonly SERVICE_PORT="cluster-insight"
 readonly SERVICE_PATH="$(pwd)/${SERVICE_NAME}"
-
 readonly INSTALL_PATH="${SERVICE_PATH}/install"
 
 readonly MINION_CONTROLLER_NAME="${SERVICE_NAME}-minion-controller-v1"
@@ -148,7 +151,22 @@ function start_kubernetes_rc() {
   fi
 }
 
+# Launch a kubectl reverse proxy on the next available port number
+# after 8000. The port number of the proxy is returned in the global
+# variable KUBECTL_PORT.
+#
+# Usage:
+# launch_kubectl_proxy
+#
+# Return code:
+# 0: proxy is running on port KUBECTL_PORT
+# 1: failed to start the proxy on any port.
+# KUBECTL_PORT is set to zero.
 function launch_kubectl_proxy() {
+  if [[ $# -ne 0 ]]; then
+    echo "Usage: launch_kubectl_proxy"
+    exit 1
+  fi
   local pid
   for port in $(seq 8001 65535); do 
     # Start the proxy in the background on port ${port}
@@ -168,13 +186,26 @@ function launch_kubectl_proxy() {
   return 1
 }
 
+# Verify that the service is active by accessing the "/healthz" endpoint
+# of the service repeatedly until the output contains the string "OK".
+# Access the "/healthz" up to 60 times with a one second delay.
+# We assume that the service will start in less than 60 seconds after
+# its replication controller is activated.
+#
+# Usage:
+# verify_service_health SERVICE_URL
+#
+# Returned code:
+# 0: expected contents of "/healthz" endpoint (success).
+# 1: the contents of the "/healthz" endpoint never contained the string
+#    "OK" (failure).
 function verify_service_health() {
   if [[ $# -ne 1 ]]; then
-    echo "Usage: verify_service_health KUBECTL_PORT"
+    echo "Usage: verify_service_health SERVICE_URL"
     exit 1
   fi
   for i in $(seq 1 60); do
-    health="$(curl http://localhost:${1}/api/v1/proxy/namespaces/default/services/${SERVICE_NAME}:${SERVICE_PORT}/healthz 2>/dev/null)"
+    health="$(curl $1/healthz 2>/dev/null)"
     if [[ "${health}" =~ "OK" ]]; then
       return 0
     fi
@@ -183,20 +214,67 @@ function verify_service_health() {
   return 1
 }
 
-if [[ ("${1:-}" == "--debug") || ("${1:-}" == "-d") ]]; then
-  # Run in debug mode.
-  # Use the debug version of the master and minion template files.
-  echo "run in debug mode"
-  readonly MASTER_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-master-controller-debug.yaml"
-  readonly MINION_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-minion-controller-debug.yaml"
-  shift
-else
-  # Run in production mode.
-  # Use the production version of the master and minion template files.
-  echo "run in production mode"
-  readonly MASTER_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-master-controller.yaml"
-  readonly MINION_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-minion-controller.yaml"
-fi
+# Verify that the output of the "/debug" endpoint contains at least
+# one of each of the expected resource types (Cluster, Node, Pod,
+# ReplicationController, Service, Container, Process, and Image).
+# This function must be called after the service is up and running.
+# It is normally called after a successful return from
+# verify_service_health().
+#
+# This test is intended to detect API version mismatches and other
+# catastrophic errors that disable portions of the Cluster-Insight
+# logic. This test could have shortened the debug time of issue #93
+# by much.
+#
+# Usage:
+# verify_service_correctness SERVICE_URL
+#
+# Returned code:
+# 0: expected contents of "/debug" endpoint (success).
+# 1: unexpected contents of "/debug" endpoint (failure).
+function verify_service_correctness() {
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: verify_service_correctness SERVICE_URL"
+    exit 1
+  fi
+  debug="$(curl $1/debug 2>/dev/null)"
+  for resource in "Cluster" "Node" "Pod" "ReplicationController" "Service" \
+      "Container" "Process" "Image"
+  do
+    if [[ !("${debug}" =~ "${resource}:") ]]; then
+      echo "Output of "/debug" endpoint is missing all ${resource} resources"
+      return 1
+    fi
+  done 
+  return 0
+}
+
+# Decode first run-time script argument.
+case "${1:-}" in
+  -d|--debug)
+    # Run in debug mode.
+    # Use the debug version of the master and minion template files.
+    echo "Run in debug mode."
+    echo "To test a container that is not the latest version from Docker Hub,"
+    echo "you should build the container in all minion nodes before running"
+    echo "this script."
+    readonly MASTER_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-master-controller-debug.yaml"
+    readonly MINION_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-minion-controller-debug.yaml"
+    shift
+    ;;
+  -*)
+    echo "Usage: $0 [-d|--debug] [path_to_Kubernetes_binaries]"
+    exit 1
+    ;;
+  *)
+    # Run in production mode.
+    # Use the production version of the master and minion template files.
+    echo "Run in production mode."
+    echo "Use the latest version of the container from Docker Hub."
+    readonly MASTER_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-master-controller.yaml"
+    readonly MINION_CONTROLLER_FILE="${INSTALL_PATH}/${SERVICE_NAME}-minion-controller.yaml"
+    ;;
+esac
 
 if [[ $# -ge 1 ]]; then
   KUBE_ROOT="$1"
@@ -208,6 +286,15 @@ fi
 if [[ -z "$(which ${KUBECTL})" ]]; then
   echo "could not find the kubectl executable at ${KUBECTL}"
   echo "usage: $0 [-d|--debug] [path/to/kubernetes]"
+  exit 1
+fi
+
+# Verify that Kubernetes supports API_VERSION.
+echo "Verify support of Kubernetes API version ${API_VERSION}"
+readonly SUPPORTED_API="$(${KUBECTL} api-versions | sed 's/ /,/g')"
+if [[ !("${SUPPORTED_API}," =~ ",${API_VERSION},") ]]; then
+  echo "Kubernetes does not support required API version ${API_VERSION}"
+  echo "You must upgrate Kubernetes in order to install Cluster-Insight"
   exit 1
 fi
 
@@ -242,9 +329,19 @@ launch_kubectl_proxy || {
 }
 
 echo "${KUBECTL} proxy is running on port ${KUBECTL_PORT}"
+readonly SERVICE_URL="http://localhost:${KUBECTL_PORT}/api/${API_VERSION}/proxy/namespaces/default/services/${SERVICE_NAME}:${SERVICE_PORT}"
+echo "service endoints are available at ${SERVICE_URL}"
 
-verify_service_health ${KUBECTL_PORT} || {
+verify_service_health ${SERVICE_URL} || {
   echo "FAILED to get service health response."
+  exit 1
+}
+
+# verify that the cluster-insight service is working correctly.
+echo "Verifying service correctness."
+
+verify_service_correctness ${SERVICE_URL} || {
+  echo "FAILED to get expected contents of \"/debug\" endpoint."
   exit 1
 }
 
