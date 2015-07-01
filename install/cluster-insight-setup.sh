@@ -221,6 +221,11 @@ function verify_service_health() {
 # It is normally called after a successful return from
 # verify_service_health().
 #
+# This test is intended to detect API version mismatches and other
+# catastrophic errors that disable portions of the Cluster-Insight
+# logic. This test could have shortened the debug time of issue #93
+# by much.
+#
 # Usage:
 # verify_service_correctness SERVICE_URL
 #
