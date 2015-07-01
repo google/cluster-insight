@@ -25,7 +25,7 @@ The provided installation script will configure, install, and run cluster-insigh
 ### Kubernetes API version
 
 The cluster-insight service currently supports only Kubernetes API version "v1".
-To check which API versions are supported by your cluster, run the following command on any machine in your cluster:
+To check which API versions are supported by your cluster, run the following command on the master node of your cluster:
 ```
 $ kubectl api-versions
 ```
@@ -44,9 +44,9 @@ You can run it as often as you like to update the service (e.g., when the contai
 The script pulls the latest released version of the image from Docker Hub only if it does not exist yet in the nodes of your cluster.
 To run the script:
 
-* Clone the cluster-insight sources from Github into a local directory named `./cluster-insight`, using a command like
-`git clone https://github.com/google/cluster-insight.git`.
-* Run the installation script from the local directory, using a command like
+* Clone the cluster-insight sources from Github into a local directory named `./cluster-insight` on the master node of your cluster
+using a command like `git clone https://github.com/google/cluster-insight.git`.
+* Run the installation script from the local directory on the master node of your cluster using a command like
 `./cluster-insight/install/cluster-insight-setup.sh [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
 your kubernetes binary directory.
 
@@ -65,12 +65,12 @@ We will update the image tag in these template files whenever we push a new rele
 
 The provided installation script, `cluster-insight-setup.sh`, can also install the latest `kubernetes/cluster-insight` image in each node
 (as opposed to the latest released version from Docker Hub), and run then in debug mode.
-To install and run the latest image in each node you should:
-* Clone the cluster-insight sources from Github into a local directory named `./cluster-insight`, using a command like
-`git clone https://github.com/google/cluster-insight.git`.
-* Build the Cluster-Insight image in every node of your cluster.
+To install and run the latest image you should:
+* On every node of your cluster (master and minion nodes) you should clone the cluster-insight sources from Github into a local directory named
+`./cluster-insight` using a command like `git clone https://github.com/google/cluster-insight.git`.
+* On every minion node of your cluster you should build the Cluster-Insight image.
 You should follow the instructions in the `./cluster-insight/collector/Dockerfile` to build the image.
-* Run the installation script from the local directory, using a command like
+* On the master node of your cluster you should run the installation script from the local directory using a command like
 `./cluster-insight/install/cluster-insight-setup.sh -d [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
 your kubernetes binary directory.
 
