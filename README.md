@@ -27,7 +27,7 @@ The provided installation script will configure, install, and run cluster-insigh
 The cluster-insight service currently supports only Kubernetes API version "v1".
 To check which API versions are supported by your cluster, run the following command on any machine in your cluster:
 ```
-$ kubectl api-versions`
+$ kubectl api-versions
 ```
 The output should look like:
 ```
@@ -50,11 +50,13 @@ To run the script:
 `./cluster-insight/install/cluster-insight-setup.sh [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
 your kubernetes binary directory.
 
-The installation script starts the cluster-insight service and two replication controllers, one for the master and one for the minions. By default, the master replication controller runs one replica, and the minion replication controller runs a replica for every node in the cluster. Both replications controllers pull the latest version of the cluster-insight container image from Docker Hub when necessary.
+The installation script starts the cluster-insight service and two replication controllers, one for the master and one for the minions.
+By default, the master replication controller runs one replica, and the minion replication controller runs a replica for every node in the cluster.
+Both replications controllers pull the latest released version of the cluster-insight container image from Docker Hub when necessary.
 
 ### Behind the scenes: released image tags
 
-The Cluster-Insight images on Docker Hub are tagged by the date they were built. For example, the tag may be `2015-07-01` for the image built on
+The Cluster-Insight images on Docker Hub are tagged by the date they were built. For example, the tag is `2015-07-01` for the image built on
 July 1st, 2015.
 The template files in `./cluster-insight/install/cluster-insight-{master,minion}-controller.yaml` mention the latest released image by its tag.
 We will update the image tag in these template files whenever we push a new released image to Docker Hub.
@@ -72,8 +74,10 @@ You should follow the instructions in the `./cluster-insight/collector/Dockerfil
 `./cluster-insight/install/cluster-insight-setup.sh -d [<path/to/kubernetes>]`, where the optional `<path/to/kubernetes>` is the path to
 your kubernetes binary directory.
 
-Running the cluster-insight in debug mode enables extensive logging (good), but also enables the built-in debugger that allows any client
+Running the Cluster-Insight in debug mode enables extensive logging (good), but also enables the built-in debugger that allows any client
 to access the internals of the running cluster-insight master after a failure (a security hole).
+You should install and run the Cluster-Insight service in debug mode only if you develop new code or need more detailed logging information.
+In any case, do not run Cluster-Insight in debug mode while serving external traffic. 
 
 ### Easy access: use the REST API
 
