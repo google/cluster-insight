@@ -536,7 +536,7 @@ def _do_compute_master_pods(gs, cluster_guid, nodes_list, oldest_timestamp, g):
     known_node_ids.add(node['id'])
     project_id = utilities.node_id_to_project_id(node['id'])
 
-  # Compute the set of Nodes references by pods but not in the known set.
+  # Compute the set of Nodes referenced by pods but not in the known set.
   # The set of unknown node names may be empty.
   assert utilities.valid_string(project_id)
   missing_node_ids = set()
