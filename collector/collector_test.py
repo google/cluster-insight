@@ -175,11 +175,11 @@ class TestCollector(unittest.TestCase):
     assert utilities.valid_string(start_time)
     assert utilities.valid_string(end_time)
     self.assertEqual(1, self.count_resources(result, 'Cluster'))
-    self.assertEqual(3, self.count_resources(result, 'Node'))
+    self.assertEqual(4, self.count_resources(result, 'Node'))
     self.assertEqual(6, self.count_resources(result, 'Service'))
     # TODO(eran): the pods count does not include the pods running in the
     # master. Fix the count once we include pods that run in the master node.
-    self.assertEqual(10, self.count_resources(result, 'Pod'))
+    self.assertEqual(14, self.count_resources(result, 'Pod'))
     self.assertEqual(5, self.count_resources(result, 'Container'))
     self.assertEqual(7, self.count_resources(result, 'Process'))
     self.assertEqual(2, self.count_resources(result, 'Image'))
@@ -212,7 +212,7 @@ class TestCollector(unittest.TestCase):
 
     json_output = json.dumps(result, sort_keys=True)
     self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(37, json_output.count('"createdBy": '))
+    self.assertEqual(42, json_output.count('"createdBy": '))
 
   def test_cluster(self):
     """Test the '/cluster' endpoint."""
@@ -234,11 +234,11 @@ class TestCollector(unittest.TestCase):
       # its original timestamp.
       self.verify_resources(result, start_time, end_time)
 
-      self.assertEqual(24, self.count_relations(result, 'contains'))
+      self.assertEqual(25, self.count_relations(result, 'contains'))
       self.assertEqual(3, self.count_relations(result, 'createdFrom'))
       self.assertEqual(7, self.count_relations(result, 'loadBalances'))
       self.assertEqual(6, self.count_relations(result, 'monitors'))
-      self.assertEqual(10, self.count_relations(result, 'runs'))
+      self.assertEqual(14, self.count_relations(result, 'runs'))
 
       # Verify that all relations contain a timestamp in the range
       # [start_time, end_time].
@@ -255,7 +255,7 @@ class TestCollector(unittest.TestCase):
 
       json_output = json.dumps(result, sort_keys=True)
       self.assertEqual(2, json_output.count('"alternateLabel": '))
-      self.assertEqual(87, json_output.count('"createdBy": '))
+      self.assertEqual(97, json_output.count('"createdBy": '))
 
       # Wait a little to ensure that the current time is greater than
       # end_time
