@@ -640,6 +640,32 @@ def get_images(gs, docker_host):
   return images_list
 
 
+@utilities.global_state_string_args
+def get_minion_status(gs, docker_host):
+  """Returns the status of the collector minion running on 'docker_host'.
+
+  Args:
+    gs: global state.
+    docker_host: Docker host name. Must not be empty.
+
+  Returns:
+  'OK': the collector minion is active.
+  'ERROR': the collecor minion is inactive or an error occured while
+    communicating with it.
+  """
+  try:
+    containers_list = get_containers(gs, docker_host)
+  except:
+    gs.logger_error('failed to communicate with collector minion on %s',
+                    docker_host)
+    return 'ERROR'
+
+  # In testing mode, an empty containers list is also considered an error.
+  if gs.get_testing() and (not containers_list):
+    return 'ERROR'
+  return 'OK'
+
+
 @utilities.global_state_arg
 def get_version(gs):
   """Returns a human-readable information of the currently running image.

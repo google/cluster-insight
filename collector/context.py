@@ -333,6 +333,7 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
   for pod in kubernetes.get_pods(gs, node_id):
     _do_compute_pod(gs, node_guid, pod, g)
     pod_ids.add(pod['id'])
+    # pod.properties.spec.nodeName may be missing if the pod is waiting.
     docker_host = utilities.get_attribute(
         pod, ['properties', 'spec', 'nodeName'])
     if utilities.valid_string(docker_host):
@@ -341,10 +342,10 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
   # 'docker_hosts' should contain a single Docker host, because all of
   # the pods run in the same Node. However, if it is not the case, we
   # cannot fix the situation, so we just log an error message and continue.
-  if len(docker_hosts) > 1:
+  if len(docker_hosts) != 1:
     gs.logger_error(
         'corrupt pod data in node=%s: '
-        '"docker_hosts" contain more than one entry: %s',
+        '"docker_hosts" is empty or contains more than one entry: %s',
         node_guid, str(docker_hosts))
 
   # Process containers concurrently.
@@ -379,17 +380,21 @@ def _do_compute_pod(gs, node_guid, pod, g):
 
   pod_id = pod['id']
   pod_guid = 'Pod:' + pod_id
-  docker_host = utilities.get_attribute(
-      pod, ['properties', 'spec', 'nodeName'])
-  if not utilities.valid_string(docker_host):
-    msg = ('Docker host (pod.properties.spec.nodeName) '
-           'not found in pod ID %s' % pod_id)
-    gs.logger_error(msg)
-    raise collector_error.CollectorError(msg)
-
   g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                  pod['properties'])
-  g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
+
+  # pod.properties.spec.nodeName may be missing if the pod is waiting
+  # (not running yet).
+  docker_host = utilities.get_attribute(
+      pod, ['properties', 'spec', 'nodeName'])
+  if utilities.valid_string(docker_host):
+    if node_guid == ('Node:' + docker_host):
+      g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
+    else:
+      msg = ('Docker host (pod.properties.spec.nodeName)=%s '
+             'not matching node ID=%s' % (docker_host, node_guid))
+      gs.logger_error(msg)
+      raise collector_error.CollectorError(msg)
 
 
 def _do_compute_container(gs, docker_host, parent_guid, container, g):
@@ -542,13 +547,11 @@ def _do_compute_master_pods(gs, cluster_guid, nodes_list, oldest_timestamp, g):
   missing_node_ids = set()
   for pod in kubernetes.get_pods(gs):
     assert utilities.is_wrapped_object(pod, 'Pod')
+    # pod.properties.spec.nodeName may be missing if the pod is waiting.
     parent_node_id = utilities.get_attribute(
         pod, ['properties', 'spec', 'nodeName'])
     if not utilities.valid_string(parent_node_id):
-      msg = ('Docker host (pod.properties.spec.nodeName) '
-             'not found in pod ID %s' % pod['id'])
-      gs.logger_error(msg)
-      raise collector_error.CollectorError(msg)
+      continue
 
     if parent_node_id in known_node_ids:
       continue
