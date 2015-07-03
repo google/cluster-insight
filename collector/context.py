@@ -331,7 +331,7 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
   # Process pods sequentially because calls to _do_compute_pod() do not call
   # lower-level services or wait.
   for pod in kubernetes.get_pods(gs, node_id):
-    _do_compute_pod(gs, node_guid, pod, g)
+    _do_compute_pod(gs, cluster_guid, node_guid, pod, g)
     pod_ids.add(pod['id'])
     # pod.properties.spec.nodeName may be missing if the pod is waiting.
     docker_host = utilities.get_attribute(
@@ -372,8 +372,9 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
              'container': container, 'g': g}))
 
 
-def _do_compute_pod(gs, node_guid, pod, g):
+def _do_compute_pod(gs, cluster_guid, node_guid, pod, g):
   assert isinstance(gs, global_state.GlobalState)
+  assert utilities.valid_string(cluster_guid)
   assert utilities.valid_string(node_guid)
   assert utilities.is_wrapped_object(pod, 'Pod')
   assert isinstance(g, ContextGraph)
@@ -388,6 +389,7 @@ def _do_compute_pod(gs, node_guid, pod, g):
   docker_host = utilities.get_attribute(
       pod, ['properties', 'spec', 'nodeName'])
   if utilities.valid_string(docker_host):
+    # Pod is running.
     if node_guid == ('Node:' + docker_host):
       g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
     else:
@@ -395,6 +397,9 @@ def _do_compute_pod(gs, node_guid, pod, g):
              'not matching node ID=%s' % (docker_host, node_guid))
       gs.logger_error(msg)
       raise collector_error.CollectorError(msg)
+  else:
+    # Pod is not running.
+    g.add_relation(cluster_guid, pod_guid, 'contains')  # Cluster contains Pod
 
 
 def _do_compute_container(gs, docker_host, parent_guid, container, g):
@@ -574,7 +579,7 @@ def _do_compute_master_pods(gs, cluster_guid, nodes_list, oldest_timestamp, g):
     g.add_resource(node_guid, node['annotations'], 'Node', oldest_timestamp, {})
     g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
     for pod in kubernetes.get_pods(gs, node_id):
-      _do_compute_pod(gs, node_guid, pod, g)
+      _do_compute_pod(gs, cluster_guid, node_guid, pod, g)
 
 
 def _do_compute_graph(gs, input_queue, output_queue, output_format):
