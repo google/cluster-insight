@@ -316,10 +316,8 @@ class TestCollector(unittest.TestCase):
     self.assertTrue(result.get('success'))
     version = result.get('version')
     self.assertTrue(isinstance(version, types.StringTypes))
-    # TODO(eran): restore this test once the /version endpoint is fixed.
-    # self.assertEqual(
-    #    'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
-    self.assertEqual('_unknown_', version)
+    self.assertEqual(
+       'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
 
   def test_minions_status(self):
     """Test the '/minions_status' endpoint."""

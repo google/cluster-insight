@@ -604,7 +604,16 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
   assert utilities.valid_string(output_format)
 
   g = ContextGraph()
-  g.set_version(docker.get_version(gs))
+  try:
+    version = docker.get_version(gs)
+  except Exception as e:
+    exc_type, value, _ = sys.exc_info()
+    msg = ('get_version() failed with exception %s: %s' %
+           (exc_type, value))
+    gs.logger_error(msg)
+    version = '_unknown_'
+
+  g.set_version(version)
   g.set_relations_to_timestamps(gs.get_relations_to_timestamps())
 
   # Nodes

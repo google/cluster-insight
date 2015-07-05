@@ -23,6 +23,7 @@ minion nodes.
 """
 
 import json
+import os
 import re
 import sys
 import time
@@ -681,9 +682,6 @@ def get_version(gs):
     CollectorError: in case of any error to compute the running image
       information.
   """
-  return '_unknown_'
-  # TODO(eran): fix the error
-  # could not find an entry for \"cpu:/docker/...\" in /proc/self/cgroup
   version, timestamp_secs = gs.get_version_cache().lookup('')
   if timestamp_secs is not None:
     assert utilities.valid_string(version)
@@ -709,17 +707,41 @@ def get_version(gs):
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
 
-  # The file must contain an entry for 'cpu:/docker/...'.
-  m = re.search(r'\b[0-9]+:cpu:/docker/([0-9a-fA-F]+)\b', cgroup)
+  # The file must contain an entry for '\d+:cpu:/...'.
+  m = re.search(r'\b\d+:cpu:/([0-9a-fA-F]+)\b', cgroup)
   if not m:
     msg = 'could not find an entry for "cpu:/docker/..." in %s' % fname
     gs.logger_error(msg)
     raise collector_error.CollectorError(msg)
 
   hex_container_id = m.group(1)
+  if gs.get_testing():
+    # This pod name is guaranteed to match a pod in the testdata directory.
+    my_pod_name = 'kube-dns-bqw5e'
+  else:
+    my_pod_name = os.uname()[1]
+  assert utilities.valid_string(my_pod_name)
+
+  # Find my node name from my pod.
+  my_node_name = None
+  for pod in kubernetes.get_pods(gs):
+    assert utilities.is_wrapped_object(pod, 'Pod')
+    if pod['id'] == my_pod_name:
+      my_node_name = utilities.get_attribute(
+          pod, ['properties', 'spec', 'nodeName'])
+      break
+
+  if not utilities.valid_string(my_node_name):
+    msg = ('could not find pod %s or this pod does not contain a valid '
+           'node name' % my_pod_name)
+    gs.logger_error(msg)
+    raise collector_error.CollectorError(msg)
+
   # inspect the running container.
-  url = 'http://localhost:{port}/containers/{container_id}/json'.format(
-      port=gs.get_docker_port(), container_id=hex_container_id)
+  # Must specify an explicit host name (not "localhost").
+  url = 'http://{host}:{port}/containers/{container_id}/json'.format(
+      host=my_node_name, port=gs.get_docker_port(),
+      container_id=hex_container_id)
   container = fetch_data(gs, url, 'container-' + hex_container_id[:12])
 
   # Fetch the image symbolic name and hex ID from the container information.
@@ -735,8 +757,10 @@ def get_version(gs):
     raise collector_error.CollectorError(msg)
 
   # Fetch image information.
-  url = 'http://localhost:{port}/images/{image_id}/json'.format(
-      port=gs.get_docker_port(), image_id=hex_image_id)
+  # Must specify an explicit host name (not "localhost").
+  url = 'http://{host}:{port}/images/{image_id}/json'.format(
+      host=my_node_name, port=gs.get_docker_port(),
+      image_id=hex_image_id)
   image = fetch_data(gs, url, 'image-' + hex_image_id[:12])
 
   # Fetch the image creation timestamp.

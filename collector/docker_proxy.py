@@ -132,8 +132,7 @@ def get_response(req, cache=None):
         requests.codes.ok,
         {'Content-Type': 'application/json'})
 
-  except Exception as e:
-    app.logger.error(e, exc_info=True)
+  except:
     exc_type, value, _ = sys.exc_info()
     msg = ('Failed to retrieve %s with exception %s: %s' %
            (req, exc_type, value))
@@ -167,8 +166,7 @@ def fill_cache(cache):
     app.logger.error('invalid response format from "/containers/json"')
     return
 
-  except Exception as e:
-    app.logger.error(e, exc_info=True)
+  except:
     exc_type, value, _ = sys.exc_info()
     msg = ('Failed to fetch /containers/json with exception %s: %s' %
            (exc_type, value))
@@ -196,8 +194,7 @@ def fill_cache(cache):
       cache.update(req, json.dumps(result))
       app.logger.info('caching result of request=%s', req)
 
-    except Exception as e:
-      app.logger.error(e, exc_info=True)
+    except:
       exc_type, value, _ = sys.exc_info()
       msg = ('Failed to fetch %s with exception %s: %s' %
              (req, exc_type, value))
