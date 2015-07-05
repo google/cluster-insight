@@ -161,7 +161,11 @@ def fill_cache(cache):
   """
   assert cache is not None
   try:
-    r = fetch('/containers/json')
+    containers_list = fetch('/containers/json')
+
+  except ValueError:
+    app.logger.error('invalid response format from "/containers/json"')
+    return
 
   except Exception as e:
     app.logger.error(e, exc_info=True)
@@ -169,18 +173,6 @@ def fill_cache(cache):
     msg = ('Failed to fetch /containers/json with exception %s: %s' %
            (exc_type, value))
     app.logger.error(msg)
-    return
-
-  if r.status_code != requests.codes.ok:
-    app.logger.error('failed to fetch /container/json with code %d',
-                     r.status_code)
-    return
-
-  try:
-    containers_list = r.json()
-
-  except ValueError:
-    app.logger.error('invalid response format from "/containers/json"')
     return
 
   if not isinstance(containers_list, types.ListType):
@@ -198,15 +190,18 @@ def fill_cache(cache):
 
     container_id = container_info['Names'][0][1:]
     req = '/containers/{cid}/json'.format(cid=container_id)
-    r = fetch(req)
-    if r.status_code == requests.codes.ok:
-      result = r.json()
+    try:
+      result = fetch(req)
       cleanup(result)
       cache.update(req, json.dumps(result))
       app.logger.info('caching result of request=%s', req)
-    else:
-      app.logger.error('failed to fetch request=%s with code %d',
-                       req, r.status_code)
+
+    except Exception as e:
+      app.logger.error(e, exc_info=True)
+      exc_type, value, _ = sys.exc_info()
+      msg = ('Failed to fetch %s with exception %s: %s' %
+             (req, exc_type, value))
+      app.logger.error(msg)
 
 
 def worker(cache):
