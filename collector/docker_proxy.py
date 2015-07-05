@@ -76,7 +76,7 @@ def fetch(req):
     req: the request to be sent to the Docker daemon.
 
   Returns:
-  A Unix domain socket response object.
+  The contents of the JSON response.
 
   Raises:
     IOError: the Unix domain socket returns a code other than OK (200).
