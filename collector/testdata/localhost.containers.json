@@ -1,0 +1,30 @@
+[
+{"Status": "Up 4 minutes", "Created": 1434643469, "Image": "kubernetes/cluster-insight:latest", "Labels": {}, "Ports": [], "Command": "python ./cluster_insight.py", "Names": ["/cluster-insight"], "Id": "f2d8dea9ba29bd91343f19fd4e27cb6240c684a7ff60b1a22d9da1c0eaf3a666"},
+{"Command":"/bin/sh -c /run.sh","Created":1426602624,
+"Id":"56ebf71bec95cc8625593d2e070bd71fa93eeb8d0d39dd3eff3031538bde96ba",
+"Image":"brendanburns/php-redis:latest",
+"Names":["/k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8"],
+"Ports":[],"Status":"Up 2 minutes"}
+,{"Command":"/pause","Created":1426602623,"Id":"aef82ee917e9724c163a114b9e4838da689cc4d9951b8999b7021b3f7c58c6ca",
+"Image":"kubernetes/pause:go",
+"Names":["/k8s_POD.e614ed9a_guestbook-controller-ls6k1.default.api_f991d53e-b949-11e4-8246-42010af0c3dd_b9c45653"],
+"Ports":[],"Status":"Up 2 minutes"}
+,{"Command":"/usr/bin/cadvisor","Created":1424472983,
+"Id":"daef6c8e2ab9b57e82844af7ea9295ba61570119262312f76fd47208930269f5","Image":"google/cadvisor:0.8.0",
+"Names":["/k8s_cadvisor.8d424740_cadvisor-agent.file-6bb810db-k8s-guestbook-node-3.file_2039c0fb42605770df4f3883795d7142_69bc4807"],
+"Ports":[],"Status":"Up 3 weeks"}
+,{"Command":"/bin/sh -c /run.sh","Created":1424472983,
+"Id":"3b2da7c60ec7d85c33af1c4596854b38f404fc4c08b10b3f95b78811f5cee885","Image":"brendanburns/redis-slave:latest",
+"Names":["/k8s_redis-worker.872a0284_redis-worker-controller-4qg33.default.api_bdb88fe4-b949-11e4-8246-42010af0c3dd_17b69b78"],
+"Ports":[],"Status":"Up 3 weeks"}
+,{"Command":"/pause","Created":1424472982,"Id":"a8515e7b12ba52eed616cc8530eaeadf702c3e29e2e466a923cff0be30a1403a",
+"Image":"kubernetes/pause:go",
+"Names":["/k8s_POD.1522ef03_redis-worker-controller-4qg33.default.api_bdb8f295-b949-11e4-8246-42010af0c3dd_d5360105"],
+"Ports":[{"IP":"0.0.0.0","PrivatePort":6379,"PublicPort":6380,"Type":"tcp"}],
+"Status":"Up 3 weeks"}
+,{"Command":"/pause","Created":1424472982,"Id":"c6e8f60a7df43fb716bb9f14671b5945493ea60398cf0406921b1db8ebd52e79",
+"Image":"kubernetes/pause:go",
+"Names":["/k8s_POD.252debe0_cadvisor-agent.file-6bb810db-k8s-guestbook-node-3.file_2039c0fb42605770df4f3883795d7142_388b112c"],
+"Ports":[{"IP":"0.0.0.0","PrivatePort":8080,"PublicPort":4194,"Type":"tcp"
+}],"Status":"Up 3 weeks"}
+]

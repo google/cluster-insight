@@ -33,6 +33,7 @@ container information will hit the cache.
 import argparse
 import json
 import logging
+import re
 import sys
 import threading
 import time
@@ -40,6 +41,7 @@ import types
 
 import flask
 from flask_cors import CORS
+import requests
 import requests_unixsocket
 
 import constants
@@ -74,11 +76,31 @@ def fetch(req):
     req: the request to be sent to the Docker daemon.
 
   Returns:
-  A Unix domain socket response object.
+  The contents of the JSON response.
+
+  Raises:
+    IOError: the Unix domain socket returns a code other than OK (200).
   """
   assert utilities.valid_string(req)
-  return session.get(
+  assert req[0] == '/'
+  if app.proxy_is_testing_mode:
+    fname = 'testdata/localhost' + re.sub(r'[^a-zA-Z0-9_.-]', '.', req)
+    app.logger.info('reading req %s from %s', req, fname)
+    f = open(fname, 'r')
+    result = json.loads(f.read())
+    f.close()
+    return result
+
+  r = session.get(
       '{docker_host}{url}'.format(docker_host=LOCAL_DOCKER_HOST, url=req))
+
+  if r.status_code != requests.codes.ok:
+    msg = 'Accessing %s API returns an error code %d' % (req, r.status_code)
+    app.logger.error(msg)
+    raise IOError(msg)
+
+  else:
+    return r.json()
 
 
 def cleanup(result):
@@ -95,30 +117,22 @@ def get_response(req, cache=None):
     if value is not None:
       app.logger.info('cache hit for request=%s', req)
       return flask.make_response(
-          value, 200, {'Content-Type': 'application/json'})
+          value, requests.codes.ok, {'Content-Type': 'application/json'})
 
   try:
-    r = fetch(req)
-    if r.status_code != 200:
-      msg = 'Accessing %s API returns an error code %d' % (req, r.status_code)
-      app.logger.error(msg)
-      raise IOError(msg)
+    result = fetch(req)
+    cleanup(result)
+    output = json.dumps(result)
+    if cache:
+      app.logger.info('caching result of request=%s', req)
+      cache.update(req, output)
 
-    else:
-      result = r.json()
-      cleanup(result)
-      output = json.dumps(result)
-      if cache:
-        app.logger.info('caching result of request=%s', req)
-        cache.update(req, output)
+    return flask.make_response(
+        output,
+        requests.codes.ok,
+        {'Content-Type': 'application/json'})
 
-      return flask.make_response(
-          output,
-          r.status_code,
-          {'Content-Type': 'application/json'})
-
-  except Exception as e:
-    app.logger.error(e, exc_info=True)
+  except:
     exc_type, value, _ = sys.exc_info()
     msg = ('Failed to retrieve %s with exception %s: %s' %
            (req, exc_type, value))
@@ -146,26 +160,17 @@ def fill_cache(cache):
   """
   assert cache is not None
   try:
-    r = fetch('/containers/json')
+    containers_list = fetch('/containers/json')
 
-  except Exception as e:
-    app.logger.error(e, exc_info=True)
+  except ValueError:
+    app.logger.error('invalid response format from "/containers/json"')
+    return
+
+  except:
     exc_type, value, _ = sys.exc_info()
     msg = ('Failed to fetch /containers/json with exception %s: %s' %
            (exc_type, value))
     app.logger.error(msg)
-    return
-
-  if r.status_code != 200:
-    app.logger.error('failed to fetch /container/json with code %d',
-                     r.status_code)
-    return
-
-  try:
-    containers_list = r.json()
-
-  except ValueError:
-    app.logger.error('invalid response format from "/containers/json"')
     return
 
   if not isinstance(containers_list, types.ListType):
@@ -183,15 +188,17 @@ def fill_cache(cache):
 
     container_id = container_info['Names'][0][1:]
     req = '/containers/{cid}/json'.format(cid=container_id)
-    r = fetch(req)
-    if r.status_code == 200:
-      result = r.json()
+    try:
+      result = fetch(req)
       cleanup(result)
       cache.update(req, json.dumps(result))
       app.logger.info('caching result of request=%s', req)
-    else:
-      app.logger.error('failed to fetch request=%s with code %d',
-                       req, r.status_code)
+
+    except:
+      exc_type, value, _ = sys.exc_info()
+      msg = ('Failed to fetch %s with exception %s: %s' %
+             (req, exc_type, value))
+      app.logger.error(msg)
 
 
 def worker(cache):
@@ -219,7 +226,7 @@ def get_all_containers():
 @app.route('/containers/<container_id>/json', methods=['GET'])
 def get_one_container(container_id):
   return get_response('/containers/{cid}/json'.format(cid=container_id),
-                      app.containers_cache)
+                      app.proxy_containers_cache)
 
 
 @app.route('/images/<image_id>/json', methods=['GET'])
@@ -243,7 +250,7 @@ def get_one_container_processes(container_id):
 def get_version():
   return flask.make_response(
       '{"version": "unknown for now"}',
-      200, {'Content-Type': 'application/json'})
+      requests.codes.ok, {'Content-Type': 'application/json'})
 
 
 # Starts the web server and listen on all external IPs associated with this
@@ -260,9 +267,10 @@ def main():
 
   args = parser.parse_args()
   app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
-  app.containers_cache = simple_cache.SimpleCache(
+  app.proxy_containers_cache = simple_cache.SimpleCache(
       MAX_CONTAINER_AGE_SECONDS, MAX_CLEANUP_AGE_SECONDS)
-  t = threading.Thread(target=worker, args=(app.containers_cache,))
+  app.proxy_is_testing_mode = False
+  t = threading.Thread(target=worker, args=(app.proxy_containers_cache,))
   t.daemon = True
   t.start()
   app.run(host='0.0.0.0', port=args.docker_port, debug=args.debug)

@@ -52,6 +52,7 @@ import Queue  # "Queue" was renamed "queue" in Python 3.
 import re
 import sys
 import threading
+import time
 import types
 
 # local imports
@@ -60,6 +61,7 @@ import constants
 import docker
 import global_state
 import kubernetes
+import metrics
 import utilities
 
 
@@ -329,8 +331,9 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
   # Process pods sequentially because calls to _do_compute_pod() do not call
   # lower-level services or wait.
   for pod in kubernetes.get_pods(gs, node_id):
-    _do_compute_pod(gs, input_queue, node_guid, pod, g)
+    _do_compute_pod(gs, cluster_guid, node_guid, pod, g)
     pod_ids.add(pod['id'])
+    # pod.properties.spec.nodeName may be missing if the pod is waiting.
     docker_host = utilities.get_attribute(
         pod, ['properties', 'spec', 'nodeName'])
     if utilities.valid_string(docker_host):
@@ -339,10 +342,10 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
   # 'docker_hosts' should contain a single Docker host, because all of
   # the pods run in the same Node. However, if it is not the case, we
   # cannot fix the situation, so we just log an error message and continue.
-  if len(docker_hosts) > 1:
+  if len(docker_hosts) != 1:
     gs.logger_error(
         'corrupt pod data in node=%s: '
-        '"docker_hosts" contain more than one entry: %s',
+        '"docker_hosts" is empty or contains more than one entry: %s',
         node_guid, str(docker_hosts))
 
   # Process containers concurrently.
@@ -369,26 +372,34 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
              'container': container, 'g': g}))
 
 
-def _do_compute_pod(gs, input_queue, node_guid, pod, g):
+def _do_compute_pod(gs, cluster_guid, node_guid, pod, g):
   assert isinstance(gs, global_state.GlobalState)
-  assert isinstance(input_queue, Queue.PriorityQueue)
+  assert utilities.valid_string(cluster_guid)
   assert utilities.valid_string(node_guid)
   assert utilities.is_wrapped_object(pod, 'Pod')
   assert isinstance(g, ContextGraph)
 
   pod_id = pod['id']
   pod_guid = 'Pod:' + pod_id
-  docker_host = utilities.get_attribute(
-      pod, ['properties', 'spec', 'nodeName'])
-  if not utilities.valid_string(docker_host):
-    msg = ('Docker host (pod.properties.spec.nodeName) '
-           'not found in pod ID %s' % pod_id)
-    gs.logger_error(msg)
-    raise collector_error.CollectorError(msg)
-
   g.add_resource(pod_guid, pod['annotations'], 'Pod', pod['timestamp'],
                  pod['properties'])
-  g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
+
+  # pod.properties.spec.nodeName may be missing if the pod is waiting
+  # (not running yet).
+  docker_host = utilities.get_attribute(
+      pod, ['properties', 'spec', 'nodeName'])
+  if utilities.valid_string(docker_host):
+    # Pod is running.
+    if node_guid == ('Node:' + docker_host):
+      g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
+    else:
+      msg = ('Docker host (pod.properties.spec.nodeName)=%s '
+             'not matching node ID=%s' % (docker_host, node_guid))
+      gs.logger_error(msg)
+      raise collector_error.CollectorError(msg)
+  else:
+    # Pod is not running.
+    g.add_relation(cluster_guid, pod_guid, 'contains')  # Cluster contains Pod
 
 
 def _do_compute_container(gs, docker_host, parent_guid, container, g):
@@ -500,6 +511,77 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
                     rcontroller_id)
 
 
+def _do_compute_master_pods(gs, cluster_guid, nodes_list, oldest_timestamp, g):
+  """Adds pods running on the master node to the graph.
+
+  These pods do not have a valid parent node, because the nodes list
+  does not include the master node.
+
+  This routine adds a dummy master node, and then adds the pods running
+  on the master node to the graph. It does not add information about
+  containers, processes, or images of these nodes, because there is no
+  minion collector running on the master node.
+
+  Note that in some configurations (for example, GKE), there is no
+  master node.
+
+  Args:
+    gs: the global state.
+    cluster_guid: the cluster's ID.
+    nodes_list: a list of wrapped Node objects.
+    oldest_timestamp: the timestamp of the oldest Node object.
+    g: the context graph under construction.
+  """
+  assert isinstance(gs, global_state.GlobalState)
+  assert utilities.valid_string(cluster_guid)
+  assert isinstance(nodes_list, types.ListType)
+  assert utilities.valid_string(oldest_timestamp)
+  assert isinstance(g, ContextGraph)
+
+  # Compute the set of known Node names.
+  known_node_ids = set()
+  project_id = '_unknown_'
+  for node in nodes_list:
+    assert utilities.is_wrapped_object(node, 'Node')
+    known_node_ids.add(node['id'])
+    project_id = utilities.node_id_to_project_id(node['id'])
+
+  # Compute the set of Nodes referenced by pods but not in the known set.
+  # The set of unknown node names may be empty.
+  assert utilities.valid_string(project_id)
+  missing_node_ids = set()
+  for pod in kubernetes.get_pods(gs):
+    assert utilities.is_wrapped_object(pod, 'Pod')
+    # pod.properties.spec.nodeName may be missing if the pod is waiting.
+    parent_node_id = utilities.get_attribute(
+        pod, ['properties', 'spec', 'nodeName'])
+    if not utilities.valid_string(parent_node_id):
+      continue
+
+    if parent_node_id in known_node_ids:
+      continue
+
+    # Found a pod that does not belong to any of the known nodes.
+    missing_node_ids.add(parent_node_id)
+
+  # Process the pods in each of the missing nodes.
+  for node_id in missing_node_ids:
+    # Create a dummy node object just as a placeholder for metric
+    # annotations.
+    node = utilities.wrap_object(
+        {}, 'Node', node_id, time.time(),
+        label=utilities.node_id_to_host_name(node_id))
+
+    # The project_id may be '_unknown_'. This is not a big
+    # deal, since the aggregator knows the project ID.
+    metrics.annotate_node(project_id, node)
+    node_guid = 'Node:' + node_id
+    g.add_resource(node_guid, node['annotations'], 'Node', oldest_timestamp, {})
+    g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
+    for pod in kubernetes.get_pods(gs, node_id):
+      _do_compute_pod(gs, cluster_guid, node_guid, pod, g)
+
+
 def _do_compute_graph(gs, input_queue, output_queue, output_format):
   """Returns the context graph in the specified format.
 
@@ -522,7 +604,16 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
   assert utilities.valid_string(output_format)
 
   g = ContextGraph()
-  g.set_version(docker.get_version(gs))
+  try:
+    version = docker.get_version(gs)
+  except Exception as e:
+    exc_type, value, _ = sys.exc_info()
+    msg = ('get_version() failed with exception %s: %s' %
+           (exc_type, value))
+    gs.logger_error(msg)
+    version = '_unknown_'
+
+  g.set_version(version)
   g.set_relations_to_timestamps(gs.get_relations_to_timestamps())
 
   # Nodes
@@ -572,6 +663,13 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
         _do_compute_rcontroller,
         {'gs': gs, 'cluster_guid': cluster_guid, 'rcontroller': rcontroller,
          'g': g}))
+
+  # Pods running on the master node.
+  input_queue.put((
+      gs.get_random_priority(),
+      _do_compute_master_pods,
+      {'gs': gs, 'cluster_guid': cluster_guid, 'nodes_list': nodes_list,
+       'oldest_timestamp': oldest_timestamp, 'g': g}))
 
   # Wait until worker threads finished processing all outstanding requests.
   # Once we return from the join(), all output was generated already.

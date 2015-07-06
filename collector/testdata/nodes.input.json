@@ -140,6 +140,53 @@
             "systemUUID": "73B57188-A536-FC18-5D0A-60A562925E9C"
           }
         }
+      },
+      {
+        "metadata": {
+          "creationTimestamp": "2015-05-26T15:30:08Z", 
+          "name": "k8s-guestbook-node-4", 
+          "resourceVersion": "101139", 
+          "selfLink": "/api/v1/nodes/k8s-guestbook-node-4", 
+          "uid": "1754da89-03bc-11e5-94dd-42010af099dd"
+        }, 
+        "spec": {
+          "externalID": "7254866938629058439"
+        }, 
+        "status": {
+          "addresses": [
+            {
+              "address": "130.211.190.34", 
+              "type": "ExternalIP"
+            }, 
+            {
+              "address": "130.211.190.34", 
+              "type": "LegacyHostIP"
+            }
+          ], 
+          "capacity": {
+            "cpu": "1", 
+            "memory": "3800808Ki"
+          }, 
+          "conditions": [
+            {
+              "lastHeartbeatTime": "2015-05-29T15:23:14Z", 
+              "lastTransitionTime": "2015-05-26T15:30:14Z", 
+              "reason": "kubelet is posting ready status", 
+              "status": "True", 
+              "type": "Ready"
+            }
+          ], 
+          "nodeInfo": {
+            "bootID": "2ba078bf-1b18-43d7-a4e3-900e971f64ca", 
+            "containerRuntimeVersion": "docker://1.6.0", 
+            "kernelVersion": "3.16.0-0.bpo.4-amd64", 
+            "kubeProxyVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
+            "kubeletVersion": "v0.17.1-1-g6e65b9613ce03b-dirty", 
+            "machineID": "", 
+            "osImage": "Debian GNU/Linux 7 (wheezy)", 
+            "systemUUID": "73B57188-A536-FC18-5D0A-60A562925E9C"
+          }
+        }
       }
   ]
 }

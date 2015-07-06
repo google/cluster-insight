@@ -306,9 +306,35 @@ def get_version():
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
   except:
-    msg = ('get_version() failed with exception %s' % sys.exc_info()[0])
+    msg = 'get_version() failed with exception %s' % sys.exc_info()[0]
     app.logger.exception(msg)
     return flask.jsonify(utilities.make_error(msg))
+
+
+@app.route('/minions_status', methods=['GET'])
+def get_minions():
+  """Computes the response of the '/minions_status' endpoint.
+
+  Returns:
+  A dictionary from node names to the status of their minion collectors
+  or an error message.
+  """
+  gs = app.context_graph_global_state
+  minions_status = {}
+  try:
+    for node in kubernetes.get_nodes(gs):
+      assert utilities.is_wrapped_object(node, 'Node')
+      docker_host = node['id']
+      minions_status[docker_host] = docker.get_minion_status(gs, docker_host)
+
+  except collector_error.CollectorError as e:
+    return flask.jsonify(utilities.make_error(str(e)))
+  except:
+    msg = 'get_minions_status() failed with exception %s' % sys.exc_info()[0]
+    app.logger.exception(msg)
+    return flask.jsonify(utilities.make_error(msg))
+
+  return flask.jsonify(utilities.make_response(minions_status, 'minionsStatus'))
 
 
 @app.route('/healthz', methods=['GET'])

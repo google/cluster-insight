@@ -214,6 +214,35 @@ function verify_service_health() {
   return 1
 }
 
+# Verify that the minions are active by accessing the service
+# '/minions_status' endpoint repeatedly until the output contains the string
+# "OK" and it does not contain the string "ERROR".
+# Access the "/minions_status" up to 60 times with a one second delay.
+# We assume that the minion collectors will start in less than 60 seconds after
+# their replication controller is activated.
+#
+# Usage:
+# verify_service_health SERVICE_URL
+#
+# Returned code:
+# 0: expected contents of "/minions_status" endpoint (success).
+# 1: the contents of the "/minions_status" endpoint never contained the string
+#    "OK" and not the string "ERROR" (failure).
+function verify_minions_health() {
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: verify_minions_health SERVICE_URL"
+    exit 1
+  fi
+  for i in $(seq 1 60); do
+    health="$(curl $1/minions_status 2>/dev/null)"
+    if [[ ("${health}" =~ "OK") && !("${health}" =~ "ERROR") ]]; then
+      return 0
+    fi
+    sleep 1
+  done 
+  return 1
+}
+
 # Verify that the output of the "/debug" endpoint contains at least
 # one of each of the expected resource types (Cluster, Node, Pod,
 # ReplicationController, Service, Container, Process, and Image).
@@ -318,10 +347,7 @@ start_kubernetes_rc "${MINION_CONTROLLER_NAME}" "${MINION_CONTROLLER_FILE}" "${N
 start_kubernetes_rc "${MASTER_CONTROLLER_NAME}" "${MASTER_CONTROLLER_FILE}" "${NUM_MASTERS:-1}"
 start_kubernetes_service "${SERVICE_NAME}" "${SERVICE_FILE}"
 
-
-# verify that the cluster-insight service is healthy.
-echo "Verifying service health."
-
+# Launch kubectl reverse proxy
 KUBECTL_PORT=0
 launch_kubectl_proxy || {
   echo "FAILED to launch ${KUBECTL} proxy."
@@ -332,8 +358,16 @@ echo "${KUBECTL} proxy is running on port ${KUBECTL_PORT}"
 readonly SERVICE_URL="http://localhost:${KUBECTL_PORT}/api/${API_VERSION}/proxy/namespaces/default/services/${SERVICE_NAME}:${SERVICE_PORT}"
 echo "service endoints are available at ${SERVICE_URL}"
 
+# verify that the cluster-insight service is healthy.
+echo "Verifying service health."
 verify_service_health ${SERVICE_URL} || {
   echo "FAILED to get service health response."
+  exit 1
+}
+
+echo "Verifying minions health."
+verify_minions_health ${SERVICE_URL} || {
+  echo "FAILED to initialize some minions"
   exit 1
 }
 
