@@ -79,6 +79,7 @@ def return_elapsed(gs):
         {'start_time': utilities.seconds_to_timestamp(
             elapsed_record.start_time),
          'what': elapsed_record.what,
+         'threadIdentifier': elapsed_record.thread_identifier,
          'elapsed_seconds': duration})
     elapsed_sum += duration
     if (elapsed_min is None) or (elapsed_max is None):

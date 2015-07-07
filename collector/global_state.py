@@ -20,6 +20,7 @@ import collections
 import Queue  # "Queue" was renamed "queue" in Python 3.
 import random
 import sys
+import thread
 import threading
 import types
 
@@ -30,7 +31,8 @@ import utilities
 
 
 ElapsedRecord = collections.namedtuple(
-    'ElapsedRecord', ['start_time', 'what', 'elapsed_seconds'])
+    'ElapsedRecord',
+    ['start_time', 'what', 'thread_identifier', 'elapsed_seconds'])
 
 
 class GlobalState(object):
@@ -245,6 +247,7 @@ class GlobalState(object):
 
     self._elapsed_queue.put(
         ElapsedRecord(start_time=start_time, what=url_or_fname,
+                      thread_identifier=thread.get_ident(),
                       elapsed_seconds=elapsed_seconds))
 
   def get_elapsed(self):

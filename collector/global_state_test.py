@@ -17,6 +17,7 @@
 """Tests for collector/global_state.py."""
 
 # global imports
+import thread
 import time
 import types
 import unittest
@@ -46,6 +47,7 @@ class TestGlobalState(unittest.TestCase):
     self.assertEqual(now, result[0].start_time)
     self.assertEqual('abc', result[0].what)
     self.assertEqual(13.4, result[0].elapsed_seconds)
+    self.assertEqual(thread.get_ident(), result[0].thread_identifier)
 
     # Calling get_elapsed() should clear the list of elapsed times.
     result = self._state.get_elapsed()
