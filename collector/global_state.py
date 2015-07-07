@@ -233,7 +233,7 @@ class GlobalState(object):
     assert utilities.valid_string(url_or_fname)
     assert isinstance(elapsed_seconds, types.FloatType)
 
-    # If the queue is too large, remove some items until its contains less
+    # If the queue is too large, remove some items until it will contain less
     # than constants.MAX_ELAPSED_QUEUE_SIZE elements.
     while self._elapsed_queue.qsize() >= constants.MAX_ELAPSED_QUEUE_SIZE:
       try:
