@@ -16,6 +16,8 @@
 
 """Keeps global system state to be used by concurrent threads.
 """
+import collections
+import Queue  # "Queue" was renamed "queue" in Python 3.
 import random
 import sys
 import threading
@@ -24,6 +26,11 @@ import types
 # local imports
 import constants
 import simple_cache
+import utilities
+
+
+ElapsedRecord = collections.namedtuple(
+    'ElapsedRecord', ['start_time', 'what', 'elapsed_seconds'])
 
 
 class GlobalState(object):
@@ -74,6 +81,9 @@ class GlobalState(object):
 
     # pointers to synchronization constructs.
     self._bounded_semaphore = None
+
+    # Elapsed time queue containing ElapsedRecord items.
+    self._elapsed_queue = Queue.Queue()  # a FIFO queue
 
     # pointers to shared dictionaries.
     self._relations_lock = threading.Lock()
@@ -207,3 +217,51 @@ class GlobalState(object):
     assert isinstance(v, types.DictType)
     with self._relations_lock:
       self._relations_to_timestamps = v
+
+  def add_elapsed(self, start_time, url_or_fname, elapsed_seconds):
+    """Append an ElapsedRecord of an access operation to the elapsed time queue.
+
+    Keep at most constants.MAX_ELAPSED_QUEUE_SIZE elements in the elapsed
+    time queue.
+
+    Args:
+      start_time: the timestamp at the start of the operation.
+      url_or_fname: the URL or file name of the operation.
+      elapsed_seconds: the elapsed time of the operation.
+    """
+    assert isinstance(start_time, types.FloatType)
+    assert utilities.valid_string(url_or_fname)
+    assert isinstance(elapsed_seconds, types.FloatType)
+
+    # If the queue is too large, remove some items until its contains less
+    # than constants.MAX_ELAPSED_QUEUE_SIZE elements.
+    while self._elapsed_queue.qsize() >= constants.MAX_ELAPSED_QUEUE_SIZE:
+      try:
+        self._elapsed_queue.get(block=False)
+      except Queue.Empty:
+        # self._elapsed_queue.get() may raise the EMPTY exception if the
+        # queue becomes empty (for example, due to concurrent access).
+        break
+
+    self._elapsed_queue.put(
+        ElapsedRecord(start_time=start_time, what=url_or_fname,
+                      elapsed_seconds=elapsed_seconds))
+
+  def get_elapsed(self):
+    """Returns a list of all queued elapsed time records and clears the queue.
+
+    Returns:
+    An empty list if the elapsed time queue is empty.
+    Otherwise, a list of ElapsedRecord in the order that they appear
+    in the queue.
+    """
+    result = []
+    while not self._elapsed_queue.empty():
+      try:
+        result.append(self._elapsed_queue.get(block=False))
+      except Queue.Empty:
+        # self._elapsed_queue.get() may raise the Empty exception if the
+        # queue becomes empty (for example, due to concurrent access).
+        break
+
+    return result

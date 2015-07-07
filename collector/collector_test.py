@@ -317,7 +317,7 @@ class TestCollector(unittest.TestCase):
     version = result.get('version')
     self.assertTrue(isinstance(version, types.StringTypes))
     self.assertEqual(
-       'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
+        'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
 
   def test_minions_status(self):
     """Test the '/minions_status' endpoint."""
@@ -330,6 +330,46 @@ class TestCollector(unittest.TestCase):
         '{"k8s-guestbook-node-1": "OK", "k8s-guestbook-node-2": "OK", '
         '"k8s-guestbook-node-3": "OK", "k8s-guestbook-node-4": "ERROR"}',
         json.dumps(status, sort_keys=True))
+
+  def verify_empty_elapsed(self):
+    """Verify that '/elapsed' endoint returns an empty list of elapsed times.
+    """
+    ret_value = self.app.get('/elapsed')
+    result = json.loads(ret_value.data)
+    self.assertTrue(result.get('success'))
+    elapsed = result.get('elapsed')
+    self.assertTrue(isinstance(elapsed, types.DictType))
+    self.assertEqual(0, elapsed.get('count'))
+    self.assertTrue(elapsed.get('min') is None)
+    self.assertTrue(elapsed.get('max') is None)
+    self.assertTrue(elapsed.get('average') is None)
+    self.assertTrue(isinstance(elapsed.get('items'), types.ListType))
+    self.assertEqual([], elapsed.get('items'))
+
+  def test_elapsed(self):
+    """Test the '/elapsed' endpoint with and without calls to Kubernetes/Docker.
+    """
+    self.verify_empty_elapsed()
+
+    # Issue a few requests to Kubernetes and Docker.
+    self.app.get('/version')
+
+    # Now we should have a few elpased time records.
+    ret_value = self.app.get('/elapsed')
+    result = json.loads(ret_value.data)
+    self.assertTrue(result.get('success'))
+    elapsed = result.get('elapsed')
+    self.assertTrue(isinstance(elapsed, types.DictType))
+    self.assertEqual(3, elapsed.get('count'))
+    self.assertTrue(elapsed.get('min') > 0)
+    self.assertTrue(elapsed.get('max') > 0)
+    self.assertTrue(elapsed.get('min') <= elapsed.get('average') <=
+                    elapsed.get('max'))
+    self.assertTrue(isinstance(elapsed.get('items'), types.ListType))
+    self.assertEqual(3, len(elapsed.get('items')))
+
+    # The next call to '/elapsed' should return an empty list
+    self.verify_empty_elapsed()
 
   def test_healthz(self):
     """Test the '/healthz' endpoint."""
