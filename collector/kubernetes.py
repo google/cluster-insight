@@ -22,10 +22,10 @@ is accessible via the URL defined by KUBERNETES_API.
 """
 
 import json
+import os
 import sys
 import time
 import types
-import os
 
 import requests
 
@@ -39,16 +39,17 @@ import utilities
 
 KUBERNETES_API = 'https://%s:%s/api/v1'
 
+
 def get_kubernetes_base_url():
-  """
-  Computes the base URL for the Kubernetes master from the environment 
-  variables for the kubernetes service.
+  """Returns the base URL for the Kubernetes master.
+
+  Uses the environment variables for the kubernetes service.
 
   Returns:
-    The base URL for the Kubernetes master, including the api prefix.
+    The base URL for the Kubernetes master, including the API prefix.
 
   Raises:
-    CollectorError: if the environment variable KUBERNETES_SERVICE_HOST 
+    CollectorError: if the environment variable KUBERNETES_SERVICE_HOST
     or KUBERNETES_SERVICE_PORT is not defined or empty.
   """
   service_host = os.environ.get('KUBERNETES_SERVICE_HOST')
@@ -65,18 +66,20 @@ def get_kubernetes_base_url():
 
 
 KUBERNETES_BEARER_TOKEN = ''
-KUBERNETES_BEARER_TOKEN_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+KUBERNETES_BEARER_TOKEN_FILE = (
+    '/var/run/secrets/kubernetes.io/serviceaccount/token')
+
 
 def get_kubernetes_bearer_token():
-  """
-  Reads the bearer token required to call the Kubernetes master from a file
-  The file is installed in every container within a Kubernetes pod by the Kubelet. 
-  The path to the file is documented at
+  """Reads the bearer token required to call the Kubernetes master from a file.
+
+  The file is installed in every container within a Kubernetes pod by the
+  Kubelet. The path to the file is documented at
   https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/accessing-the-cluster.md.
 
   Returns:
-    The contents of the token file as a string for use in the Authorization header 
-    as a bearer token: 'Authorization: Bearer <token>'
+    The contents of the token file as a string for use in the Authorization
+    header as a bearer token: 'Authorization: Bearer <token>'
 
   Raises:
     IOError: if cannot open the token file.
@@ -126,15 +129,21 @@ def fetch_data(gs, url):
     Other exceptions may be raised as the result of attempting to
     fetch the URL.
   """
+  start_time = time.time()
   if gs.get_testing():
     # Read the data from a file.
     url_elements = url.split('/')
     fname = 'testdata/' + url_elements[-1] + '.input.json'
-    return json.loads(open(fname, 'r').read())
+    v = json.loads(open(fname, 'r').read())
+    gs.add_elapsed(start_time, fname, time.time() - start_time)
+    return v
   else:
     # Send the request to Kubernetes
     headers = get_kubernetes_headers()
-    return requests.get(url, headers=headers, verify=False).json()
+    v = requests.get(url, headers=headers, verify=False).json()
+    gs.add_elapsed(start_time, url, time.time() - start_time)
+    return v
+
 
 @utilities.global_state_arg
 def get_nodes(gs):

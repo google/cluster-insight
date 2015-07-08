@@ -44,3 +44,6 @@ MAX_CONCURRENT_COMPUTE_GRAPH = 2
 
 MODE_MINION = 'minion'
 MODE_MASTER = 'master'
+
+# Maximum number of elapsed time records in the elapsed time queue.
+MAX_ELAPSED_QUEUE_SIZE = 1000

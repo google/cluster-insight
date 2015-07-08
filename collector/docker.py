@@ -69,6 +69,7 @@ def fetch_data(gs, url, base_name, expect_missing=False):
   assert isinstance(gs, global_state.GlobalState)
   assert isinstance(url, types.StringTypes)
   assert isinstance(base_name, types.StringTypes)
+  start_time = time.time()
   if gs.get_testing():
     # Read the data from a file.
     fname = 'testdata/' + base_name + '.input.json'
@@ -76,6 +77,7 @@ def fetch_data(gs, url, base_name, expect_missing=False):
       f = open(fname, 'r')
       v = json.loads(f.read())
       f.close()
+      gs.add_elapsed(start_time, fname, time.time() - start_time)
       return v
     except IOError:
       # File not found
@@ -91,7 +93,9 @@ def fetch_data(gs, url, base_name, expect_missing=False):
       raise collector_error.CollectorError(msg)
   else:
     # Send the request to Kubernetes
-    return requests.get(url).json()
+    v = requests.get(url).json()
+    gs.add_elapsed(start_time, url, time.time() - start_time)
+    return v
 
 
 @utilities.global_state_two_string_args

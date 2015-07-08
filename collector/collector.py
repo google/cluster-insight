@@ -57,6 +57,45 @@ def valid_id(x):
   return utilities.valid_optional_string(x)
 
 
+def return_elapsed(gs):
+  """Returns a description of the elapsed time of recent operations.
+
+  Args:
+    gs: global state.
+
+  Returns:
+  A dictionary containing the count, minimum elapsed time,
+  maximum elapsed time, average elapsed time, and list of elapsed time
+  records.
+  """
+  assert isinstance(gs, global_state.GlobalState)
+  elapsed_list = []
+  elapsed_sum = 0.0
+  elapsed_min = None
+  elapsed_max = None
+  for elapsed_record in gs.get_elapsed():
+    duration = elapsed_record.elapsed_seconds
+    elapsed_list.append(
+        {'start_time': utilities.seconds_to_timestamp(
+            elapsed_record.start_time),
+         'what': elapsed_record.what,
+         'threadIdentifier': elapsed_record.thread_identifier,
+         'elapsed_seconds': duration})
+    elapsed_sum += duration
+    if (elapsed_min is None) or (elapsed_max is None):
+      elapsed_min = duration
+      elapsed_max = duration
+    else:
+      elapsed_min = min(elapsed_min, duration)
+      elapsed_max = max(elapsed_max, duration)
+
+  return {'count': len(elapsed_list),
+          'min': elapsed_min,
+          'max': elapsed_max,
+          'average': elapsed_sum / len(elapsed_list) if elapsed_list else None,
+          'items': elapsed_list}
+
+
 @app.route('/', methods=['GET'])
 def home():
   """Returns the response of the '/' endpoint.
@@ -335,6 +374,26 @@ def get_minions():
     return flask.jsonify(utilities.make_error(msg))
 
   return flask.jsonify(utilities.make_response(minions_status, 'minionsStatus'))
+
+
+@app.route('/elapsed', methods=['GET'])
+def get_elapsed():
+  """Computes the response of the '/elapsed' endpoint.
+
+  Returns:
+  A successful response containing the list of elapsed time records of the
+  most recent Kubernetes and Docker access operations since the previous
+  call to the '/elapsed' endpoint. Never returns more than
+  constants.MAX_ELAPSED_QUEUE_SIZE elapsed time records.
+  """
+  gs = app.context_graph_global_state
+  try:
+    result = return_elapsed(gs)
+    return flask.jsonify(utilities.make_response(result, 'elapsed'))
+  except:
+    msg = 'get_elapsed() failed with exception %s' % sys.exc_info()[0]
+    app.logger.exception(msg)
+    return flask.jsonify(utilities.make_error(msg))
 
 
 @app.route('/healthz', methods=['GET'])
