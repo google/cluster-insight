@@ -334,8 +334,9 @@ stop_kubernetes_rc "${MINION_CONTROLLER_NAME}" "${MINION_CONTROLLER_FILE}"
 
 # compute the number of minions if not supplied by the caller.
 if [[ -z "${NUM_MINIONS:-}" ]]; then
-  NUM_MINIONS="$(${KUBECTL} get nodes | fgrep -v STATUS | wc -l)"
-  if [[ "${NUM_MINIONS}" < 1 ]]; then
+  # Watch out! On Mac, the output of "wc -l" starts with whitespace.
+  declare -i NUM_MINIONS="$(${KUBECTL} get nodes | fgrep -v STATUS | wc -l)"
+  if [[ "${NUM_MINIONS}" -lt 1 ]]; then
     echo "SCRIPT FAILED"
     echo "Kubernetes is not running"
     exit 1
