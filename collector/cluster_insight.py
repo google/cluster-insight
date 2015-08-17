@@ -17,7 +17,6 @@
 
 """Select the module to run specified by CLUSTER_INSIGHT_MODE env. variable."""
 
-import argparse
 import os
 
 import collector
@@ -26,23 +25,6 @@ import constants
 import docker_proxy
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Cluster-Insight data collector')
-  parser.add_argument('-d', '--debug', action='store_true',
-                      help='enable debug mode')
-  parser.add_argument('-p', '--port', action='store', type=int,
-                      default=constants.DATA_COLLECTOR_PORT,
-                      help=('data collector port number [default=%d]' %
-                            constants.DATA_COLLECTOR_PORT))
-  parser.add_argument('--docker_port', action='store', type=int,
-                      default=constants.DOCKER_PORT,
-                      help=('Docker port number [default=%d]' %
-                            constants.DOCKER_PORT))
-  parser.add_argument('-w', '--workers', action='store', type=int,
-                      default=0,
-                      help=('number of concurrent workers. A zero or a '
-                            'negative value denotes an automatic calculation '
-                            'of this number. [default=0]'))
-
   mode = os.environ.get('CLUSTER_INSIGHT_MODE')
 
   if mode == constants.MODE_MASTER:
