@@ -45,6 +45,9 @@ def get_kubernetes_base_url():
 
   Uses the environment variables for the kubernetes service.
 
+  Additionally, the environment variable KUBERNETES_API can be used
+  to override the returned URL.
+
   Returns:
     The base URL for the Kubernetes master, including the API prefix.
 
@@ -52,6 +55,11 @@ def get_kubernetes_base_url():
     CollectorError: if the environment variable KUBERNETES_SERVICE_HOST
     or KUBERNETES_SERVICE_PORT is not defined or empty.
   """
+  try:
+    return os.environ['KUBERNETES_API']
+  except KeyError:
+    pass
+
   service_host = os.environ.get('KUBERNETES_SERVICE_HOST')
   if not service_host:
     raise collector_error.CollectorError(
@@ -99,7 +107,10 @@ def get_kubernetes_bearer_token():
 
 
 def get_kubernetes_headers():
-  return {'Authorization': 'Bearer %s' % (get_kubernetes_bearer_token())}
+  try:
+    return {'Authorization': 'Bearer %s' % (get_kubernetes_bearer_token())}
+  except IOError:
+    return {}
 
 
 @utilities.global_state_string_args
