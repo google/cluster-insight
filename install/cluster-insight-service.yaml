@@ -8,7 +8,6 @@ metadata:
     kubernetes.io/name: ClusterInsight
     version: v1
 spec: 
-  type: LoadBalancer
   selector: 
     cluster-insight-mode: master
   ports: 
