@@ -156,7 +156,13 @@ class TestCollector(unittest.TestCase):
 
     return n
 
-  def count_relations(self, output, type_name):
+  def count_relations(self, output, type_name,
+                      source_type=None, target_type=None):
+    """Count relations of the specified type (e.g., "contains").
+
+    If the source type and/or target type is specified (e.g., "Node", "Pod",
+    etc.), count only relations that additionally match that constraint.
+    """
     assert isinstance(output, types.DictType)
     assert isinstance(type_name, types.StringTypes)
     if not isinstance(output.get('relations'), types.ListType):
@@ -165,8 +171,13 @@ class TestCollector(unittest.TestCase):
     n = 0
     for r in output.get('relations'):
       assert isinstance(r, types.DictType)
-      if r.get('type') == type_name:
-        n += 1
+      if r['type'] != type_name:
+        continue
+      if source_type and r['source'].split(':')[0] != source_type:
+        continue
+      if target_type and r['target'].split(':')[0] != target_type:
+        continue
+      n += 1
 
     return n
 
@@ -233,6 +244,19 @@ class TestCollector(unittest.TestCase):
       # in the second iteration, the data did not change, so it should keep
       # its original timestamp.
       self.verify_resources(result, start_time, end_time)
+
+      self.assertEqual(5, self.count_relations(
+          result, 'contains', 'Cluster', 'Node'))
+      self.assertEqual(6, self.count_relations(
+          result, 'contains', 'Cluster', 'Service'))
+      self.assertEqual(3, self.count_relations(
+          result, 'contains', 'Cluster', 'ReplicationController'))
+      self.assertEqual(1, self.count_relations(
+          result, 'contains', 'Node', 'Container'))
+      self.assertEqual(4, self.count_relations(
+          result, 'contains', 'Pod', 'Container'))
+      self.assertEqual(7, self.count_relations(
+          result, 'contains', 'Container', 'Process'))
 
       self.assertEqual(26, self.count_relations(result, 'contains'))
       self.assertEqual(3, self.count_relations(result, 'createdFrom'))
