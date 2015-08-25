@@ -42,21 +42,6 @@ app = flask.Flask(__name__)
 cors = CORS(app)
 
 
-def valid_id(x):
-  """Tests whether 'x' a valid resource identifier.
-
-  A valid resource identifier is either None (which means you refer to every
-  resource) or a non-empty string.
-
-  Args:
-    x: a resource identifier or None.
-
-  Returns:
-    True iff 'x' is a valid resource identifier.
-  """
-  return utilities.valid_optional_string(x)
-
-
 def return_elapsed(gs):
   """Returns a description of the elapsed time of recent operations.
 
