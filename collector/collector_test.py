@@ -47,6 +47,7 @@ class TestCollector(unittest.TestCase):
     gs.set_logger(collector.app.logger)
     gs.set_num_workers(1)  # execute worker tasks sequentially
     collector.app.context_graph_global_state = gs
+    collector.app.config['TESTING'] = True
     self.app = collector.app.test_client()
 
   def compare_to_golden(self, ret_value, fname):
