@@ -131,18 +131,6 @@ class TestCollector(unittest.TestCase):
     ret_value = self.app.get('/cluster/resources/rcontrollers')
     self.compare_to_golden(ret_value.data, 'replicationcontrollers')
 
-  def test_containers(self):
-    ret_value = self.app.get('/cluster/resources/containers')
-    self.compare_to_golden(ret_value.data, 'containers')
-
-  def test_processes(self):
-    ret_value = self.app.get('/cluster/resources/processes')
-    self.compare_to_golden(ret_value.data, 'processes')
-
-  def test_images(self):
-    ret_value = self.app.get('/cluster/resources/images')
-    self.compare_to_golden(ret_value.data, 'images')
-
   def count_resources(self, output, type_name):
     assert isinstance(output, types.DictType)
     assert isinstance(type_name, types.StringTypes)
@@ -334,28 +322,6 @@ class TestCollector(unittest.TestCase):
     ret_value = self.app.get('/debug')
     self.compare_to_golden(ret_value.data, 'debug')
 
-  def test_version(self):
-    """Test the '/version' endpoint."""
-    ret_value = self.app.get('/version')
-    result = json.loads(ret_value.data)
-    self.assertTrue(result.get('success'))
-    version = result.get('version')
-    self.assertTrue(isinstance(version, types.StringTypes))
-    self.assertEqual(
-        'kubernetes/cluster-insight ac933439ec5a 2015-03-28T17:23:41', version)
-
-  def test_minions_status(self):
-    """Test the '/minions_status' endpoint."""
-    ret_value = self.app.get('/minions_status')
-    result = json.loads(ret_value.data)
-    self.assertTrue(result.get('success'))
-    status = result.get('minionsStatus')
-    self.assertTrue(isinstance(status, types.DictType))
-    self.assertEqual(
-        '{"k8s-guestbook-node-1": "OK", "k8s-guestbook-node-2": "OK", '
-        '"k8s-guestbook-node-3": "OK", "k8s-guestbook-node-4": "ERROR"}',
-        json.dumps(status, sort_keys=True))
-
   def verify_empty_elapsed(self):
     """Verify that '/elapsed' endoint returns an empty list of elapsed times.
     """
@@ -372,14 +338,16 @@ class TestCollector(unittest.TestCase):
     self.assertEqual([], elapsed.get('items'))
 
   def test_elapsed(self):
-    """Test the '/elapsed' endpoint with and without calls to Kubernetes/Docker.
+    """Test the '/elapsed' endpoint with and without calls to Kubernetes.
     """
     self.verify_empty_elapsed()
 
-    # Issue a few requests to Kubernetes and Docker.
-    self.app.get('/version')
+    # Issue a few requests to Kubernetes.
+    self.app.get('/cluster/resources/nodes')
+    self.app.get('/cluster/resources/services')
+    self.app.get('/cluster/resources/rcontrollers')
 
-    # Now we should have a few elpased time records.
+    # Now we should have a few elapsed time records.
     ret_value = self.app.get('/elapsed')
     result = json.loads(ret_value.data)
     self.assertTrue(result.get('success'))
