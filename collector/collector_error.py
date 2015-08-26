@@ -22,7 +22,7 @@ errors in the data collector.
 Typical usage:
 try:
   result_list = requests.get(url).json()
-except:
+except Exception:
   msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
   current_app.logger.exception(msg)
   raise CollectorError(s)

@@ -181,7 +181,7 @@ def get_nodes(gs):
   url = get_kubernetes_base_url() + '/nodes'
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -260,7 +260,7 @@ def get_pods(gs):
   url = get_kubernetes_base_url() + '/pods'
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -377,7 +377,7 @@ def get_selected_pods(gs, selector):
     all_pods = get_pods(gs)
   except collector_error.CollectorError:
     raise
-  except:
+  except Exception:
     msg = 'get_pods() failed with exception %s' % sys.exc_info()[0]
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -421,7 +421,7 @@ def get_services(gs):
   url = get_kubernetes_base_url() + '/services'
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -473,7 +473,7 @@ def get_rcontrollers(gs):
 
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
