@@ -235,17 +235,12 @@ def get_nodes_with_metrics(gs):
   return nodes_list
 
 
-@utilities.global_state_optional_string_args
-def get_pods(gs, node_id=None):
-  """Gets the list of all pods in the given node or in the cluster.
-
-  When 'node_id' is None, it returns the list of pods in the cluster.
-  When 'node_id' is a non-empty string, it returns the list of pods in that
-  node.
+@utilities.global_state_arg
+def get_pods(gs):
+  """Gets the list of all pods in the cluster.
 
   Args:
     gs: global state.
-    node_id: the parent node of the pods or None.
 
   Returns:
     list of wrapped pod objects.
@@ -256,11 +251,9 @@ def get_pods(gs, node_id=None):
     CollectorError: in case of failure to fetch data from Kubernetes.
     Other exceptions may be raised due to exectution errors.
   """
-  pods_label = '' if node_id is None else node_id
-  pods, timestamp_secs = gs.get_pods_cache().lookup(pods_label)
+  pods, timestamp_secs = gs.get_pods_cache().lookup('')
   if timestamp_secs is not None:
-    gs.logger_info('get_pods(pods_label=%s) cache hit returns %d pods',
-                   pods_label, len(pods))
+    gs.logger_info('get_pods() cache hit returns %d pods', len(pods))
     return pods
 
   pods = []
@@ -284,44 +277,11 @@ def get_pods(gs, node_id=None):
       # an invalid pod without a valid pod ID value.
       continue
     wrapped_pod = utilities.wrap_object(pod, 'Pod', name, now)
-    if node_id:
-      # pod['spec']['nodeName'] may be missing if the pod
-      # is in "Waiting" status.
-      if utilities.get_attribute(pod, ['spec', 'nodeName']) == node_id:
-        pods.append(wrapped_pod)
-    else:
-      # append pod to output if 'node_id' is not specified.
-      pods.append(wrapped_pod)
+    pods.append(wrapped_pod)
 
-  ret_value = gs.get_pods_cache().update(pods_label, pods, now)
-  gs.logger_info('get_pods(node_id=%s) returns %d pods', pods_label, len(pods))
+  ret_value = gs.get_pods_cache().update('', pods, now)
+  gs.logger_info('get_pods() returns %d pods', len(pods))
   return ret_value
-
-
-@utilities.global_state_two_string_args
-def get_one_pod(gs, node_id, pod_id):
-  """Gets the pod with the given pod_id in the given node_id.
-
-  Args:
-    gs: global state.
-    node_id: the parent node of requested pod.
-    pod_id: the ID of the requested pod.
-
-  Returns:
-    If the pod was found, returns the wrapped pod object, which is the result
-    of utilities.wrap_object(pod, 'Pod', ...).
-    If the pod was not found, returns None.
-
-  Raises:
-    CollectorError in case of failure to fetch data from Kubernetes.
-    Other exceptions may be raised due to exectution errors.
-  """
-  for pod in get_pods(gs, node_id):
-    assert utilities.is_wrapped_object(pod, 'Pod')
-    if pod['id'] == pod_id:
-      return pod
-
-  return None
 
 
 def get_containers_from_pod(pod):

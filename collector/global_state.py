@@ -58,7 +58,6 @@ class GlobalState(object):
   def __init__(self):
     """Initialize internal state."""
     self._testing = False
-    self._docker_port = constants.DOCKER_PORT
     self._num_workers = 0
 
     # '_logger_lock' protects concurrent logging operations.
@@ -76,10 +75,6 @@ class GlobalState(object):
     self._pods_cache = None
     self._services_cache = None
     self._rcontrollers_cache = None
-    self._containers_cache = None
-    self._images_cache = None
-    self._processes_cache = None
-    self._version_cache = None
 
     # pointers to synchronization constructs.
     self._bounded_semaphore = None
@@ -105,18 +100,7 @@ class GlobalState(object):
     self._rcontrollers_cache = simple_cache.SimpleCache(
         constants.MAX_CACHED_DATA_AGE_SECONDS,
         constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    self._containers_cache = simple_cache.SimpleCache(
-        constants.MAX_CACHED_DATA_AGE_SECONDS,
-        constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    self._images_cache = simple_cache.SimpleCache(
-        constants.MAX_CACHED_DATA_AGE_SECONDS,
-        constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    self._processes_cache = simple_cache.SimpleCache(
-        constants.MAX_CACHED_DATA_AGE_SECONDS,
-        constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    # Never delete anything from the _version_cache.
-    self._version_cache = simple_cache.SimpleCache(
-        sys.maxint, sys.maxint)
+
     self._bounded_semaphore = threading.BoundedSemaphore(
         constants.MAX_CONCURRENT_COMPUTE_GRAPH)
 
@@ -132,18 +116,6 @@ class GlobalState(object):
   def get_rcontrollers_cache(self):
     return self._rcontrollers_cache
 
-  def get_containers_cache(self):
-    return self._containers_cache
-
-  def get_images_cache(self):
-    return self._images_cache
-
-  def get_processes_cache(self):
-    return self._processes_cache
-
-  def get_version_cache(self):
-    return self._version_cache
-
   def get_bounded_semaphore(self):
     return self._bounded_semaphore
 
@@ -152,13 +124,6 @@ class GlobalState(object):
 
   def get_testing(self):
     return self._testing
-
-  def set_docker_port(self, port):
-    assert isinstance(port, types.IntType) and port > 0
-    self._docker_port = port
-
-  def get_docker_port(self):
-    return self._docker_port
 
   def set_num_workers(self, workers):
     assert isinstance(workers, types.IntType)

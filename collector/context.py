@@ -286,21 +286,6 @@ class ContextGraph(object):
       raise collector_error.CollectorError(msg)
 
 
-def _make_error(error_message):
-  """Returns an error response in the Cluster-Insight context graph format.
-
-  Args:
-    error_message: the error message describing the failure.
-
-  Returns:
-    An error response in the cluster-insight context graph format.
-  """
-  assert isinstance(error_message, types.StringTypes) and error_message
-  return {'success': False,
-          'timestamp': utilities.now(),
-          'error_message': error_message}
-
-
 def _do_compute_node(gs, cluster_guid, node, g):
   assert isinstance(gs, global_state.GlobalState)
   assert utilities.valid_string(cluster_guid)

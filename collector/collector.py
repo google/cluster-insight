@@ -147,7 +147,7 @@ def get_pods():
   """
   gs = app.context_graph_global_state
   try:
-    pods_list = kubernetes.get_pods(gs, None)
+    pods_list = kubernetes.get_pods(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
 
@@ -234,9 +234,6 @@ def main():
   parser.add_argument('-p', '--port', action='store', type=int,
                       default=constants.DATA_COLLECTOR_PORT,
                       help='data collector port number [default=%(default)d]')
-  parser.add_argument('--docker_port', action='store', type=int,
-                      default=constants.DOCKER_PORT,
-                      help='Docker port number [default=%(default)d]')
   parser.add_argument('-w', '--workers', action='store', type=int,
                       default=0,
                       help=('number of concurrent workers. A zero or a '
@@ -248,7 +245,6 @@ def main():
   g_state = global_state.GlobalState()
   g_state.init_caches_and_synchronization()
   g_state.set_logger(app.logger)
-  g_state.set_docker_port(args.docker_port)
   g_state.set_num_workers(args.workers)
   app.context_graph_global_state = g_state
 
