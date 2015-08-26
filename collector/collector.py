@@ -15,9 +15,9 @@
 # limitations under the License.
 
 
-"""Runs the cluster insight data collector in master mode.
+"""Runs the cluster insight data collector.
 
-Collects context metadata from multiple places and computes a graph from it.
+Collects context metadata from the Kubernetes API and computes a graph from it.
 """
 
 import argparse
@@ -204,9 +204,9 @@ def get_elapsed():
 
   Returns:
   A successful response containing the list of elapsed time records of the
-  most recent Kubernetes and Docker access operations since the previous
-  call to the '/elapsed' endpoint. Never returns more than
-  constants.MAX_ELAPSED_QUEUE_SIZE elapsed time records.
+  most recent Kubernetes API invocations since the previous call to the
+  '/elapsed' endpoint. Never returns more than constants.MAX_ELAPSED_QUEUE_SIZE
+  elapsed time records.
   """
   gs = app.context_graph_global_state
   result = return_elapsed(gs)

@@ -17,8 +17,7 @@
 
 """Computes a context graph from raw context metadata.
 
-The raw context metadata is gathered from a Kubernetes master and the Docker
-daemons of its nodes.
+The raw context metadata is gathered from the Kubernetes API.
 
 The context graph is computed by a pool of concurrent worker threads.
 The purpose of the worker threads is to reduce the elapsed time by
@@ -32,7 +31,7 @@ on a minion node).
 There is no need to verify the existence of attributes in all wrapped
 objects (the output of utilities.wrap_object()), because we assume that
 the object was already verified by the corresponding get_xxx() routine
-in kubernetes.py or docker.py.
+in kubernetes.py.
 
 The get_xxx() routine should have skipped any invalid object and not
 return it to the caller.
@@ -214,7 +213,7 @@ class ContextGraph(object):
   def best_label(self, obj):
     """Returns the best human-readable label of the given object.
 
-    We perfer the "alternateLabel" over "label" and a string not composed
+    We prefer the "alternateLabel" over "label" and a string not composed
     of only hexadecimal digits over hexadecimal digits.
 
     This function must be called when self._lock is held.
@@ -474,7 +473,7 @@ def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
     # Found a pod that does not belong to any of the known nodes.
     missing_node_ids.add(parent_node_id)
 
-  # Process the pods in each of the missing nodes.
+  # Process the missing nodes.
   for node_id in missing_node_ids:
     # Create a dummy node object just as a placeholder for metric
     # annotations.
@@ -498,7 +497,7 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
     input_queue: the input queue for the worker threads.
     output_queue: output queue containing exceptions data from the worker
         threads.
-    output_format: one of 'graph', 'dot', 'context_graph', or 'resources'.
+    output_format: one of 'dot', 'context_graph', or 'resources'.
 
   Returns:
     A successful response in the specified format.

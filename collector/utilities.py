@@ -212,9 +212,9 @@ def wrap_object(obj, obj_type, obj_id, timestamp, label=None,
 def is_wrapped_object(obj, expected_type=None):
   """Returns True iff 'obj' is a wrapped object of the expected type.
 
-  A wraped object is the result of caling wrap_objected() on a given object.
+  A wrapped object is the result of calling wrap_object() on a given object.
   Note that
-  is_wrapped_object(wrap_object('some_type', 'some_id', time.time(), obj),
+  is_wrapped_object(wrap_object(obj, 'some_type', 'some_id', time.time()),
                     'some_type')
   is always true.
 
