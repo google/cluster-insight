@@ -21,7 +21,7 @@ errors in the data collector.
 
 Typical usage:
 try:
-  containers_list = requests.get(url).json()
+  result_list = requests.get(url).json()
 except:
   msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
   current_app.logger.exception(msg)

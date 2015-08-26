@@ -180,9 +180,8 @@ class TestCollector(unittest.TestCase):
     # TODO(eran): the pods count does not include the pods running in the
     # master. Fix the count once we include pods that run in the master node.
     self.assertEqual(14, self.count_resources(result, 'Pod'))
-    self.assertEqual(5, self.count_resources(result, 'Container'))
-    self.assertEqual(7, self.count_resources(result, 'Process'))
-    self.assertEqual(2, self.count_resources(result, 'Image'))
+    self.assertEqual(16, self.count_resources(result, 'Container'))
+    self.assertEqual(10, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
     # Verify that all resources are valid wrapped objects.
@@ -210,10 +209,6 @@ class TestCollector(unittest.TestCase):
     self.assertTrue(utilities.valid_string(result.get('timestamp')))
     self.assertTrue(start_time <= result['timestamp'] <= end_time)
 
-    json_output = json.dumps(result, sort_keys=True)
-    self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(43, json_output.count('"createdBy": '))
-
   def test_cluster(self):
     """Test the '/cluster' endpoint."""
     start_time = utilities.now()
@@ -240,15 +235,11 @@ class TestCollector(unittest.TestCase):
           result, 'contains', 'Cluster', 'Service'))
       self.assertEqual(3, self.count_relations(
           result, 'contains', 'Cluster', 'ReplicationController'))
-      self.assertEqual(1, self.count_relations(
-          result, 'contains', 'Node', 'Container'))
-      self.assertEqual(4, self.count_relations(
+      self.assertEqual(16, self.count_relations(
           result, 'contains', 'Pod', 'Container'))
-      self.assertEqual(7, self.count_relations(
-          result, 'contains', 'Container', 'Process'))
 
-      self.assertEqual(26, self.count_relations(result, 'contains'))
-      self.assertEqual(3, self.count_relations(result, 'createdFrom'))
+      self.assertEqual(30, self.count_relations(result, 'contains'))
+      self.assertEqual(16, self.count_relations(result, 'createdFrom'))
       self.assertEqual(7, self.count_relations(result, 'loadBalances'))
       self.assertEqual(6, self.count_relations(result, 'monitors'))
       self.assertEqual(14, self.count_relations(result, 'runs'))
@@ -265,10 +256,6 @@ class TestCollector(unittest.TestCase):
       # The overall timestamp must be in the expected range.
       self.assertTrue(utilities.valid_string(result.get('timestamp')))
       self.assertTrue(start_time <= result['timestamp'] <= end_time)
-
-      json_output = json.dumps(result, sort_keys=True)
-      self.assertEqual(2, json_output.count('"alternateLabel": '))
-      self.assertEqual(99, json_output.count('"createdBy": '))
 
       # Wait a little to ensure that the current time is greater than
       # end_time

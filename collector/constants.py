@@ -20,9 +20,6 @@
 # The Cluster-Insight data collector listens on this port for requests.
 DATA_COLLECTOR_PORT = 5555
 
-# The Docker controller listens on this port in the master and minion nodes.
-DOCKER_PORT = 4243
-
 # The cache will keep data for at most this many seconds.
 MAX_CACHED_DATA_AGE_SECONDS = 10
 
@@ -41,9 +38,6 @@ MAX_CONCURRENT_WORKERS = 10
 # These calls are executed by concurrent worker threads, so they may generate
 # heavy load on the backend.
 MAX_CONCURRENT_COMPUTE_GRAPH = 2
-
-MODE_MINION = 'minion'
-MODE_MASTER = 'master'
 
 # Maximum number of elapsed time records in the elapsed time queue.
 MAX_ELAPSED_QUEUE_SIZE = 1000
