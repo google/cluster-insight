@@ -211,7 +211,6 @@ class TestCollector(unittest.TestCase):
 
     json_output = json.dumps(result, sort_keys=True)
     self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(36, json_output.count('"createdBy": '))
 
   def test_cluster(self):
     """Test the '/cluster' endpoint."""
@@ -265,7 +264,6 @@ class TestCollector(unittest.TestCase):
 
       json_output = json.dumps(result, sort_keys=True)
       self.assertEqual(2, json_output.count('"alternateLabel": '))
-      self.assertEqual(85, json_output.count('"createdBy": '))
 
       # Wait a little to ensure that the current time is greater than
       # end_time

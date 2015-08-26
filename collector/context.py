@@ -87,7 +87,6 @@ class ContextGraph(object):
     }
     self._context_resources = []
     self._context_relations = []
-    self._version = None
     self._id_set = set()
     self._previous_relations_to_timestamps = {}
     self._current_relations_to_timestamps = {}
@@ -124,9 +123,6 @@ class ContextGraph(object):
           'annotations': copy.deepcopy(annotations)
       }
 
-      if self._version is not None:
-        resource['annotations']['createdBy'] = self._version
-
       resource['properties'] = obj
 
       self._context_resources.append(resource)
@@ -160,17 +156,9 @@ class ContextGraph(object):
       relation['annotations'] = {}
       if metadata is not None:
         relation['annotations']['metadata'] = copy.deep_copy(metadata)
-
       relation['annotations']['label'] = label if label is not None else kind
-      if self._version is not None:
-        relation['annotations']['createdBy'] = self._version
 
       self._context_relations.append(relation)
-
-  def set_version(self, version):
-    assert utilities.valid_string(version)
-    with self._lock:
-      self._version = version
 
   def set_title(self, title):
     """Sets the title of the context graph."""
@@ -593,16 +581,6 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
   assert utilities.valid_string(output_format)
 
   g = ContextGraph()
-  try:
-    version = docker.get_version(gs)
-  except Exception as e:
-    exc_type, value, _ = sys.exc_info()
-    msg = ('get_version() failed with exception %s: %s' %
-           (exc_type, value))
-    gs.logger_error(msg)
-    version = '_unknown_'
-
-  g.set_version(version)
   g.set_relations_to_timestamps(gs.get_relations_to_timestamps())
 
   # Nodes
