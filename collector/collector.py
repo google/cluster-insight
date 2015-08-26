@@ -234,18 +234,12 @@ def main():
   parser.add_argument('-p', '--port', action='store', type=int,
                       default=constants.DATA_COLLECTOR_PORT,
                       help='data collector port number [default=%(default)d]')
-  parser.add_argument('-w', '--workers', action='store', type=int,
-                      default=0,
-                      help=('number of concurrent workers. A zero or a '
-                            'negative value denotes an automatic calculation '
-                            'of this number. [default=%(default)d]'))
   args = parser.parse_args()
 
   app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
   g_state = global_state.GlobalState()
   g_state.init_caches_and_synchronization()
   g_state.set_logger(app.logger)
-  g_state.set_num_workers(args.workers)
   app.context_graph_global_state = g_state
 
   app.run(host=args.host, port=args.port, debug=args.debug)

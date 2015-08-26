@@ -19,15 +19,6 @@
 
 The raw context metadata is gathered from the Kubernetes API.
 
-The context graph is computed by a pool of concurrent worker threads.
-The purpose of the worker threads is to reduce the elapsed time by
-performing independent operations concurrently.
-
-We store the outstanding operations in a random order in the input
-work queue in order to prevent long trains of accessess to the same
-system component (such as the Kubernetes master or a Docker controller
-on a minion node).
-
 There is no need to verify the existence of attributes in all wrapped
 objects (the output of utilities.wrap_object()), because we assume that
 the object was already verified by the corresponding get_xxx() routine
@@ -47,16 +38,13 @@ context.compute_graph(gs, output_format)
 """
 
 import copy
-import Queue  # "Queue" was renamed "queue" in Python 3.
 import re
-import sys
 import threading
 import time
 import types
 
 # local imports
 import collector_error
-import constants
 import global_state
 import kubernetes
 import metrics
@@ -489,14 +477,11 @@ def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
     g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
 
 
-def _do_compute_graph(gs, input_queue, output_queue, output_format):
+def _do_compute_graph(gs, output_format):
   """Returns the context graph in the specified format.
 
   Args:
     gs: the global state.
-    input_queue: the input queue for the worker threads.
-    output_queue: output queue containing exceptions data from the worker
-        threads.
     output_format: one of 'dot', 'context_graph', or 'resources'.
 
   Returns:
@@ -506,8 +491,6 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
     CollectorError: inconsistent or invalid graph data.
   """
   assert isinstance(gs, global_state.GlobalState)
-  assert isinstance(input_queue, Queue.PriorityQueue)
-  assert isinstance(output_queue, Queue.Queue)
   assert utilities.valid_string(output_format)
 
   g = ContextGraph()
@@ -547,37 +530,14 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
 
   # Services
   for service in kubernetes.get_services(gs):
-    input_queue.put((
-        gs.get_random_priority(),
-        _do_compute_service,
-        {'gs': gs, 'cluster_guid': cluster_guid, 'service': service, 'g': g}))
+    _do_compute_service(gs, cluster_guid, service, g)
 
   # ReplicationControllers
-  rcontrollers_list = kubernetes.get_rcontrollers(gs)
-  for rcontroller in rcontrollers_list:
-    input_queue.put((
-        gs.get_random_priority(),
-        _do_compute_rcontroller,
-        {'gs': gs, 'cluster_guid': cluster_guid, 'rcontroller': rcontroller,
-         'g': g}))
+  for rcontroller in kubernetes.get_rcontrollers(gs):
+    _do_compute_rcontroller(gs, cluster_guid, rcontroller, g)
 
   # Other nodes, not on the list, such as the Kubernetes master.
-  input_queue.put((
-      gs.get_random_priority(),
-      _do_compute_other_nodes,
-      {'gs': gs, 'cluster_guid': cluster_guid, 'nodes_list': nodes_list,
-       'oldest_timestamp': oldest_timestamp, 'g': g}))
-
-  # Wait until worker threads finished processing all outstanding requests.
-  # Once we return from the join(), all output was generated already.
-  input_queue.join()
-
-  # Convert any exception caught by the worker threads to an exception
-  # raised by the current thread.
-  if not output_queue.empty():
-    msg = output_queue.get_nowait()  # should not fail.
-    gs.logger_error(msg)
-    raise collector_error.CollectorError(msg)
+  _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g)
 
   # Keep the relations_to_timestamps mapping for next call.
   gs.set_relations_to_timestamps(g.get_relations_to_timestamps())
@@ -585,53 +545,6 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
 
   # Dump the resulting graph
   return g.dump(gs, output_format)
-
-
-def worker(gs, input_queue, output_queue):
-  """A worker thread that executes tasks from the input queue.
-
-  The input queue contains tuples of the form:
-  (function, keyword-args dictionary).
-  All exceptions raised during the exection of the function are caught
-  and a textual description of the execption is pushed at the end of the
-  output queue. If the exection of the function does not raise any
-  exception, then nothing is pushed at the end of the output queue.
-
-  The worker thread pulls work from the input queue repeatedly.
-  The worker thread exits only if the tuple it pulls from the input queue
-  contains a function equivalent to None.
-
-  The the entries in the input queue are kept in a random order to prevent
-  long trains of accesses to the same minion node or to the Kubernetes
-  master. Long trains of requests to the same system component are
-  inherently sequential.
-
-  Args:
-    gs: global state.
-    input_queue: input queue containing (priority, function, kwargs) tuples.
-    output_queue: output queue containing exception information
-  """
-  assert isinstance(gs, global_state.GlobalState)
-  assert isinstance(input_queue, Queue.PriorityQueue)
-  assert isinstance(output_queue, Queue.Queue)
-
-  while True:
-    _, func, kwargs = input_queue.get()
-    if func is None:
-      break
-    assert isinstance(kwargs, types.DictType)
-
-    try:
-      func(**kwargs)
-    except collector_error.CollectorError as e:
-      output_queue.put(str(e))
-    except:
-      msg = ('calling %s with arguments %s failed with exception %s' %
-             (str(func), str(kwargs), sys.exc_info()[0]))
-      gs.logger_error(msg)
-      output_queue.put(msg)
-
-    input_queue.task_done()
 
 
 @utilities.global_state_string_args
@@ -649,45 +562,4 @@ def compute_graph(gs, output_format):
   The context graph in the specified format.
   """
   with gs.get_bounded_semaphore():
-    input_queue = Queue.PriorityQueue()
-    output_queue = Queue.Queue()
-
-    # Compute the number of workers threads to create.
-    if gs.get_testing():
-      nworkers = 1
-    elif gs.get_num_workers() > 0:
-      # no range restrictions.
-      nworkers = gs.get_num_workers()
-    else:
-      # get_nodes() may trigger an exception. It will be handled by
-      # the exception handler in the caller of this routine.
-      nworkers = len(kubernetes.get_nodes(gs))
-      # The number of workers must be in the range
-      # [constants.MIN_CONCURRENT_WORKERS, constants.MAX_CONCURRENT_WORKERS].
-      nworkers = utilities.range_limit(
-          nworkers,
-          constants.MIN_CONCURRENT_WORKERS, constants.MAX_CONCURRENT_WORKERS)
-
-    # Start worker threads
-    gs.logger_info('creating %d worker threads', nworkers)
-    worker_threads = []
-    for _ in range(nworkers):
-      t = threading.Thread(target=worker, args=(gs, input_queue, output_queue))
-      t.daemon = True
-      t.start()
-      worker_threads.append(t)
-
-    # Compute the graph
-    try:
-      result = _do_compute_graph(gs, input_queue, output_queue, output_format)
-    finally:
-      # Cleanup: signal all worker threads to stop and wait for them to
-      # terminate. If we do not stop the threads they may run forever
-      # and constitute a memory leak.
-      for _ in worker_threads:
-        input_queue.put((0, None, None))
-
-      for t in worker_threads:
-        t.join()
-
-  return result
+    return _do_compute_graph(gs, output_format)
