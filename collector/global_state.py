@@ -18,7 +18,6 @@
 """
 import collections
 import Queue  # "Queue" was renamed "queue" in Python 3.
-import random
 import sys
 import thread
 import threading
@@ -58,17 +57,10 @@ class GlobalState(object):
   def __init__(self):
     """Initialize internal state."""
     self._testing = False
-    self._num_workers = 0
 
     # '_logger_lock' protects concurrent logging operations.
     self._logger_lock = threading.Lock()
     self._logger = None
-
-    # '_random_lock' protects concurrent calls to get_random_priority().
-    self._random_lock = threading.Lock()
-    self._random_generator = random.Random()
-    self._random_generator.seed(None)  # use system time
-    self._sequence_number = 0
 
     # pointers to various caches.
     self._nodes_cache = None
@@ -124,29 +116,6 @@ class GlobalState(object):
 
   def get_testing(self):
     return self._testing
-
-  def set_num_workers(self, workers):
-    assert isinstance(workers, types.IntType)
-    self._num_workers = workers
-
-  def get_num_workers(self):
-    return self._num_workers
-
-  def get_random_priority(self):
-    """Computes a presudo random priority in production mode.
-
-    When in testing mode, return an increasing sequence number.
-
-    Returns:
-    A pseudo random priority in the range [0, 1000] or an increasing
-    sequence number depending on production/testing mode, respectively.
-    """
-    with self._random_lock:
-      if self._testing:
-        self._sequence_number += 1
-        return self._sequence_number
-      else:
-        return self._random_generator.randint(0, 1000)
 
   def set_logger(self, logger):
     with self._logger_lock:
