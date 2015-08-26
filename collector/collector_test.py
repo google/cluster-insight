@@ -181,7 +181,6 @@ class TestCollector(unittest.TestCase):
     # master. Fix the count once we include pods that run in the master node.
     self.assertEqual(14, self.count_resources(result, 'Pod'))
     self.assertEqual(5, self.count_resources(result, 'Container'))
-    self.assertEqual(7, self.count_resources(result, 'Process'))
     self.assertEqual(2, self.count_resources(result, 'Image'))
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
@@ -212,7 +211,7 @@ class TestCollector(unittest.TestCase):
 
     json_output = json.dumps(result, sort_keys=True)
     self.assertEqual(2, json_output.count('"alternateLabel": '))
-    self.assertEqual(43, json_output.count('"createdBy": '))
+    self.assertEqual(36, json_output.count('"createdBy": '))
 
   def test_cluster(self):
     """Test the '/cluster' endpoint."""
@@ -244,10 +243,8 @@ class TestCollector(unittest.TestCase):
           result, 'contains', 'Node', 'Container'))
       self.assertEqual(4, self.count_relations(
           result, 'contains', 'Pod', 'Container'))
-      self.assertEqual(7, self.count_relations(
-          result, 'contains', 'Container', 'Process'))
 
-      self.assertEqual(26, self.count_relations(result, 'contains'))
+      self.assertEqual(19, self.count_relations(result, 'contains'))
       self.assertEqual(3, self.count_relations(result, 'createdFrom'))
       self.assertEqual(7, self.count_relations(result, 'loadBalances'))
       self.assertEqual(6, self.count_relations(result, 'monitors'))
@@ -268,7 +265,7 @@ class TestCollector(unittest.TestCase):
 
       json_output = json.dumps(result, sort_keys=True)
       self.assertEqual(2, json_output.count('"alternateLabel": '))
-      self.assertEqual(99, json_output.count('"createdBy": '))
+      self.assertEqual(85, json_output.count('"createdBy": '))
 
       # Wait a little to ensure that the current time is greater than
       # end_time

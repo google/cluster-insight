@@ -83,7 +83,6 @@ class ContextGraph(object):
         'ReplicationController': 'purple',
         'Pod': 'blue',
         'Container': 'green',
-        'Process': 'gold',
         'Image': 'maroon'
     }
     self._context_resources = []
@@ -418,16 +417,6 @@ def _do_compute_container(gs, docker_host, parent_guid, container, g):
 
   # The parent (Pod or Node) contains Container.
   g.add_relation(parent_guid, container_guid, 'contains')
-
-  # Processes in a Container
-  for process in docker.get_processes(gs, docker_host, container_id):
-    process_id = process['id']
-    process_guid = 'Process:' + process_id
-    g.add_resource(process_guid, process['annotations'],
-                   'Process', process['timestamp'], process['properties'])
-
-    # Container contains Process
-    g.add_relation(container_guid, process_guid, 'contains')
 
   image = docker.get_image(gs, docker_host, container)
   if image is None:
