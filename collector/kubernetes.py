@@ -388,37 +388,6 @@ def get_selected_pods(gs, selector):
   return pods
 
 
-@utilities.global_state_string_args
-def get_pod_host(gs, pod_id):
-  """Gets the host name associated with the given pod.
-
-  Args:
-    gs: global state.
-    pod_id: the pod name.
-
-  Returns:
-    If the pod was found, returns the associated host name.
-    If the pod was not found, returns an empty string.
-
-  Raises:
-    CollectorError in case of failure to fetch data from Kubernetes.
-    Other exceptions may be raised due to exectution errors.
-  """
-  gs.logger_info('calling get_pod_host(pod_id=%s)', pod_id)
-  for pod in get_pods(gs):
-    if not utilities.valid_string(pod.get('id')):
-      # Found an invalid pod without a pod ID.
-      continue
-
-    pod_host = utilities.get_attribute(pod, ['properties', 'spec', 'nodeName'])
-    if pod['id'] == pod_id and utilities.valid_string(pod_host):
-      # 'pod_host' may be missing if the pod is in "Waiting" state.
-      return pod_host
-
-  # Could not find pod.
-  return ''
-
-
 @utilities.global_state_arg
 def get_services(gs):
   """Gets the list of services in the current cluster.

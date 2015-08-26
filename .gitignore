@@ -1,2 +1,3 @@
 # Ignore following files
 *.pyc
+**/.DS_Store
