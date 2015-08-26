@@ -70,9 +70,8 @@ def _get_container_labels(container, parent_pod):
   if not utilities.valid_string(hostname):
     return None
 
-  short_container_name = utilities.get_short_container_name(
-      container, parent_pod)
-
+  short_container_name = utilities.get_attribute(
+      container, ['properties', 'metadata', 'name'])
   if not utilities.valid_string(short_container_name):
     return None
 
@@ -177,22 +176,11 @@ def annotate_container(project_id, container, parent_pod):
     parent_pod: the parent pod of 'container'.
 
   Raises:
-    AssertionError: if the input arguments are invalid or if
-    'parent_pod' is not the parent of 'container'
+    AssertionError: if the input arguments are invalid
   """
   assert utilities.valid_string(project_id)
   assert utilities.is_wrapped_object(container, 'Container')
   assert utilities.is_wrapped_object(parent_pod, 'Pod')
-  parent_name = utilities.get_attribute(
-      container, ['properties', 'Config', 'Hostname'])
-  assert utilities.valid_string(parent_name)
-  pod_name = utilities.get_attribute(
-      parent_pod, ['properties', 'metadata', 'name'])
-  assert utilities.valid_string(pod_name)
-
-  # The 'parent_name' value is truncated to the first 64 characters.
-  # Thus it must be the prefix of the full pod name.
-  assert pod_name.startswith(parent_name)
 
   m = _make_gcm_metrics(
       project_id, _get_container_labels(container, parent_pod))

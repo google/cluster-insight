@@ -31,7 +31,6 @@ from flask_cors import CORS
 import collector_error
 import constants
 import context
-import docker
 import global_state
 import kubernetes
 import utilities

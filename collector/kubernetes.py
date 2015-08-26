@@ -324,6 +324,51 @@ def get_one_pod(gs, node_id, pod_id):
   return None
 
 
+def get_containers_from_pod(pod):
+  """Extracts synthesized container resources from a pod.
+
+  Only containers for which status is available are included. (The pod may
+  still be pending.)
+  """
+  assert utilities.is_wrapped_object(pod, 'Pod')
+  specs = utilities.get_attribute(pod, ['properties', 'spec', 'containers'])
+  statuses = utilities.get_attribute(
+      pod, ['properties', 'status', 'containerStatuses'])
+  timestamp = pod['timestamp']
+
+  spec_dict = {}
+  for spec in specs or []:
+    spec = spec.copy()
+    spec_dict[spec.pop('name')] = spec
+
+  containers = []
+  for status in statuses or []:
+    status = status.copy()
+    name = status.pop('name')
+    unique_id = status.get('containerID', name)
+    obj = {
+      'metadata': {'name': name},
+      'spec': spec_dict.get(name, {}),
+      'status': status,
+    }
+    container = utilities.wrap_object(obj, 'Container', unique_id, timestamp,
+                                      label=name)
+    containers.append(container)
+
+  return containers
+
+
+def get_image_from_container(container):
+  """Extracts a synthesized image resource from a container."""
+  assert utilities.is_wrapped_object(container, 'Container')
+  timestamp = container['timestamp']
+  image_name = container['properties']['status']['image']
+  image_id = container['properties']['status']['imageID']
+  obj = {'metadata': {'name': image_name}}
+  return utilities.wrap_object(obj, 'Image', image_id, timestamp,
+                               label=image_name)
+
+
 @utilities.two_dict_args
 def matching_labels(pod, selector):
   """Compares the key/vale pairs in 'selector' with the pod's label.

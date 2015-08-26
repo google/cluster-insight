@@ -297,18 +297,21 @@ def range_limit(x, low, high):
     return x
 
 
-def wrap_object(obj, obj_type, obj_id, timestamp_seconds, label=None,
+def wrap_object(obj, obj_type, obj_id, timestamp, label=None,
                 alt_label=None):
   """Returns a dictionary containing the standard wrapper around 'obj'.
   """
   assert valid_string(obj_type) and valid_string(obj_id)
-  assert isinstance(timestamp_seconds, types.FloatType)
+  assert isinstance(timestamp, (float, str))
   assert valid_optional_string(label)
   assert valid_optional_string(alt_label)
 
+  if not isinstance(timestamp, str):
+    timestamp = seconds_to_timestamp(timestamp)
+
   wrapped_obj = {
       'id': obj_id, 'type': obj_type,
-      'timestamp': seconds_to_timestamp(timestamp_seconds),
+      'timestamp': timestamp,
       'properties': obj}
 
   wrapped_obj['annotations'] = {}
