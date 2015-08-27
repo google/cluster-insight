@@ -140,7 +140,7 @@ def fetch_data(gs, url):
     fetch the URL.
   """
   start_time = time.time()
-  if gs.get_testing():
+  if app.testing:
     # Read the data from a file.
     url_elements = url.split('/')
     fname = 'testdata/' + url_elements[-1] + '.input.json'
