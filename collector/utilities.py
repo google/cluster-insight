@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common utility routines for the Cluster-Insight data collector.
-"""
+"""Common utility routines for the Cluster-Insight data collector."""
+
 import datetime
 import hashlib
 import json

@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Keeps global system state to be used by concurrent threads.
-"""
+"""Keeps global system state to be used by concurrent threads."""
+
 import collections
 import Queue  # "Queue" was renamed "queue" in Python 3.
 import sys
