@@ -21,7 +21,6 @@ Collects context metadata from the Kubernetes API and computes a graph from it.
 """
 
 import argparse
-import logging
 import sys
 
 import flask
@@ -236,7 +235,6 @@ def main():
                       help='data collector port number [default=%(default)d]')
   args = parser.parse_args()
 
-  app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
   g_state = global_state.GlobalState()
   g_state.init_caches_and_synchronization()
   app.context_graph_global_state = g_state
