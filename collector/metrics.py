@@ -166,11 +166,10 @@ def annotate_container(project_id, container, parent_pod):
 
   m = _make_gcm_metrics(
       project_id, _get_container_labels(container, parent_pod))
-  if m is None:
-    return
-  if container.get('annotations') is None:
-    container['annotations'] = {}
-  container['annotations']['metrics'] = m
+  if m is not None:
+    if 'annotations' not in container:
+      container['annotations'] = {}
+    container['annotations']['metrics'] = m
 
 
 def annotate_node(project_id, node):
@@ -187,8 +186,7 @@ def annotate_node(project_id, node):
   assert utilities.is_wrapped_object(node, 'Node')
 
   m = _make_gcm_metrics(project_id, _get_node_labels(node))
-  if m is None:
-    return
-  if node.get('annotations') is None:
-    node['annotations'] = {}
-  node['annotations']['metrics'] = m
+  if m is not None:
+    if 'annotations' not in node:
+      node['annotations'] = {}
+    node['annotations']['metrics'] = m

@@ -184,7 +184,7 @@ class ContextGraph(object):
           'success': True,
           'timestamp': self.max_resources_and_relations_timestamp(),
           'resources': self._context_resources,
-          'relations': self._context_relations
+          'relations': self._context_relations,
       }
       return context_graph
 

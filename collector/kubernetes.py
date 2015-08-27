@@ -174,14 +174,14 @@ def get_nodes(gs):
   """
   nodes, timestamp_secs = gs.get_nodes_cache().lookup('')
   if timestamp_secs is not None:
-    gs.logger_info('get_nodes() cache hit returns %d nodes', len(nodes))
+    gs.logger_debug('get_nodes() cache hit returns %d nodes', len(nodes))
     return nodes
 
   nodes = []
   url = get_kubernetes_base_url() + '/nodes'
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -253,14 +253,14 @@ def get_pods(gs):
   """
   pods, timestamp_secs = gs.get_pods_cache().lookup('')
   if timestamp_secs is not None:
-    gs.logger_info('get_pods() cache hit returns %d pods', len(pods))
+    gs.logger_debug('get_pods() cache hit returns %d pods', len(pods))
     return pods
 
   pods = []
   url = get_kubernetes_base_url() + '/pods'
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -377,7 +377,7 @@ def get_selected_pods(gs, selector):
     all_pods = get_pods(gs)
   except collector_error.CollectorError:
     raise
-  except:
+  except Exception:
     msg = 'get_pods() failed with exception %s' % sys.exc_info()[0]
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -388,8 +388,8 @@ def get_selected_pods(gs, selector):
     if matching_labels(pod, selector):
       pods.append(pod)
 
-  gs.logger_info('get_selected_pods(labels=%s) returns %d pods',
-                 str(selector), len(pods))
+  gs.logger_debug('get_selected_pods(labels=%s) returns %d pods',
+                  str(selector), len(pods))
   return pods
 
 
@@ -413,15 +413,15 @@ def get_services(gs):
   """
   services, timestamp_secs = gs.get_services_cache().lookup('')
   if timestamp_secs is not None:
-    gs.logger_info('get_services() cache hit returns %d services',
-                   len(services))
+    gs.logger_debug('get_services() cache hit returns %d services',
+                    len(services))
     return services
 
   services = []
   url = get_kubernetes_base_url() + '/services'
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -463,7 +463,7 @@ def get_rcontrollers(gs):
   """
   rcontrollers, ts = gs.get_rcontrollers_cache().lookup('')
   if ts is not None:
-    gs.logger_info(
+    gs.logger_debug(
         'get_rcontrollers() cache hit returns %d rcontrollers',
         len(rcontrollers))
     return rcontrollers
@@ -473,7 +473,7 @@ def get_rcontrollers(gs):
 
   try:
     result = fetch_data(gs, url)
-  except:
+  except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
