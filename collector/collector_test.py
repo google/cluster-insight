@@ -131,9 +131,9 @@ class TestCollector(unittest.TestCase):
     self.compare_to_golden(ret_value.data, 'replicationcontrollers')
 
   def count_resources(self, output, type_name):
-    assert isinstance(output, types.DictType)
+    assert isinstance(output, dict)
     assert isinstance(type_name, types.StringTypes)
-    if not isinstance(output.get('resources'), types.ListType):
+    if not isinstance(output.get('resources'), list):
       return 0
 
     n = 0
@@ -151,14 +151,14 @@ class TestCollector(unittest.TestCase):
     If the source type and/or target type is specified (e.g., "Node", "Pod",
     etc.), count only relations that additionally match that constraint.
     """
-    assert isinstance(output, types.DictType)
+    assert isinstance(output, dict)
     assert isinstance(type_name, types.StringTypes)
-    if not isinstance(output.get('relations'), types.ListType):
+    if not isinstance(output.get('relations'), list):
       return 0
 
     n = 0
     for r in output.get('relations'):
-      assert isinstance(r, types.DictType)
+      assert isinstance(r, dict)
       if r['type'] != type_name:
         continue
       if source_type and r['source'].split(':')[0] != source_type:
@@ -170,7 +170,7 @@ class TestCollector(unittest.TestCase):
     return n
 
   def verify_resources(self, result, start_time, end_time):
-    assert isinstance(result, types.DictType)
+    assert isinstance(result, dict)
     assert utilities.valid_string(start_time)
     assert utilities.valid_string(end_time)
     self.assertEqual(1, self.count_resources(result, 'Cluster'))
@@ -184,7 +184,7 @@ class TestCollector(unittest.TestCase):
     self.assertEqual(3, self.count_resources(result, 'ReplicationController'))
 
     # Verify that all resources are valid wrapped objects.
-    assert isinstance(result.get('resources'), types.ListType)
+    assert isinstance(result.get('resources'), list)
     for r in result['resources']:
       # all resources must be valid.
       assert utilities.is_wrapped_object(r)
@@ -245,9 +245,9 @@ class TestCollector(unittest.TestCase):
 
       # Verify that all relations contain a timestamp in the range
       # [start_time, end_time].
-      self.assertTrue(isinstance(result.get('relations'), types.ListType))
+      self.assertTrue(isinstance(result.get('relations'), list))
       for r in result['relations']:
-        self.assertTrue(isinstance(r, types.DictType))
+        self.assertTrue(isinstance(r, dict))
         timestamp = r.get('timestamp')
         self.assertTrue(utilities.valid_string(timestamp))
         self.assertTrue(start_time <= timestamp <= end_time)
@@ -265,7 +265,7 @@ class TestCollector(unittest.TestCase):
     timestamp_before_update = utilities.now()
     gs = collector.app.context_graph_global_state
     nodes, timestamp_seconds = gs.get_nodes_cache().lookup('')
-    self.assertTrue(isinstance(nodes, types.ListType))
+    self.assertTrue(isinstance(nodes, list))
     self.assertTrue(start_time <=
                     utilities.seconds_to_timestamp(timestamp_seconds) <=
                     end_time)
@@ -291,9 +291,9 @@ class TestCollector(unittest.TestCase):
 
     # Verify that all relations contain a timestamp in the range
     # [start_time, end_time].
-    self.assertTrue(isinstance(result.get('relations'), types.ListType))
+    self.assertTrue(isinstance(result.get('relations'), list))
     for r in result['relations']:
-      self.assertTrue(isinstance(r, types.DictType))
+      self.assertTrue(isinstance(r, dict))
       timestamp = r.get('timestamp')
       self.assertTrue(utilities.valid_string(timestamp))
       self.assertTrue(start_time <= timestamp <= end_time)
@@ -315,12 +315,12 @@ class TestCollector(unittest.TestCase):
     result = json.loads(ret_value.data)
     self.assertTrue(result.get('success'))
     elapsed = result.get('elapsed')
-    self.assertTrue(isinstance(elapsed, types.DictType))
+    self.assertTrue(isinstance(elapsed, dict))
     self.assertEqual(0, elapsed.get('count'))
     self.assertTrue(elapsed.get('min') is None)
     self.assertTrue(elapsed.get('max') is None)
     self.assertTrue(elapsed.get('average') is None)
-    self.assertTrue(isinstance(elapsed.get('items'), types.ListType))
+    self.assertTrue(isinstance(elapsed.get('items'), list))
     self.assertEqual([], elapsed.get('items'))
 
   def test_elapsed(self):
@@ -338,13 +338,13 @@ class TestCollector(unittest.TestCase):
     result = json.loads(ret_value.data)
     self.assertTrue(result.get('success'))
     elapsed = result.get('elapsed')
-    self.assertTrue(isinstance(elapsed, types.DictType))
+    self.assertTrue(isinstance(elapsed, dict))
     self.assertEqual(3, elapsed.get('count'))
     self.assertTrue(elapsed.get('min') > 0)
     self.assertTrue(elapsed.get('max') > 0)
     self.assertTrue(elapsed.get('min') <= elapsed.get('average') <=
                     elapsed.get('max'))
-    self.assertTrue(isinstance(elapsed.get('items'), types.ListType))
+    self.assertTrue(isinstance(elapsed.get('items'), list))
     self.assertEqual(3, len(elapsed.get('items')))
 
     # The next call to '/elapsed' should return an empty list

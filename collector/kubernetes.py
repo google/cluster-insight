@@ -25,7 +25,6 @@ import json
 import os
 import sys
 import time
-import types
 
 import requests
 
@@ -187,7 +186,7 @@ def get_nodes(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  if not (isinstance(result, types.DictType) and 'items' in result):
+  if not (isinstance(result, dict) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -266,7 +265,7 @@ def get_pods(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  if not (isinstance(result, types.DictType) and 'items' in result):
+  if not (isinstance(result, dict) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -346,7 +345,7 @@ def matching_labels(pod, selector):
   """
   pod_labels = utilities.get_attribute(
       pod, ['properties', 'metadata', 'labels'])
-  if not isinstance(pod_labels, types.DictType):
+  if not isinstance(pod_labels, dict):
     return False
   selector_view = selector.viewitems()
   pod_labels_view = pod_labels.viewitems()
@@ -427,7 +426,7 @@ def get_services(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  if not (isinstance(result, types.DictType) and 'items' in result):
+  if not (isinstance(result, dict) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)
@@ -479,7 +478,7 @@ def get_rcontrollers(gs):
     raise collector_error.CollectorError(msg)
 
   now = time.time()
-  if not (isinstance(result, types.DictType) and 'items' in result):
+  if not (isinstance(result, dict) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
     gs.logger_exception(msg)
     raise collector_error.CollectorError(msg)

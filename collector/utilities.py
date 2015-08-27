@@ -75,7 +75,7 @@ def seconds_to_timestamp(seconds):
   Returns:
   An ISO 8601 date/time value, which is YYYY-MM-DDTHH:MM:SS[.mmmmmm].
   """
-  assert isinstance(seconds, (types.IntType, types.LongType, types.FloatType))
+  assert isinstance(seconds, (int, long, float))
   return datetime.datetime.fromtimestamp(seconds).isoformat()
 
 
@@ -135,7 +135,7 @@ def global_state_dict_args(func):
   """
   def inner(arg1, arg2):
     assert isinstance(arg1, global_state.GlobalState)
-    assert isinstance(arg2, types.DictType) and arg2
+    assert isinstance(arg2, dict) and arg2
     return func(arg1, arg2)
 
   return inner
@@ -154,8 +154,8 @@ def two_dict_args(func):
   A decorated function.
   """
   def inner(arg1, arg2):
-    assert isinstance(arg1, types.DictType) and arg1
-    assert isinstance(arg2, types.DictType) and arg2
+    assert isinstance(arg1, dict) and arg1
+    assert isinstance(arg2, dict) and arg2
     return func(arg1, arg2)
 
   return inner
@@ -209,7 +209,7 @@ def is_wrapped_object(obj, expected_type=None):
           valid_string(get_attribute(obj, ['type'])) and
           ((expected_type is None) or (obj['type'] == expected_type)) and
           valid_string(get_attribute(obj, ['timestamp'])) and
-          isinstance(get_attribute(obj, ['properties']), types.DictType))
+          isinstance(get_attribute(obj, ['properties']), dict))
 
 
 def timeless_json_hash(obj):
@@ -332,11 +332,11 @@ def get_attribute(obj, names_list):
   The attribute value or None if any of the intermediate values is not a
   dictionary of any of the attributes in 'names_list' was not found.
   """
-  assert isinstance(names_list, types.ListType)
+  assert isinstance(names_list, list)
   v = obj
   for name in names_list:
     assert isinstance(name, types.StringTypes)
-    if isinstance(v, types.DictType) and (name in v):
+    if isinstance(v, dict) and (name in v):
       v = v[name]
     else:
       return None
@@ -357,7 +357,7 @@ def make_response(value, attribute_name):
   """
   assert valid_string(attribute_name)
   # Compute the maximum timestamp of the values in the list 'value'.
-  if (isinstance(value, types.ListType) and value and
+  if (isinstance(value, list) and value and
       all([is_wrapped_object(x) for x in value])):
     ts = value[0]['timestamp']  # we know that the list is not empty
     for x in value:

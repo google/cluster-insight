@@ -19,7 +19,6 @@
 # global imports
 import json
 import time
-import types
 import unittest
 
 # local imports

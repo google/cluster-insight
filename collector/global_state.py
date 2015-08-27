@@ -21,7 +21,6 @@ import Queue  # "Queue" was renamed "queue" in Python 3.
 import sys
 import thread
 import threading
-import types
 
 # local imports
 import constants
@@ -150,7 +149,7 @@ class GlobalState(object):
       return self._relations_to_timestamps
 
   def set_relations_to_timestamps(self, v):
-    assert isinstance(v, types.DictType)
+    assert isinstance(v, dict)
     with self._relations_lock:
       self._relations_to_timestamps = v
 
@@ -165,9 +164,9 @@ class GlobalState(object):
       url_or_fname: the URL or file name of the operation.
       elapsed_seconds: the elapsed time of the operation.
     """
-    assert isinstance(start_time, types.FloatType)
+    assert isinstance(start_time, float)
     assert utilities.valid_string(url_or_fname)
-    assert isinstance(elapsed_seconds, types.FloatType)
+    assert isinstance(elapsed_seconds, float)
 
     # If the queue is too large, remove some items until it contains less
     # than constants.MAX_ELAPSED_QUEUE_SIZE elements.
