@@ -375,8 +375,6 @@ def _do_compute_service(gs, cluster_guid, service, g):
       pod_guid = 'Pod:' + pod['id']
       # Service loadBalances Pod
       g.add_relation(service_guid, pod_guid, 'loadBalances')
-  else:
-    gs.logger_error('Service id=%s has no "selector" attribute', service_id)
 
 
 def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
