@@ -101,33 +101,6 @@ class TestUtilities(unittest.TestCase):
     with self.assertRaises(ValueError):
       utilities.node_id_to_host_name('Node:')
 
-  def test_node_id_to_project_id(self):
-    """Tests node_id_to_project_id()."""
-    self.assertEqual(
-        'rising-apricot-840',
-        utilities.node_id_to_project_id(
-            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        'rising-apricot-840',
-        utilities.node_id_to_project_id(
-            'Node:k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        '_unknown_',
-        utilities.node_id_to_project_id('k8s-guestbook-node-1'))
-    self.assertEqual(
-        'spartan-alcove-89517',
-        utilities.node_id_to_project_id(
-            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
-            'internal'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_project_id('x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_project_id('Node:x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_project_id('Node:'))
-    with self.assertRaises(AssertionError):
-      utilities.node_id_to_project_id('')
-
   def test_node_id_to_cluster_name(self):
     """Tests node_id_to_cluster_name()."""
     self.assertEqual(

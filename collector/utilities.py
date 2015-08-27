@@ -236,27 +236,6 @@ def timeless_json_hash(obj):
 
 
 @one_string_arg
-def node_id_to_project_id(node_id):
-  """Returns the project ID of the node ID.
-
-  It assumes that the node's ID matches the pattern NODE_ID_PATTERN.
-  See the comment describing NODE_ID_PATTERN for details and examples.
-  If the node's ID does not match NODE_ID_PATTERN, return '_unknown_'.
-
-  Args:
-    node_id: node identifier. Must not be empty.
-
-  Returns:
-  The project ID or '_unknown_'.
-  """
-  m = re.match(NODE_ID_PATTERN, node_id)
-  if m:
-    return m.group(3)
-  else:
-    return '_unknown_'
-
-
-@one_string_arg
 def node_id_to_host_name(node_id):
   """Returns the host name part of the given node ID.
 
