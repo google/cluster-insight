@@ -239,7 +239,6 @@ def main():
   app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
   g_state = global_state.GlobalState()
   g_state.init_caches_and_synchronization()
-  g_state.set_logger(app.logger)
   app.context_graph_global_state = g_state
 
   app.run(host=args.host, port=args.port, debug=args.debug)

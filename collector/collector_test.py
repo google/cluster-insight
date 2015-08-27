@@ -44,7 +44,6 @@ class TestCollector(unittest.TestCase):
     gs = global_state.GlobalState()
     gs.init_caches_and_synchronization()
     gs.set_testing(True)
-    gs.set_logger(collector.app.logger)
     collector.app.context_graph_global_state = gs
     collector.app.config['TESTING'] = True
     self.app = collector.app.test_client()

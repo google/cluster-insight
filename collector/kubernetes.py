@@ -27,9 +27,9 @@ import sys
 import time
 import types
 
+from flask import current_app as app
 import requests
 
-# local imports
 import collector_error
 import metrics
 import utilities
@@ -174,7 +174,7 @@ def get_nodes(gs):
   """
   nodes, timestamp_secs = gs.get_nodes_cache().lookup('')
   if timestamp_secs is not None:
-    gs.logger_debug('get_nodes() cache hit returns %d nodes', len(nodes))
+    app.logger.debug('get_nodes() cache hit returns %d nodes', len(nodes))
     return nodes
 
   nodes = []
@@ -183,13 +183,13 @@ def get_nodes(gs):
     result = fetch_data(gs, url)
   except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   for node in result['items']:
@@ -203,7 +203,7 @@ def get_nodes(gs):
     nodes.append(wrapped_node)
 
   ret_value = gs.get_nodes_cache().update('', nodes, now)
-  gs.logger_info('get_nodes() returns %d nodes', len(nodes))
+  app.logger.info('get_nodes() returns %d nodes', len(nodes))
   return ret_value
 
 
@@ -253,7 +253,7 @@ def get_pods(gs):
   """
   pods, timestamp_secs = gs.get_pods_cache().lookup('')
   if timestamp_secs is not None:
-    gs.logger_debug('get_pods() cache hit returns %d pods', len(pods))
+    app.logger.debug('get_pods() cache hit returns %d pods', len(pods))
     return pods
 
   pods = []
@@ -262,13 +262,13 @@ def get_pods(gs):
     result = fetch_data(gs, url)
   except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   for pod in result['items']:
@@ -280,7 +280,7 @@ def get_pods(gs):
     pods.append(wrapped_pod)
 
   ret_value = gs.get_pods_cache().update('', pods, now)
-  gs.logger_info('get_pods() returns %d pods', len(pods))
+  app.logger.info('get_pods() returns %d pods', len(pods))
   return ret_value
 
 
@@ -379,7 +379,7 @@ def get_selected_pods(gs, selector):
     raise
   except Exception:
     msg = 'get_pods() failed with exception %s' % sys.exc_info()[0]
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   pods = []
@@ -388,8 +388,8 @@ def get_selected_pods(gs, selector):
     if matching_labels(pod, selector):
       pods.append(pod)
 
-  gs.logger_debug('get_selected_pods(labels=%s) returns %d pods',
-                  str(selector), len(pods))
+  app.logger.debug('get_selected_pods(labels=%s) returns %d pods',
+                   str(selector), len(pods))
   return pods
 
 
@@ -413,8 +413,8 @@ def get_services(gs):
   """
   services, timestamp_secs = gs.get_services_cache().lookup('')
   if timestamp_secs is not None:
-    gs.logger_debug('get_services() cache hit returns %d services',
-                    len(services))
+    app.logger.debug('get_services() cache hit returns %d services',
+                     len(services))
     return services
 
   services = []
@@ -423,13 +423,13 @@ def get_services(gs):
     result = fetch_data(gs, url)
   except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   for service in result['items']:
@@ -441,7 +441,7 @@ def get_services(gs):
         utilities.wrap_object(service, 'Service', name, now))
 
   ret_value = gs.get_services_cache().update('', services, now)
-  gs.logger_info('get_services() returns %d services', len(services))
+  app.logger.info('get_services() returns %d services', len(services))
   return ret_value
 
 
@@ -463,7 +463,7 @@ def get_rcontrollers(gs):
   """
   rcontrollers, ts = gs.get_rcontrollers_cache().lookup('')
   if ts is not None:
-    gs.logger_debug(
+    app.logger.debug(
         'get_rcontrollers() cache hit returns %d rcontrollers',
         len(rcontrollers))
     return rcontrollers
@@ -475,13 +475,13 @@ def get_rcontrollers(gs):
     result = fetch_data(gs, url)
   except Exception:
     msg = 'fetching %s failed with exception %s' % (url, sys.exc_info()[0])
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   now = time.time()
   if not (isinstance(result, types.DictType) and 'items' in result):
     msg = 'invalid result when fetching %s' % url
-    gs.logger_exception(msg)
+    app.logger.exception(msg)
     raise collector_error.CollectorError(msg)
 
   for rcontroller in result['items']:
@@ -494,6 +494,6 @@ def get_rcontrollers(gs):
         rcontroller, 'ReplicationController', name, now))
 
   ret_value = gs.get_rcontrollers_cache().update('', rcontrollers, now)
-  gs.logger_info(
+  app.logger.info(
       'get_rcontrollers() returns %d rcontrollers', len(rcontrollers))
   return ret_value
