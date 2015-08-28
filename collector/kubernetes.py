@@ -196,9 +196,7 @@ def get_nodes(gs):
     if not utilities.valid_string(name):
       # an invalid node without a valid node ID value.
       continue
-    wrapped_node = utilities.wrap_object(
-        node, 'Node', name, now,
-        label=utilities.node_id_to_host_name(name))
+    wrapped_node = utilities.wrap_object(node, 'Node', name, now)
     nodes.append(wrapped_node)
 
   ret_value = gs.get_nodes_cache().update('', nodes, now)

@@ -16,12 +16,9 @@
 
 """Tests for collector/utilities.py."""
 
-# global imports
-import json
 import time
 import unittest
 
-# local imports
 import utilities
 
 CONTAINER = {
@@ -33,17 +30,6 @@ CONTAINER = {
         'Id': 'deadbeef',
         'Image': '01234567',
         'Name': '/k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default'
-    },
-    'timestamp': '2015-05-29T18:42:52.217499',
-    'type': 'Container'
-}
-
-ANOTHER_CONTAINER = {
-    'id': 'cluster-insight-deadbeef',
-    'properties': {
-        'Id': u'deadbeef',
-        'Image': u'01234567',
-        'Name': u'/cluster-insight'
     },
     'timestamp': '2015-05-29T18:42:52.217499',
     'type': 'Container'
@@ -74,32 +60,6 @@ PARENT_POD = {
 
 
 class TestUtilities(unittest.TestCase):
-
-  def test_node_id_to_host_name(self):
-    """Tests node_id_to_host_name()."""
-    self.assertEqual(
-        'k8s-guestbook-node-1',
-        utilities.node_id_to_host_name(
-            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        'k8s-guestbook-node-1',
-        utilities.node_id_to_host_name('k8s-guestbook-node-1'))
-    self.assertEqual(
-        'kubernetes-minion-dlc9',
-        utilities.node_id_to_host_name(
-            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
-            'internal'))
-    self.assertEqual(
-        'k8s-guestbook-node-1',
-        utilities.node_id_to_host_name('Node:k8s-guestbook-node-1'))
-    with self.assertRaises(AssertionError):
-      utilities.node_id_to_host_name('')
-    with self.assertRaises(ValueError):
-      utilities.node_id_to_host_name('x.y.z.w')
-    with self.assertRaises(ValueError):
-      utilities.node_id_to_host_name('Node:x.y.z.w')
-    with self.assertRaises(ValueError):
-      utilities.node_id_to_host_name('Node:')
 
   def test_timeless_json_hash(self):
     """Tests timeless_json_hash() with multiple similar and dissimilar objects.

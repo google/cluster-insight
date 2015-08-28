@@ -455,9 +455,7 @@ def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
   for node_id in missing_node_ids:
     # Create a dummy node object just as a placeholder for metric
     # annotations.
-    node = utilities.wrap_object(
-        {}, 'Node', node_id, time.time(),
-        label=utilities.node_id_to_host_name(node_id))
+    node = utilities.wrap_object({}, 'Node', node_id, time.time())
 
     metrics.annotate_node(node)
     node_guid = 'Node:' + node_id
