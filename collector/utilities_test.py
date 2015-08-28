@@ -101,32 +101,6 @@ class TestUtilities(unittest.TestCase):
     with self.assertRaises(ValueError):
       utilities.node_id_to_host_name('Node:')
 
-  def test_node_id_to_cluster_name(self):
-    """Tests node_id_to_cluster_name()."""
-    self.assertEqual(
-        'guestbook',
-        utilities.node_id_to_cluster_name(
-            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        'guestbook',
-        utilities.node_id_to_cluster_name('k8s-guestbook-node-1'))
-    self.assertEqual(
-        'guestbook',
-        utilities.node_id_to_cluster_name('Node:k8s-guestbook-node-1'))
-    self.assertEqual(
-        '_unknown_',
-        utilities.node_id_to_cluster_name(
-            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
-            'internal'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_cluster_name('x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_cluster_name('Node:x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_cluster_name('Node:'))
-    with self.assertRaises(AssertionError):
-      utilities.node_id_to_cluster_name('')
-
   def test_timeless_json_hash(self):
     """Tests timeless_json_hash() with multiple similar and dissimilar objects.
     """

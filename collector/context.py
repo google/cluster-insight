@@ -499,10 +499,9 @@ def _do_compute_graph(gs, output_format):
     if node['timestamp'] < oldest_timestamp:
       oldest_timestamp = node['timestamp']
 
-  # Get the cluster name from the first node.
-  # The cluster name is an approximation. It is not a big deal if it
-  # is incorrect, since the aggregator knows the cluster name.
-  cluster_name = utilities.node_id_to_cluster_name(nodes_list[0]['id'])
+  # The cluster name may be available through the Kubernetes API someday.
+  # TODO(rimey): Determine the cluster name.
+  cluster_name = '_unknown_'
   cluster_guid = 'Cluster:' + cluster_name
   g.set_title(cluster_name)
   g.add_resource(cluster_guid, {'label': cluster_name}, 'Cluster',
