@@ -43,9 +43,8 @@ class TestCollector(unittest.TestCase):
     os.environ['KUBERNETES_SERVICE_PORT'] = '443'
     gs = global_state.GlobalState()
     gs.init_caches_and_synchronization()
-    gs.set_testing(True)
     collector.app.context_graph_global_state = gs
-    collector.app.config['TESTING'] = True
+    collector.app.testing = True
     self.app = collector.app.test_client()
 
   def compare_to_golden(self, ret_value, fname):

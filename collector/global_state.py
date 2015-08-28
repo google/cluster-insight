@@ -46,8 +46,6 @@ class GlobalState(object):
 
   def __init__(self):
     """Initialize internal state."""
-    self._testing = False
-
     # pointers to various caches.
     self._nodes_cache = None
     self._pods_cache = None
@@ -96,12 +94,6 @@ class GlobalState(object):
 
   def get_bounded_semaphore(self):
     return self._bounded_semaphore
-
-  def set_testing(self, testing):
-    self._testing = testing
-
-  def get_testing(self):
-    return self._testing
 
   def get_relations_to_timestamps(self):
     with self._relations_lock:
