@@ -301,15 +301,13 @@ def _do_compute_pod(cluster_guid, pod, g):
   if utilities.valid_string(node_id):
     # Pod is running.
     node_guid = 'Node:' + node_id
-    project_id = utilities.node_id_to_project_id(node_id)
     g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
   else:
     # Pod is not running.
-    project_id = '_unknown_'
     g.add_relation(cluster_guid, pod_guid, 'contains')  # Cluster contains Pod
 
   for container in kubernetes.get_containers_from_pod(pod):
-    metrics.annotate_container(project_id, container, pod)
+    metrics.annotate_container(container, pod)
     _do_compute_container(pod_guid, container, g)
 
 
@@ -432,15 +430,12 @@ def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
 
   # Compute the set of known Node names.
   known_node_ids = set()
-  project_id = '_unknown_'
   for node in nodes_list:
     assert utilities.is_wrapped_object(node, 'Node')
     known_node_ids.add(node['id'])
-    project_id = utilities.node_id_to_project_id(node['id'])
 
   # Compute the set of Nodes referenced by pods but not in the known set.
   # The set of unknown node names may be empty.
-  assert utilities.valid_string(project_id)
   missing_node_ids = set()
   for pod in kubernetes.get_pods(gs):
     assert utilities.is_wrapped_object(pod, 'Pod')
@@ -460,13 +455,9 @@ def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
   for node_id in missing_node_ids:
     # Create a dummy node object just as a placeholder for metric
     # annotations.
-    node = utilities.wrap_object(
-        {}, 'Node', node_id, time.time(),
-        label=utilities.node_id_to_host_name(node_id))
+    node = utilities.wrap_object({}, 'Node', node_id, time.time())
 
-    # The project_id may be '_unknown_'. This is not a big
-    # deal, since the aggregator knows the project ID.
-    metrics.annotate_node(project_id, node)
+    metrics.annotate_node(node)
     node_guid = 'Node:' + node_id
     g.add_resource(node_guid, node['annotations'], 'Node', oldest_timestamp, {})
     g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
@@ -506,10 +497,9 @@ def _do_compute_graph(gs, output_format):
     if node['timestamp'] < oldest_timestamp:
       oldest_timestamp = node['timestamp']
 
-  # Get the cluster name from the first node.
-  # The cluster name is an approximation. It is not a big deal if it
-  # is incorrect, since the aggregator knows the cluster name.
-  cluster_name = utilities.node_id_to_cluster_name(nodes_list[0]['id'])
+  # The cluster name may be available through the Kubernetes API someday.
+  # TODO(rimey): Determine the cluster name.
+  cluster_name = '_unknown_'
   cluster_guid = 'Cluster:' + cluster_name
   g.set_title(cluster_name)
   g.add_resource(cluster_guid, {'label': cluster_name}, 'Cluster',

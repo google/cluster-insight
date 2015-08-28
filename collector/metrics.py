@@ -105,11 +105,10 @@ def _get_node_labels(node):
   }
 
 
-def _make_gcm_metrics(project_id, labels_dict):
-  """Generate a descriptor of GCM metrics from 'project_id' and 'labels_dict'.
+def _make_gcm_metrics(labels_dict):
+  """Generate a descriptor of GCM metrics from 'labels_dict'.
 
   Args:
-    project_id: the project ID
     labels_dict: the key/value pairs that identify all metrics of the
     current resource.
 
@@ -130,61 +129,51 @@ def _make_gcm_metrics(project_id, labels_dict):
     }
   }
   """
-  if labels_dict is None:
-    return None
-
-  assert utilities.valid_string(project_id)
-  assert isinstance(labels_dict, dict)
-
   if not labels_dict:
-    # an empty dictionary
     return None
+
+  assert isinstance(labels_dict, dict)
 
   return {'gcm': {
       'names': copy.deepcopy(METRIC_NAMES),
-      'project': project_id,
+      'project': '_unknown_',
       'labels': copy.deepcopy(labels_dict),
       'labels_prefix': METRIC_PREFIX + 'label/'
   }}
 
 
-def annotate_container(project_id, container, parent_pod):
+def annotate_container(container, parent_pod):
   """Annotate the given container with Heapster GCM metric information.
 
   Args:
-    project_id: the project ID
     container: the container object to annotate.
     parent_pod: the parent pod of 'container'.
 
   Raises:
     AssertionError: if the input arguments are invalid
   """
-  assert utilities.valid_string(project_id)
   assert utilities.is_wrapped_object(container, 'Container')
   assert utilities.is_wrapped_object(parent_pod, 'Pod')
 
-  m = _make_gcm_metrics(
-      project_id, _get_container_labels(container, parent_pod))
+  m = _make_gcm_metrics(_get_container_labels(container, parent_pod))
   if m is not None:
     if 'annotations' not in container:
       container['annotations'] = {}
     container['annotations']['metrics'] = m
 
 
-def annotate_node(project_id, node):
+def annotate_node(node):
   """Annotate the given node with Heapster GCM metric information.
 
   Args:
-    project_id: the project ID
     node: the node object to annotate.
 
   Raises:
     AssertionError: if the input argument is invalid.
   """
-  assert utilities.valid_string(project_id)
   assert utilities.is_wrapped_object(node, 'Node')
 
-  m = _make_gcm_metrics(project_id, _get_node_labels(node))
+  m = _make_gcm_metrics(_get_node_labels(node))
   if m is not None:
     if 'annotations' not in node:
       node['annotations'] = {}

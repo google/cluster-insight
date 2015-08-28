@@ -196,9 +196,7 @@ def get_nodes(gs):
     if not utilities.valid_string(name):
       # an invalid node without a valid node ID value.
       continue
-    wrapped_node = utilities.wrap_object(
-        node, 'Node', name, now,
-        label=utilities.node_id_to_host_name(name))
+    wrapped_node = utilities.wrap_object(node, 'Node', name, now)
     nodes.append(wrapped_node)
 
   ret_value = gs.get_nodes_cache().update('', nodes, now)
@@ -225,11 +223,7 @@ def get_nodes_with_metrics(gs):
   nodes_list = get_nodes(gs)
 
   for node in nodes_list:
-    assert utilities.is_wrapped_object(node, 'Node')
-    project_id = utilities.node_id_to_project_id(node['id'])
-    # The project_id may be '_unknown_'. This is not a big
-    # deal, since the aggregator knows the project ID.
-    metrics.annotate_node(project_id, node)
+    metrics.annotate_node(node)
 
   return nodes_list
 
