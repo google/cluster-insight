@@ -25,7 +25,6 @@ https://github.com/GoogleCloudPlatform/heapster/issues/241.
 
 # global imports
 import copy
-import types
 
 # local imports
 import utilities
@@ -135,7 +134,7 @@ def _make_gcm_metrics(project_id, labels_dict):
     return None
 
   assert utilities.valid_string(project_id)
-  assert isinstance(labels_dict, types.DictType)
+  assert isinstance(labels_dict, dict)
 
   if not labels_dict:
     # an empty dictionary

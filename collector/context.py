@@ -83,7 +83,7 @@ class ContextGraph(object):
       return self._current_relations_to_timestamps
 
   def set_relations_to_timestamps(self, d):
-    assert isinstance(d, types.DictType)
+    assert isinstance(d, dict)
     with self._lock:
       self._previous_relations_to_timestamps = d
 
@@ -94,7 +94,7 @@ class ContextGraph(object):
         annotations, ['label']))
     assert utilities.valid_string(rtype)
     assert utilities.valid_string(timestamp)
-    assert isinstance(obj, types.DictType)
+    assert isinstance(obj, dict)
 
     with self._lock:
       # It is possible that the same resource is referenced by more than one
@@ -120,7 +120,7 @@ class ContextGraph(object):
     assert utilities.valid_string(source) and utilities.valid_string(target)
     assert utilities.valid_string(kind)
     assert utilities.valid_optional_string(label)
-    assert (metadata is None) or isinstance(metadata, types.DictType)
+    assert (metadata is None) or isinstance(metadata, dict)
 
     with self._lock:
       # The timestamp of the relation should be inherited from the previous
@@ -363,7 +363,7 @@ def _do_compute_service(gs, cluster_guid, service, g):
   selector = utilities.get_attribute(
       service, ['properties', 'spec', 'selector'])
   if selector:
-    if not isinstance(selector, types.DictType):
+    if not isinstance(selector, dict):
       msg = 'Service id=%s has an invalid "selector" value' % service_id
       app.logger.error(msg)
       raise collector_error.CollectorError(msg)
@@ -395,7 +395,7 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
   selector = utilities.get_attribute(
       rcontroller, ['properties', 'spec', 'selector'])
   if selector:
-    if not isinstance(selector, types.DictType):
+    if not isinstance(selector, dict):
       msg = ('Rcontroller id=%s has an invalid "replicaSelector" value' %
              rcontroller_id)
       app.logger.error(msg)
@@ -426,7 +426,7 @@ def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
   """
   assert isinstance(gs, global_state.GlobalState)
   assert utilities.valid_string(cluster_guid)
-  assert isinstance(nodes_list, types.ListType)
+  assert isinstance(nodes_list, list)
   assert utilities.valid_string(oldest_timestamp)
   assert isinstance(g, ContextGraph)
 

@@ -19,7 +19,6 @@
 # global imports
 import thread
 import time
-import types
 import unittest
 
 # local imports
@@ -34,7 +33,7 @@ class TestGlobalState(unittest.TestCase):
 
   def test_elapsed(self):
     result = self._state.get_elapsed()
-    self.assertTrue(isinstance(result, types.ListType))
+    self.assertTrue(isinstance(result, list))
     self.assertEqual([], result)
 
     now = time.time()
@@ -42,7 +41,7 @@ class TestGlobalState(unittest.TestCase):
 
     # expect to get a list of one elapsed time records.
     result = self._state.get_elapsed()
-    self.assertTrue(isinstance(result, types.ListType))
+    self.assertTrue(isinstance(result, list))
     self.assertEqual(1, len(result))
     self.assertEqual(now, result[0].start_time)
     self.assertEqual('abc', result[0].what)
@@ -51,7 +50,7 @@ class TestGlobalState(unittest.TestCase):
 
     # Calling get_elapsed() should clear the list of elapsed times.
     result = self._state.get_elapsed()
-    self.assertTrue(isinstance(result, types.ListType))
+    self.assertTrue(isinstance(result, list))
     self.assertEqual([], result)
 
 
