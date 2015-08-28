@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Keeps global system state to be used by concurrent threads.
-"""
+"""Keeps global system state to be used by concurrent threads."""
+
 import collections
 import Queue  # "Queue" was renamed "queue" in Python 3.
-import sys
 import thread
 import threading
 import types
@@ -44,23 +43,11 @@ class GlobalState(object):
   You should initialize the GlobalState object before any access it.
   Since GlobalState is a read-only object after initialization, it is
   thread safe.
-
-  The only locking provided by GlobalState is for concurrent logging
-  operations. It is neede because GlobalState typically keeps a reference
-  to Flask's logger. I have no idea whether the Flask logger supports
-  concurrent operations.
-
-  Direct logging via the 'logging' package does not seem to work under
-  Flask.
   """
 
   def __init__(self):
     """Initialize internal state."""
     self._testing = False
-
-    # '_logger_lock' protects concurrent logging operations.
-    self._logger_lock = threading.Lock()
-    self._logger = None
 
     # pointers to various caches.
     self._nodes_cache = None
@@ -116,34 +103,6 @@ class GlobalState(object):
 
   def get_testing(self):
     return self._testing
-
-  def set_logger(self, logger):
-    with self._logger_lock:
-      self._logger = logger
-
-  def logger_debug(self, *args):
-    with self._logger_lock:
-      self._logger.debug(*args)
-
-  def logger_info(self, *args):
-    with self._logger_lock:
-      self._logger.info(*args)
-
-  def logger_warning(self, *args):
-    with self._logger_lock:
-      self._logger.warning(*args)
-
-  def logger_error(self, *args):
-    with self._logger_lock:
-      self._logger.error(*args)
-
-  def logger_fatal(self, *args):
-    with self._logger_lock:
-      self._logger.fatal(*args)
-
-  def logger_exception(self, *args):
-    with self._logger_lock:
-      self._logger.exception(*args)
 
   def get_relations_to_timestamps(self):
     with self._relations_lock:

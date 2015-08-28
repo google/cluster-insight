@@ -43,7 +43,8 @@ import threading
 import time
 import types
 
-# local imports
+from flask import current_app as app
+
 import collector_error
 import global_state
 import kubernetes
@@ -253,9 +254,8 @@ class ContextGraph(object):
       graph_data = 'digraph{' + ';'.join(graph_items) + '}'
       return graph_data
 
-  def dump(self, gs, output_format):
+  def dump(self, output_format):
     """Returns the context graph in the specified format."""
-    assert isinstance(gs, global_state.GlobalState)
     assert isinstance(output_format, types.StringTypes)
 
     self._context_resources.sort(key=lambda x: x['id'])
@@ -269,12 +269,11 @@ class ContextGraph(object):
       return self.to_context_resources()
     else:
       msg = 'invalid dump() output_format: %s' % output_format
-      gs.logger_error(msg)
+      app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
 
-def _do_compute_node(gs, cluster_guid, node, g):
-  assert isinstance(gs, global_state.GlobalState)
+def _do_compute_node(cluster_guid, node, g):
   assert utilities.valid_string(cluster_guid)
   assert utilities.is_wrapped_object(node, 'Node')
   assert isinstance(g, ContextGraph)
@@ -286,8 +285,7 @@ def _do_compute_node(gs, cluster_guid, node, g):
   g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
 
 
-def _do_compute_pod(gs, cluster_guid, pod, g):
-  assert isinstance(gs, global_state.GlobalState)
+def _do_compute_pod(cluster_guid, pod, g):
   assert utilities.valid_string(cluster_guid)
   assert utilities.is_wrapped_object(pod, 'Pod')
   assert isinstance(g, ContextGraph)
@@ -312,11 +310,10 @@ def _do_compute_pod(gs, cluster_guid, pod, g):
 
   for container in kubernetes.get_containers_from_pod(pod):
     metrics.annotate_container(project_id, container, pod)
-    _do_compute_container(gs, pod_guid, container, g)
+    _do_compute_container(pod_guid, container, g)
 
 
-def _do_compute_container(gs, parent_guid, container, g):
-  assert isinstance(gs, global_state.GlobalState)
+def _do_compute_container(parent_guid, container, g):
   assert utilities.valid_string(parent_guid)
   assert utilities.is_wrapped_object(container, 'Container')
   assert isinstance(g, ContextGraph)
@@ -368,7 +365,7 @@ def _do_compute_service(gs, cluster_guid, service, g):
   if selector:
     if not isinstance(selector, types.DictType):
       msg = 'Service id=%s has an invalid "selector" value' % service_id
-      gs.logger_error(msg)
+      app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     for pod in kubernetes.get_selected_pods(gs, selector):
@@ -401,7 +398,7 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
     if not isinstance(selector, types.DictType):
       msg = ('Rcontroller id=%s has an invalid "replicaSelector" value' %
              rcontroller_id)
-      gs.logger_error(msg)
+      app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     for pod in kubernetes.get_selected_pods(gs, selector):
@@ -409,8 +406,8 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
       # Rcontroller monitors Pod
       g.add_relation(rcontroller_guid, pod_guid, 'monitors')
   else:
-    gs.logger_error('Rcontroller id=%s has no "spec.selector" attribute',
-                    rcontroller_id)
+    app.logger.error('Rcontroller id=%s has no "spec.selector" attribute',
+                     rcontroller_id)
 
 
 def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
@@ -497,7 +494,7 @@ def _do_compute_graph(gs, output_format):
   # Nodes
   nodes_list = kubernetes.get_nodes_with_metrics(gs)
   if not nodes_list:
-    return g.dump(gs, output_format)
+    return g.dump(output_format)
 
   # Find the timestamp of the oldest node. This will be the timestamp of
   # the cluster.
@@ -520,11 +517,11 @@ def _do_compute_graph(gs, output_format):
 
   # Nodes
   for node in nodes_list:
-    _do_compute_node(gs, cluster_guid, node, g)
+    _do_compute_node(cluster_guid, node, g)
 
   # Pods
   for pod in kubernetes.get_pods(gs):
-    _do_compute_pod(gs, cluster_guid, pod, g)
+    _do_compute_pod(cluster_guid, pod, g)
 
   # Services
   for service in kubernetes.get_services(gs):
@@ -542,7 +539,7 @@ def _do_compute_graph(gs, output_format):
   g.set_metadata({'timestamp': g.max_resources_and_relations_timestamp()})
 
   # Dump the resulting graph
-  return g.dump(gs, output_format)
+  return g.dump(output_format)
 
 
 @utilities.global_state_string_args

@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common constants for the Cluster-Insight data collector.
-"""
+"""Common constants for the Cluster-Insight data collector."""
 
 # The Cluster-Insight data collector listens on this port for requests.
 DATA_COLLECTOR_PORT = 5555
