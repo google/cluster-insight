@@ -1,0 +1,19 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: cluster-insight-controller
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cluster-insight
+        version: v2
+    spec:
+      containers:
+        - name: cluster-insight
+          image: kubernetes/cluster-insight:v2.0-alpha
+          ports:
+            - name: cluster-insight
+              containerPort: 5555
