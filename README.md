@@ -12,6 +12,12 @@ The nodes of the context graph are cluster resources (cluster, nodes, services, 
 
 Deploying Cluster Insight involves creating a service and a replication controller. The replication controller creates one pod, which contains one container. The container image is [here](https://registry.hub.docker.com/u/kubernetes/cluster-insight/) on Docker Hub.
 
+### Preliminaries
+
+In the following, we will assume that you have a Kubernetes cluster running and `kubectl` configured to talk to it. If you have set up the Kubernetes cluster from the command line with `gcloud container clusters create` or `kube-up.sh`, then `kubectl` will have been configured for you. If you have set it up from the Google Developers Console, you can configure `kubectl` by running `gcloud container clusters get-credentials`.
+
+If you have several Kubernetes clusters configured, you can determine the corresponding *context names* with `kubectl config view`, and you can switch among them with `kubectl config use-context CONTEXT_NAME`.
+
 ### Setup
 
 Assuming you have configured `kubectl` to talk to your Kubernetes cluster, deploying Cluster Insight is a simple matter of invoking `kubectl create`:
