@@ -14,15 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Keeps global system state to be used by concurrent threads.
-"""
+"""Keeps global system state to be used by concurrent threads."""
+
 import collections
 import Queue  # "Queue" was renamed "queue" in Python 3.
-import random
-import sys
 import thread
 import threading
-import types
 
 # local imports
 import constants
@@ -45,41 +42,15 @@ class GlobalState(object):
   You should initialize the GlobalState object before any access it.
   Since GlobalState is a read-only object after initialization, it is
   thread safe.
-
-  The only locking provided by GlobalState is for concurrent logging
-  operations. It is neede because GlobalState typically keeps a reference
-  to Flask's logger. I have no idea whether the Flask logger supports
-  concurrent operations.
-
-  Direct logging via the 'logging' package does not seem to work under
-  Flask.
   """
 
   def __init__(self):
     """Initialize internal state."""
-    self._testing = False
-    self._docker_port = constants.DOCKER_PORT
-    self._num_workers = 0
-
-    # '_logger_lock' protects concurrent logging operations.
-    self._logger_lock = threading.Lock()
-    self._logger = None
-
-    # '_random_lock' protects concurrent calls to get_random_priority().
-    self._random_lock = threading.Lock()
-    self._random_generator = random.Random()
-    self._random_generator.seed(None)  # use system time
-    self._sequence_number = 0
-
     # pointers to various caches.
     self._nodes_cache = None
     self._pods_cache = None
     self._services_cache = None
     self._rcontrollers_cache = None
-    self._containers_cache = None
-    self._images_cache = None
-    self._processes_cache = None
-    self._version_cache = None
 
     # pointers to synchronization constructs.
     self._bounded_semaphore = None
@@ -105,18 +76,7 @@ class GlobalState(object):
     self._rcontrollers_cache = simple_cache.SimpleCache(
         constants.MAX_CACHED_DATA_AGE_SECONDS,
         constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    self._containers_cache = simple_cache.SimpleCache(
-        constants.MAX_CACHED_DATA_AGE_SECONDS,
-        constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    self._images_cache = simple_cache.SimpleCache(
-        constants.MAX_CACHED_DATA_AGE_SECONDS,
-        constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    self._processes_cache = simple_cache.SimpleCache(
-        constants.MAX_CACHED_DATA_AGE_SECONDS,
-        constants.CACHE_DATA_CLEANUP_AGE_SECONDS)
-    # Never delete anything from the _version_cache.
-    self._version_cache = simple_cache.SimpleCache(
-        sys.maxint, sys.maxint)
+
     self._bounded_semaphore = threading.BoundedSemaphore(
         constants.MAX_CONCURRENT_COMPUTE_GRAPH)
 
@@ -132,91 +92,15 @@ class GlobalState(object):
   def get_rcontrollers_cache(self):
     return self._rcontrollers_cache
 
-  def get_containers_cache(self):
-    return self._containers_cache
-
-  def get_images_cache(self):
-    return self._images_cache
-
-  def get_processes_cache(self):
-    return self._processes_cache
-
-  def get_version_cache(self):
-    return self._version_cache
-
   def get_bounded_semaphore(self):
     return self._bounded_semaphore
-
-  def set_testing(self, testing):
-    self._testing = testing
-
-  def get_testing(self):
-    return self._testing
-
-  def set_docker_port(self, port):
-    assert isinstance(port, types.IntType) and port > 0
-    self._docker_port = port
-
-  def get_docker_port(self):
-    return self._docker_port
-
-  def set_num_workers(self, workers):
-    assert isinstance(workers, types.IntType)
-    self._num_workers = workers
-
-  def get_num_workers(self):
-    return self._num_workers
-
-  def get_random_priority(self):
-    """Computes a presudo random priority in production mode.
-
-    When in testing mode, return an increasing sequence number.
-
-    Returns:
-    A pseudo random priority in the range [0, 1000] or an increasing
-    sequence number depending on production/testing mode, respectively.
-    """
-    with self._random_lock:
-      if self._testing:
-        self._sequence_number += 1
-        return self._sequence_number
-      else:
-        return self._random_generator.randint(0, 1000)
-
-  def set_logger(self, logger):
-    with self._logger_lock:
-      self._logger = logger
-
-  def logger_debug(self, *args):
-    with self._logger_lock:
-      self._logger.debug(*args)
-
-  def logger_info(self, *args):
-    with self._logger_lock:
-      self._logger.info(*args)
-
-  def logger_warning(self, *args):
-    with self._logger_lock:
-      self._logger.warning(*args)
-
-  def logger_error(self, *args):
-    with self._logger_lock:
-      self._logger.error(*args)
-
-  def logger_fatal(self, *args):
-    with self._logger_lock:
-      self._logger.fatal(*args)
-
-  def logger_exception(self, *args):
-    with self._logger_lock:
-      self._logger.exception(*args)
 
   def get_relations_to_timestamps(self):
     with self._relations_lock:
       return self._relations_to_timestamps
 
   def set_relations_to_timestamps(self, v):
-    assert isinstance(v, types.DictType)
+    assert isinstance(v, dict)
     with self._relations_lock:
       self._relations_to_timestamps = v
 
@@ -231,9 +115,9 @@ class GlobalState(object):
       url_or_fname: the URL or file name of the operation.
       elapsed_seconds: the elapsed time of the operation.
     """
-    assert isinstance(start_time, types.FloatType)
+    assert isinstance(start_time, float)
     assert utilities.valid_string(url_or_fname)
-    assert isinstance(elapsed_seconds, types.FloatType)
+    assert isinstance(elapsed_seconds, float)
 
     # If the queue is too large, remove some items until it contains less
     # than constants.MAX_ELAPSED_QUEUE_SIZE elements.

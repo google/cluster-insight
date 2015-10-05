@@ -15,13 +15,12 @@
 # limitations under the License.
 
 
-"""Runs the cluster insight data collector in master mode.
+"""Runs the cluster insight data collector.
 
-Collects context metadata from multiple places and computes a graph from it.
+Collects context metadata from the Kubernetes API and computes a graph from it.
 """
 
 import argparse
-import logging
 import sys
 
 import flask
@@ -31,7 +30,6 @@ from flask_cors import CORS
 import collector_error
 import constants
 import context
-import docker
 import global_state
 import kubernetes
 import utilities
@@ -40,21 +38,6 @@ app = flask.Flask(__name__)
 
 # enable cross-origin resource sharing (CORS) HTTP headers on all routes
 cors = CORS(app)
-
-
-def valid_id(x):
-  """Tests whether 'x' a valid resource identifier.
-
-  A valid resource identifier is either None (which means you refer to every
-  resource) or a non-empty string.
-
-  Args:
-    x: a resource identifier or None.
-
-  Returns:
-    True iff 'x' is a valid resource identifier.
-  """
-  return utilities.valid_optional_string(x)
 
 
 def return_elapsed(gs):
@@ -118,10 +101,6 @@ def get_nodes():
     nodes_list = kubernetes.get_nodes_with_metrics(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = 'kubernetes.get_nodes() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
 
   return flask.jsonify(utilities.make_response(nodes_list, 'resources'))
 
@@ -138,11 +117,6 @@ def get_services():
     services_list = kubernetes.get_services(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = ('kubernetes.get_services() failed with exception %s' %
-           sys.exc_info()[0])
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
 
   return flask.jsonify(utilities.make_response(services_list, 'resources'))
 
@@ -159,11 +133,6 @@ def get_rcontrollers():
     rcontrollers_list = kubernetes.get_rcontrollers(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = ('kubernetes.get_rcontrollers() failed with exception %s' %
-           sys.exc_info()[0])
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
 
   return flask.jsonify(utilities.make_response(rcontrollers_list, 'resources'))
 
@@ -177,99 +146,11 @@ def get_pods():
   """
   gs = app.context_graph_global_state
   try:
-    pods_list = kubernetes.get_pods(gs, None)
+    pods_list = kubernetes.get_pods(gs)
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = 'kubernetes.get_pods() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
 
   return flask.jsonify(utilities.make_response(pods_list, 'resources'))
-
-
-@app.route('/cluster/resources/containers', methods=['GET'])
-def get_containers():
-  """Computes the response of the '/cluster/resources/containers' endpoint.
-
-  Returns:
-    The containers of the context graph.
-  """
-  containers = []
-
-  gs = app.context_graph_global_state
-  try:
-    for node in kubernetes.get_nodes(gs):
-      # The node_id is the Docker host name.
-      docker_host = node['id']
-      containers.extend(docker.get_containers_with_metrics(gs, docker_host))
-
-  except collector_error.CollectorError as e:
-    return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = 'get_containers() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
-
-  return flask.jsonify(utilities.make_response(containers, 'resources'))
-
-
-@app.route('/cluster/resources/processes', methods=['GET'])
-def get_processes():
-  """Computes the response of the '/cluster/resources/processes' endpoint.
-
-  Returns:
-    The processes of the context graph.
-  """
-  processes = []
-
-  gs = app.context_graph_global_state
-  try:
-    for node in kubernetes.get_nodes(gs):
-      node_id = node['id']
-      docker_host = node_id
-      for container in docker.get_containers(gs, docker_host):
-        container_id = container['id']
-        processes.extend(docker.get_processes(gs, docker_host, container_id))
-
-  except collector_error.CollectorError as e:
-    return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = 'get_processes() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
-
-  return flask.jsonify(utilities.make_response(processes, 'resources'))
-
-
-@app.route('/cluster/resources/images', methods=['GET'])
-def get_images():
-  """Computes the response of the '/cluster/resources/images' endpoint.
-
-  Returns:
-    The images of the context graph.
-  """
-  gs = app.context_graph_global_state
-
-  # A dictionary from Image ID to wrapped image objects.
-  # If an image appears more than once, keep only its latest value.
-  images_dict = {}
-
-  try:
-    for node in kubernetes.get_nodes(gs):
-      for image in docker.get_images(gs, node['id']):
-        images_dict[image['id']] = image
-
-  except collector_error.CollectorError as e:
-    return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = 'kubernetes.get_images() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
-
-  # The images list is sorted by increasing identifiers.
-  images_list = [images_dict[key] for key in sorted(images_dict.keys())]
-  return flask.jsonify(utilities.make_response(images_list, 'resources'))
 
 
 @app.route('/debug', methods=['GET'])
@@ -284,11 +165,6 @@ def get_debug():
     return context.compute_graph(gs, 'dot')
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = ('compute_graph(\"dot\") failed with exception %s' %
-           sys.exc_info()[0])
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
 
 
 @app.route('/cluster/resources', methods=['GET'])
@@ -304,11 +180,6 @@ def get_resources():
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = ('compute_graph(\"resources\") failed with exception %s' %
-           sys.exc_info()[0])
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
 
 
 @app.route('/cluster', methods=['GET'])
@@ -324,56 +195,6 @@ def get_cluster():
     return flask.jsonify(response)
   except collector_error.CollectorError as e:
     return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = ('compute_graph(\"context_graph\") failed with exception %s' %
-           sys.exc_info()[0])
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
-
-
-@app.route('/version', methods=['GET'])
-def get_version():
-  """Computes the response of the '/version' endpoint.
-
-  Returns:
-    The value of the docker.get_version() or an error message.
-  """
-  gs = app.context_graph_global_state
-  try:
-    version = docker.get_version(gs)
-    return flask.jsonify(utilities.make_response(version, 'version'))
-  except collector_error.CollectorError as e:
-    return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = 'get_version() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
-
-
-@app.route('/minions_status', methods=['GET'])
-def get_minions():
-  """Computes the response of the '/minions_status' endpoint.
-
-  Returns:
-  A dictionary from node names to the status of their minion collectors
-  or an error message.
-  """
-  gs = app.context_graph_global_state
-  minions_status = {}
-  try:
-    for node in kubernetes.get_nodes(gs):
-      assert utilities.is_wrapped_object(node, 'Node')
-      docker_host = node['id']
-      minions_status[docker_host] = docker.get_minion_status(gs, docker_host)
-
-  except collector_error.CollectorError as e:
-    return flask.jsonify(utilities.make_error(str(e)))
-  except:
-    msg = 'get_minions_status() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
-
-  return flask.jsonify(utilities.make_response(minions_status, 'minionsStatus'))
 
 
 @app.route('/elapsed', methods=['GET'])
@@ -382,18 +203,13 @@ def get_elapsed():
 
   Returns:
   A successful response containing the list of elapsed time records of the
-  most recent Kubernetes and Docker access operations since the previous
-  call to the '/elapsed' endpoint. Never returns more than
-  constants.MAX_ELAPSED_QUEUE_SIZE elapsed time records.
+  most recent Kubernetes API invocations since the previous call to the
+  '/elapsed' endpoint. Never returns more than constants.MAX_ELAPSED_QUEUE_SIZE
+  elapsed time records.
   """
   gs = app.context_graph_global_state
-  try:
-    result = return_elapsed(gs)
-    return flask.jsonify(utilities.make_response(result, 'elapsed'))
-  except:
-    msg = 'get_elapsed() failed with exception %s' % sys.exc_info()[0]
-    app.logger.exception(msg)
-    return flask.jsonify(utilities.make_error(msg))
+  result = return_elapsed(gs)
+  return flask.jsonify(utilities.make_response(result, 'elapsed'))
 
 
 @app.route('/healthz', methods=['GET'])
@@ -417,22 +233,10 @@ def main():
   parser.add_argument('-p', '--port', action='store', type=int,
                       default=constants.DATA_COLLECTOR_PORT,
                       help='data collector port number [default=%(default)d]')
-  parser.add_argument('--docker_port', action='store', type=int,
-                      default=constants.DOCKER_PORT,
-                      help='Docker port number [default=%(default)d]')
-  parser.add_argument('-w', '--workers', action='store', type=int,
-                      default=0,
-                      help=('number of concurrent workers. A zero or a '
-                            'negative value denotes an automatic calculation '
-                            'of this number. [default=%(default)d]'))
   args = parser.parse_args()
 
-  app.logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
   g_state = global_state.GlobalState()
   g_state.init_caches_and_synchronization()
-  g_state.set_logger(app.logger)
-  g_state.set_docker_port(args.docker_port)
-  g_state.set_num_workers(args.workers)
   app.context_graph_global_state = g_state
 
   app.run(host=args.host, port=args.port, debug=args.debug)

@@ -89,12 +89,12 @@ class SimpleCache(object):
   """
 
   def __init__(self, max_data_age_seconds, data_cleanup_age_seconds):
-    assert (isinstance(max_data_age_seconds, types.IntType) or
-            isinstance(max_data_age_seconds, types.LongType) or
-            isinstance(max_data_age_seconds, types.FloatType))
-    assert (isinstance(data_cleanup_age_seconds, types.IntType) or
-            isinstance(data_cleanup_age_seconds, types.LongType) or
-            isinstance(data_cleanup_age_seconds, types.FloatType))
+    assert (isinstance(max_data_age_seconds, int) or
+            isinstance(max_data_age_seconds, long) or
+            isinstance(max_data_age_seconds, float))
+    assert (isinstance(data_cleanup_age_seconds, int) or
+            isinstance(data_cleanup_age_seconds, long) or
+            isinstance(data_cleanup_age_seconds, float))
     assert max_data_age_seconds >= 0
     assert data_cleanup_age_seconds >= 0
     assert data_cleanup_age_seconds >= max_data_age_seconds
@@ -116,7 +116,7 @@ class SimpleCache(object):
     Args:
       now: current time in seconds since the Epoch.
     """
-    assert isinstance(now, types.FloatType)
+    assert isinstance(now, float)
     threshold = now - self._data_cleanup_age_seconds
     # Scan the cache using a list of keys instead of iterating on the cache
     # directly because we are deleting elements from the cache while iterating.
@@ -142,7 +142,7 @@ class SimpleCache(object):
     returns the tuple (None, None).
     """
     assert isinstance(label, types.StringTypes)
-    assert (now is None) or isinstance(now, types.FloatType)
+    assert (now is None) or isinstance(now, float)
 
     self._lock.acquire()
     ts_seconds = time.time() if now is None else now
@@ -189,7 +189,7 @@ class SimpleCache(object):
     assert isinstance(label, types.StringTypes)
     assert value is not None
     assert ((update_timestamp is None) or
-            isinstance(update_timestamp, types.FloatType))
+            isinstance(update_timestamp, float))
 
     self._lock.acquire()
     # Cleanup only when inserting new values into the cache in order to

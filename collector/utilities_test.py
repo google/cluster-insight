@@ -16,13 +16,9 @@
 
 """Tests for collector/utilities.py."""
 
-# global imports
-import json
 import time
-import types
 import unittest
 
-# local imports
 import utilities
 
 CONTAINER = {
@@ -34,17 +30,6 @@ CONTAINER = {
         'Id': 'deadbeef',
         'Image': '01234567',
         'Name': '/k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default'
-    },
-    'timestamp': '2015-05-29T18:42:52.217499',
-    'type': 'Container'
-}
-
-ANOTHER_CONTAINER = {
-    'id': 'cluster-insight-deadbeef',
-    'properties': {
-        'Id': u'deadbeef',
-        'Image': u'01234567',
-        'Name': u'/cluster-insight'
     },
     'timestamp': '2015-05-29T18:42:52.217499',
     'type': 'Container'
@@ -75,106 +60,6 @@ PARENT_POD = {
 
 
 class TestUtilities(unittest.TestCase):
-
-  def test_node_id_to_host_name(self):
-    """Tests node_id_to_host_name()."""
-    self.assertEqual(
-        'k8s-guestbook-node-1',
-        utilities.node_id_to_host_name(
-            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        'k8s-guestbook-node-1',
-        utilities.node_id_to_host_name('k8s-guestbook-node-1'))
-    self.assertEqual(
-        'kubernetes-minion-dlc9',
-        utilities.node_id_to_host_name(
-            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
-            'internal'))
-    self.assertEqual(
-        'k8s-guestbook-node-1',
-        utilities.node_id_to_host_name('Node:k8s-guestbook-node-1'))
-    with self.assertRaises(AssertionError):
-      utilities.node_id_to_host_name('')
-    with self.assertRaises(ValueError):
-      utilities.node_id_to_host_name('x.y.z.w')
-    with self.assertRaises(ValueError):
-      utilities.node_id_to_host_name('Node:x.y.z.w')
-    with self.assertRaises(ValueError):
-      utilities.node_id_to_host_name('Node:')
-
-  def test_node_id_to_project_id(self):
-    """Tests node_id_to_project_id()."""
-    self.assertEqual(
-        'rising-apricot-840',
-        utilities.node_id_to_project_id(
-            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        'rising-apricot-840',
-        utilities.node_id_to_project_id(
-            'Node:k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        '_unknown_',
-        utilities.node_id_to_project_id('k8s-guestbook-node-1'))
-    self.assertEqual(
-        'spartan-alcove-89517',
-        utilities.node_id_to_project_id(
-            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
-            'internal'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_project_id('x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_project_id('Node:x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_project_id('Node:'))
-    with self.assertRaises(AssertionError):
-      utilities.node_id_to_project_id('')
-
-  def test_node_id_to_cluster_name(self):
-    """Tests node_id_to_cluster_name()."""
-    self.assertEqual(
-        'guestbook',
-        utilities.node_id_to_cluster_name(
-            'k8s-guestbook-node-1.c.rising-apricot-840.internal'))
-    self.assertEqual(
-        'guestbook',
-        utilities.node_id_to_cluster_name('k8s-guestbook-node-1'))
-    self.assertEqual(
-        'guestbook',
-        utilities.node_id_to_cluster_name('Node:k8s-guestbook-node-1'))
-    self.assertEqual(
-        '_unknown_',
-        utilities.node_id_to_cluster_name(
-            'kubernetes-minion-dlc9.c.spartan-alcove-89517.google.com.'
-            'internal'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_cluster_name('x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_cluster_name('Node:x.y.z.w'))
-    self.assertEqual(
-        '_unknown_', utilities.node_id_to_cluster_name('Node:'))
-    with self.assertRaises(AssertionError):
-      utilities.node_id_to_cluster_name('')
-
-  def test_container_to_pod(self):
-    """Tests the operation of utilities.get_parent_pod_id()."""
-    f = open('testdata/containers.output.json')
-    containers_blob = json.loads(f.read())
-    f.close()
-
-    assert isinstance(containers_blob.get('resources'), types.ListType)
-    pod_ids_list = []
-    for container in containers_blob['resources']:
-      pod_id = utilities.get_parent_pod_id(container)
-      pod_ids_list.append(pod_id)
-
-    # One of the contains has no parent pod.
-    self.assertEqual(
-        ['guestbook-controller-14zj2',
-         'redis-master',
-         'guestbook-controller-myab8',
-         None,
-         'redis-worker-controller-4qg33'],
-        pod_ids_list)
 
   def test_timeless_json_hash(self):
     """Tests timeless_json_hash() with multiple similar and dissimilar objects.
@@ -227,12 +112,6 @@ class TestUtilities(unittest.TestCase):
     self.assertTrue(utilities.timeless_json_hash(wrapped_a1) !=
                     utilities.timeless_json_hash(wrapped_b1))
 
-  def test_get_short_container_name(self):
-    """Tests get_short_container_name()."""
-    self.assertEqual(
-        'php-redis',
-        utilities.get_short_container_name(CONTAINER, PARENT_POD))
-
   def test_make_response(self):
     """Tests make_response()."""
     # The timestamp of the first response is the current time.
@@ -269,53 +148,6 @@ class TestUtilities(unittest.TestCase):
     self.assertFalse(utilities.is_wrapped_object({}, 'Pod'))
     self.assertFalse(utilities.is_wrapped_object(None))
     self.assertFalse(utilities.is_wrapped_object('hello, world'))
-
-  def test_contains_long_hex_number(self):
-    """Tests contains_long_hex_number()."""
-    self.assertFalse(utilities.contains_long_hex_number(''))
-    self.assertFalse(utilities.contains_long_hex_number('cluster-insight'))
-    self.assertFalse(utilities.contains_long_hex_number('abc-123'))
-    self.assertFalse(utilities.contains_long_hex_number(u'hello01234567'))
-    self.assertTrue(utilities.contains_long_hex_number(u'hello.01234567'))
-    self.assertTrue(utilities.contains_long_hex_number(
-        'k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_'
-        'f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8'))
-
-  def test_get_container_name(self):
-    """Tests get_container_name()."""
-    with self.assertRaises(AssertionError):
-      utilities.get_container_name(None)
-    with self.assertRaises(AssertionError):
-      utilities.get_container_name({})
-    self.assertEqual(
-        'k8s_php-redis.526c9b3e_guestbook-controller-14zj2_default',
-        utilities.get_container_name(CONTAINER))
-    self.assertEqual(
-        'cluster-insight',
-        utilities.get_container_name(ANOTHER_CONTAINER))
-
-  def test_container_id_to_fname(self):
-    """Tests container_id_to_fname()."""
-    self.assertEqual(
-        'k8s-guestbook-node-3-container-8dcdfec8',
-        utilities.container_id_to_fname(
-            'k8s-guestbook-node-3.c.rising-apricot-840.internal',
-            'container',
-            'k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_'
-            'f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8'))
-    self.assertEqual(
-        'k8s-guestbook-node-3-container-cluster-insight',
-        utilities.container_id_to_fname(
-            'k8s-guestbook-node-3.c.rising-apricot-840.internal',
-            'container',
-            'cluster-insight'))
-    self.assertEqual(
-        'k8s-guestbook-node-3-processes-8dcdfec8',
-        utilities.container_id_to_fname(
-            'k8s-guestbook-node-3',
-            'processes',
-            'k8s_php-redis.b317029a_guestbook-controller-ls6k1.default.api_'
-            'f991d53e-b949-11e4-8246-42010af0c3dd_8dcdfec8'))
 
 
 if __name__ == '__main__':

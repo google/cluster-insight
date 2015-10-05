@@ -25,7 +25,6 @@ https://github.com/GoogleCloudPlatform/heapster/issues/241.
 
 # global imports
 import copy
-import types
 
 # local imports
 import utilities
@@ -70,9 +69,8 @@ def _get_container_labels(container, parent_pod):
   if not utilities.valid_string(hostname):
     return None
 
-  short_container_name = utilities.get_short_container_name(
-      container, parent_pod)
-
+  short_container_name = utilities.get_attribute(
+      container, ['properties', 'metadata', 'name'])
   if not utilities.valid_string(short_container_name):
     return None
 
@@ -107,11 +105,10 @@ def _get_node_labels(node):
   }
 
 
-def _make_gcm_metrics(project_id, labels_dict):
-  """Generate a descriptor of GCM metrics from 'project_id' and 'labels_dict'.
+def _make_gcm_metrics(labels_dict):
+  """Generate a descriptor of GCM metrics from 'labels_dict'.
 
   Args:
-    project_id: the project ID
     labels_dict: the key/value pairs that identify all metrics of the
     current resource.
 
@@ -132,93 +129,52 @@ def _make_gcm_metrics(project_id, labels_dict):
     }
   }
   """
-  if labels_dict is None:
-    return None
-
-  assert utilities.valid_string(project_id)
-  assert isinstance(labels_dict, types.DictType)
-
   if not labels_dict:
-    # an empty dictionary
     return None
+
+  assert isinstance(labels_dict, dict)
 
   return {'gcm': {
       'names': copy.deepcopy(METRIC_NAMES),
-      'project': project_id,
+      'project': '_unknown_',
       'labels': copy.deepcopy(labels_dict),
       'labels_prefix': METRIC_PREFIX + 'label/'
   }}
 
 
-def annotate_container_error(container, message):
-  """Annotate the given container with an error message in lieu of metrics.
-
-  Args:
-    container: the container object to annotate.
-    message: a message explaining why this container was not annotated with
-      metrics.
-
-  Raises:
-    AssertionError: if the input arguments are invalid.
-  """
-  assert utilities.is_wrapped_object(container, 'Container')
-  assert utilities.valid_string(message)
-  if container.get('annotations') is None:
-    container['annotations'] = {}
-  container['annotations']['metrics'] = {'gcmError': message}
-
-
-def annotate_container(project_id, container, parent_pod):
+def annotate_container(container, parent_pod):
   """Annotate the given container with Heapster GCM metric information.
 
   Args:
-    project_id: the project ID
     container: the container object to annotate.
     parent_pod: the parent pod of 'container'.
 
   Raises:
-    AssertionError: if the input arguments are invalid or if
-    'parent_pod' is not the parent of 'container'
+    AssertionError: if the input arguments are invalid
   """
-  assert utilities.valid_string(project_id)
   assert utilities.is_wrapped_object(container, 'Container')
   assert utilities.is_wrapped_object(parent_pod, 'Pod')
-  parent_name = utilities.get_attribute(
-      container, ['properties', 'Config', 'Hostname'])
-  assert utilities.valid_string(parent_name)
-  pod_name = utilities.get_attribute(
-      parent_pod, ['properties', 'metadata', 'name'])
-  assert utilities.valid_string(pod_name)
 
-  # The 'parent_name' value is truncated to the first 64 characters.
-  # Thus it must be the prefix of the full pod name.
-  assert pod_name.startswith(parent_name)
-
-  m = _make_gcm_metrics(
-      project_id, _get_container_labels(container, parent_pod))
-  if m is None:
-    return
-  if container.get('annotations') is None:
-    container['annotations'] = {}
-  container['annotations']['metrics'] = m
+  m = _make_gcm_metrics(_get_container_labels(container, parent_pod))
+  if m is not None:
+    if 'annotations' not in container:
+      container['annotations'] = {}
+    container['annotations']['metrics'] = m
 
 
-def annotate_node(project_id, node):
+def annotate_node(node):
   """Annotate the given node with Heapster GCM metric information.
 
   Args:
-    project_id: the project ID
     node: the node object to annotate.
 
   Raises:
     AssertionError: if the input argument is invalid.
   """
-  assert utilities.valid_string(project_id)
   assert utilities.is_wrapped_object(node, 'Node')
 
-  m = _make_gcm_metrics(project_id, _get_node_labels(node))
-  if m is None:
-    return
-  if node.get('annotations') is None:
-    node['annotations'] = {}
-  node['annotations']['metrics'] = m
+  m = _make_gcm_metrics(_get_node_labels(node))
+  if m is not None:
+    if 'annotations' not in node:
+      node['annotations'] = {}
+    node['annotations']['metrics'] = m

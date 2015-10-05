@@ -17,22 +17,12 @@
 
 """Computes a context graph from raw context metadata.
 
-The raw context metadata is gathered from a Kubernetes master and the Docker
-daemons of its nodes.
-
-The context graph is computed by a pool of concurrent worker threads.
-The purpose of the worker threads is to reduce the elapsed time by
-performing independent operations concurrently.
-
-We store the outstanding operations in a random order in the input
-work queue in order to prevent long trains of accessess to the same
-system component (such as the Kubernetes master or a Docker controller
-on a minion node).
+The raw context metadata is gathered from the Kubernetes API.
 
 There is no need to verify the existence of attributes in all wrapped
 objects (the output of utilities.wrap_object()), because we assume that
 the object was already verified by the corresponding get_xxx() routine
-in kubernetes.py or docker.py.
+in kubernetes.py.
 
 The get_xxx() routine should have skipped any invalid object and not
 return it to the caller.
@@ -48,17 +38,14 @@ context.compute_graph(gs, output_format)
 """
 
 import copy
-import Queue  # "Queue" was renamed "queue" in Python 3.
 import re
-import sys
 import threading
 import time
 import types
 
-# local imports
+from flask import current_app as app
+
 import collector_error
-import constants
-import docker
 import global_state
 import kubernetes
 import metrics
@@ -83,12 +70,10 @@ class ContextGraph(object):
         'ReplicationController': 'purple',
         'Pod': 'blue',
         'Container': 'green',
-        'Process': 'gold',
         'Image': 'maroon'
     }
     self._context_resources = []
     self._context_relations = []
-    self._version = None
     self._id_set = set()
     self._previous_relations_to_timestamps = {}
     self._current_relations_to_timestamps = {}
@@ -98,7 +83,7 @@ class ContextGraph(object):
       return self._current_relations_to_timestamps
 
   def set_relations_to_timestamps(self, d):
-    assert isinstance(d, types.DictType)
+    assert isinstance(d, dict)
     with self._lock:
       self._previous_relations_to_timestamps = d
 
@@ -109,7 +94,7 @@ class ContextGraph(object):
         annotations, ['label']))
     assert utilities.valid_string(rtype)
     assert utilities.valid_string(timestamp)
-    assert isinstance(obj, types.DictType)
+    assert isinstance(obj, dict)
 
     with self._lock:
       # It is possible that the same resource is referenced by more than one
@@ -125,9 +110,6 @@ class ContextGraph(object):
           'annotations': copy.deepcopy(annotations)
       }
 
-      if self._version is not None:
-        resource['annotations']['createdBy'] = self._version
-
       resource['properties'] = obj
 
       self._context_resources.append(resource)
@@ -138,7 +120,7 @@ class ContextGraph(object):
     assert utilities.valid_string(source) and utilities.valid_string(target)
     assert utilities.valid_string(kind)
     assert utilities.valid_optional_string(label)
-    assert (metadata is None) or isinstance(metadata, types.DictType)
+    assert (metadata is None) or isinstance(metadata, dict)
 
     with self._lock:
       # The timestamp of the relation should be inherited from the previous
@@ -161,17 +143,9 @@ class ContextGraph(object):
       relation['annotations'] = {}
       if metadata is not None:
         relation['annotations']['metadata'] = copy.deep_copy(metadata)
-
       relation['annotations']['label'] = label if label is not None else kind
-      if self._version is not None:
-        relation['annotations']['createdBy'] = self._version
 
       self._context_relations.append(relation)
-
-  def set_version(self, version):
-    assert utilities.valid_string(version)
-    with self._lock:
-      self._version = version
 
   def set_title(self, title):
     """Sets the title of the context graph."""
@@ -211,7 +185,7 @@ class ContextGraph(object):
           'success': True,
           'timestamp': self.max_resources_and_relations_timestamp(),
           'resources': self._context_resources,
-          'relations': self._context_relations
+          'relations': self._context_relations,
       }
       return context_graph
 
@@ -228,7 +202,7 @@ class ContextGraph(object):
   def best_label(self, obj):
     """Returns the best human-readable label of the given object.
 
-    We perfer the "alternateLabel" over "label" and a string not composed
+    We prefer the "alternateLabel" over "label" and a string not composed
     of only hexadecimal digits over hexadecimal digits.
 
     This function must be called when self._lock is held.
@@ -280,10 +254,12 @@ class ContextGraph(object):
       graph_data = 'digraph{' + ';'.join(graph_items) + '}'
       return graph_data
 
-  def dump(self, gs, output_format):
+  def dump(self, output_format):
     """Returns the context graph in the specified format."""
-    assert isinstance(gs, global_state.GlobalState)
     assert isinstance(output_format, types.StringTypes)
+
+    self._context_resources.sort(key=lambda x: x['id'])
+    self._context_relations.sort(key=lambda x: (x['source'], x['target']))
 
     if output_format == 'dot':
       return self.to_dot_graph()
@@ -293,28 +269,11 @@ class ContextGraph(object):
       return self.to_context_resources()
     else:
       msg = 'invalid dump() output_format: %s' % output_format
-      gs.logger_error(msg)
+      app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
 
-def _make_error(error_message):
-  """Returns an error response in the Cluster-Insight context graph format.
-
-  Args:
-    error_message: the error message describing the failure.
-
-  Returns:
-    An error response in the cluster-insight context graph format.
-  """
-  assert isinstance(error_message, types.StringTypes) and error_message
-  return {'success': False,
-          'timestamp': utilities.now(),
-          'error_message': error_message}
-
-
-def _do_compute_node(gs, input_queue, cluster_guid, node, g):
-  assert isinstance(gs, global_state.GlobalState)
-  assert isinstance(input_queue, Queue.PriorityQueue)
+def _do_compute_node(cluster_guid, node, g):
   assert utilities.valid_string(cluster_guid)
   assert utilities.is_wrapped_object(node, 'Node')
   assert isinstance(g, ContextGraph)
@@ -324,58 +283,10 @@ def _do_compute_node(gs, input_queue, cluster_guid, node, g):
   g.add_resource(node_guid, node['annotations'], 'Node', node['timestamp'],
                  node['properties'])
   g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
-  # Pods in a Node
-  pod_ids = set()
-  docker_hosts = set()
-
-  # Process pods sequentially because calls to _do_compute_pod() do not call
-  # lower-level services or wait.
-  for pod in kubernetes.get_pods(gs, node_id):
-    _do_compute_pod(gs, cluster_guid, node_guid, pod, g)
-    pod_ids.add(pod['id'])
-    # pod.properties.spec.nodeName may be missing if the pod is waiting.
-    docker_host = utilities.get_attribute(
-        pod, ['properties', 'spec', 'nodeName'])
-    if utilities.valid_string(docker_host):
-      docker_hosts.add(docker_host)
-
-  # 'docker_hosts' should contain a single Docker host, because all of
-  # the pods run in the same Node. However, if it is not the case, we
-  # cannot fix the situation, so we just log an error message and continue.
-  if len(docker_hosts) != 1:
-    gs.logger_error(
-        'corrupt pod data in node=%s: '
-        '"docker_hosts" is empty or contains more than one entry: %s',
-        node_guid, str(docker_hosts))
-
-  # Process containers concurrently.
-  for docker_host in docker_hosts:
-    for container in docker.get_containers_with_metrics(gs, docker_host):
-      parent_pod_id = utilities.get_parent_pod_id(container)
-      if utilities.valid_string(parent_pod_id) and (parent_pod_id in pod_ids):
-        # This container is contained in a pod.
-        parent_guid = 'Pod:' + parent_pod_id
-      else:
-        # This container is not contained in a pod.
-        parent_guid = node_guid
-
-      # Do not compute the containers by worker threads in test mode
-      # because the order of the output will be different than the golden
-      # files due to the effects of queuing the work.
-      if gs.get_testing():
-        _do_compute_container(gs, docker_host, parent_guid, container, g)
-      else:
-        input_queue.put((
-            gs.get_random_priority(),
-            _do_compute_container,
-            {'gs': gs, 'docker_host': docker_host, 'parent_guid': parent_guid,
-             'container': container, 'g': g}))
 
 
-def _do_compute_pod(gs, cluster_guid, node_guid, pod, g):
-  assert isinstance(gs, global_state.GlobalState)
+def _do_compute_pod(cluster_guid, pod, g):
   assert utilities.valid_string(cluster_guid)
-  assert utilities.valid_string(node_guid)
   assert utilities.is_wrapped_object(pod, 'Pod')
   assert isinstance(g, ContextGraph)
 
@@ -386,25 +297,21 @@ def _do_compute_pod(gs, cluster_guid, node_guid, pod, g):
 
   # pod.properties.spec.nodeName may be missing if the pod is waiting
   # (not running yet).
-  docker_host = utilities.get_attribute(
-      pod, ['properties', 'spec', 'nodeName'])
-  if utilities.valid_string(docker_host):
+  node_id = utilities.get_attribute(pod, ['properties', 'spec', 'nodeName'])
+  if utilities.valid_string(node_id):
     # Pod is running.
-    if node_guid == ('Node:' + docker_host):
-      g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
-    else:
-      msg = ('Docker host (pod.properties.spec.nodeName)=%s '
-             'not matching node ID=%s' % (docker_host, node_guid))
-      gs.logger_error(msg)
-      raise collector_error.CollectorError(msg)
+    node_guid = 'Node:' + node_id
+    g.add_relation(node_guid, pod_guid, 'runs')  # Node runs Pod
   else:
     # Pod is not running.
     g.add_relation(cluster_guid, pod_guid, 'contains')  # Cluster contains Pod
 
+  for container in kubernetes.get_containers_from_pod(pod):
+    metrics.annotate_container(container, pod)
+    _do_compute_container(pod_guid, container, g)
 
-def _do_compute_container(gs, docker_host, parent_guid, container, g):
-  assert isinstance(gs, global_state.GlobalState)
-  assert utilities.valid_string(docker_host)
+
+def _do_compute_container(parent_guid, container, g):
   assert utilities.valid_string(parent_guid)
   assert utilities.is_wrapped_object(container, 'Container')
   assert isinstance(g, ContextGraph)
@@ -416,26 +323,18 @@ def _do_compute_container(gs, docker_host, parent_guid, container, g):
                  'Container', container['timestamp'],
                  container['properties'])
 
-  # The parent (Pod or Node) contains Container.
+  # The parent Pod contains Container.
   g.add_relation(parent_guid, container_guid, 'contains')
 
-  # Processes in a Container
-  for process in docker.get_processes(gs, docker_host, container_id):
-    process_id = process['id']
-    process_guid = 'Process:' + process_id
-    g.add_resource(process_guid, process['annotations'],
-                   'Process', process['timestamp'], process['properties'])
-
-    # Container contains Process
-    g.add_relation(container_guid, process_guid, 'contains')
-
-  image = docker.get_image(gs, docker_host, container)
-  if image is None:
-    # image not found
-    return
-
+  image = kubernetes.get_image_from_container(container)
   image_guid = 'Image:' + image['id']
+
   # Add the image to the graph only if we have not added it before.
+  #
+  # Different containers might reference the same image using different
+  # names. Unfortunately, only the first name encountered is recorded.
+  # TODO(rimey): Record the other names as well, and choose the primary
+  # name deterministically.
   g.add_resource(image_guid, image['annotations'], 'Image',
                  image['timestamp'], image['properties'])
 
@@ -462,17 +361,15 @@ def _do_compute_service(gs, cluster_guid, service, g):
   selector = utilities.get_attribute(
       service, ['properties', 'spec', 'selector'])
   if selector:
-    if not isinstance(selector, types.DictType):
+    if not isinstance(selector, dict):
       msg = 'Service id=%s has an invalid "selector" value' % service_id
-      gs.logger_error(msg)
+      app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     for pod in kubernetes.get_selected_pods(gs, selector):
       pod_guid = 'Pod:' + pod['id']
       # Service loadBalances Pod
       g.add_relation(service_guid, pod_guid, 'loadBalances')
-  else:
-    gs.logger_error('Service id=%s has no "selector" attribute', service_id)
 
 
 def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
@@ -496,10 +393,10 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
   selector = utilities.get_attribute(
       rcontroller, ['properties', 'spec', 'selector'])
   if selector:
-    if not isinstance(selector, types.DictType):
+    if not isinstance(selector, dict):
       msg = ('Rcontroller id=%s has an invalid "replicaSelector" value' %
              rcontroller_id)
-      gs.logger_error(msg)
+      app.logger.error(msg)
       raise collector_error.CollectorError(msg)
 
     for pod in kubernetes.get_selected_pods(gs, selector):
@@ -507,23 +404,16 @@ def _do_compute_rcontroller(gs, cluster_guid, rcontroller, g):
       # Rcontroller monitors Pod
       g.add_relation(rcontroller_guid, pod_guid, 'monitors')
   else:
-    gs.logger_error('Rcontroller id=%s has no "spec.selector" attribute',
-                    rcontroller_id)
+    app.logger.error('Rcontroller id=%s has no "spec.selector" attribute',
+                     rcontroller_id)
 
 
-def _do_compute_master_pods(gs, cluster_guid, nodes_list, oldest_timestamp, g):
-  """Adds pods running on the master node to the graph.
+def _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g):
+  """Adds nodes not in the node list but running pods to the graph.
 
-  These pods do not have a valid parent node, because the nodes list
-  does not include the master node.
-
-  This routine adds a dummy master node, and then adds the pods running
-  on the master node to the graph. It does not add information about
-  containers, processes, or images of these nodes, because there is no
-  minion collector running on the master node.
-
-  Note that in some configurations (for example, GKE), there is no
-  master node.
+  This handles the case when there are pods running on the master node,
+  in which case we add a dummy node representing the master to the graph.
+  The nodes list does not include the master.
 
   Args:
     gs: the global state.
@@ -534,21 +424,18 @@ def _do_compute_master_pods(gs, cluster_guid, nodes_list, oldest_timestamp, g):
   """
   assert isinstance(gs, global_state.GlobalState)
   assert utilities.valid_string(cluster_guid)
-  assert isinstance(nodes_list, types.ListType)
+  assert isinstance(nodes_list, list)
   assert utilities.valid_string(oldest_timestamp)
   assert isinstance(g, ContextGraph)
 
   # Compute the set of known Node names.
   known_node_ids = set()
-  project_id = '_unknown_'
   for node in nodes_list:
     assert utilities.is_wrapped_object(node, 'Node')
     known_node_ids.add(node['id'])
-    project_id = utilities.node_id_to_project_id(node['id'])
 
   # Compute the set of Nodes referenced by pods but not in the known set.
   # The set of unknown node names may be empty.
-  assert utilities.valid_string(project_id)
   missing_node_ids = set()
   for pod in kubernetes.get_pods(gs):
     assert utilities.is_wrapped_object(pod, 'Pod')
@@ -564,33 +451,24 @@ def _do_compute_master_pods(gs, cluster_guid, nodes_list, oldest_timestamp, g):
     # Found a pod that does not belong to any of the known nodes.
     missing_node_ids.add(parent_node_id)
 
-  # Process the pods in each of the missing nodes.
+  # Process the missing nodes.
   for node_id in missing_node_ids:
     # Create a dummy node object just as a placeholder for metric
     # annotations.
-    node = utilities.wrap_object(
-        {}, 'Node', node_id, time.time(),
-        label=utilities.node_id_to_host_name(node_id))
+    node = utilities.wrap_object({}, 'Node', node_id, time.time())
 
-    # The project_id may be '_unknown_'. This is not a big
-    # deal, since the aggregator knows the project ID.
-    metrics.annotate_node(project_id, node)
+    metrics.annotate_node(node)
     node_guid = 'Node:' + node_id
     g.add_resource(node_guid, node['annotations'], 'Node', oldest_timestamp, {})
     g.add_relation(cluster_guid, node_guid, 'contains')  # Cluster contains Node
-    for pod in kubernetes.get_pods(gs, node_id):
-      _do_compute_pod(gs, cluster_guid, node_guid, pod, g)
 
 
-def _do_compute_graph(gs, input_queue, output_queue, output_format):
+def _do_compute_graph(gs, output_format):
   """Returns the context graph in the specified format.
 
   Args:
     gs: the global state.
-    input_queue: the input queue for the worker threads.
-    output_queue: output queue containing exceptions data from the worker
-        threads.
-    output_format: one of 'graph', 'dot', 'context_graph', or 'resources'.
+    output_format: one of 'dot', 'context_graph', or 'resources'.
 
   Returns:
     A successful response in the specified format.
@@ -599,27 +477,15 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
     CollectorError: inconsistent or invalid graph data.
   """
   assert isinstance(gs, global_state.GlobalState)
-  assert isinstance(input_queue, Queue.PriorityQueue)
-  assert isinstance(output_queue, Queue.Queue)
   assert utilities.valid_string(output_format)
 
   g = ContextGraph()
-  try:
-    version = docker.get_version(gs)
-  except Exception as e:
-    exc_type, value, _ = sys.exc_info()
-    msg = ('get_version() failed with exception %s: %s' %
-           (exc_type, value))
-    gs.logger_error(msg)
-    version = '_unknown_'
-
-  g.set_version(version)
   g.set_relations_to_timestamps(gs.get_relations_to_timestamps())
 
   # Nodes
   nodes_list = kubernetes.get_nodes_with_metrics(gs)
   if not nodes_list:
-    return g.dump(gs, output_format)
+    return g.dump(output_format)
 
   # Find the timestamp of the oldest node. This will be the timestamp of
   # the cluster.
@@ -631,10 +497,9 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
     if node['timestamp'] < oldest_timestamp:
       oldest_timestamp = node['timestamp']
 
-  # Get the cluster name from the first node.
-  # The cluster name is an approximation. It is not a big deal if it
-  # is incorrect, since the aggregator knows the cluster name.
-  cluster_name = utilities.node_id_to_cluster_name(nodes_list[0]['id'])
+  # The cluster name may be available through the Kubernetes API someday.
+  # TODO(rimey): Determine the cluster name.
+  cluster_name = '_unknown_'
   cluster_guid = 'Cluster:' + cluster_name
   g.set_title(cluster_name)
   g.add_resource(cluster_guid, {'label': cluster_name}, 'Cluster',
@@ -642,99 +507,29 @@ def _do_compute_graph(gs, input_queue, output_queue, output_format):
 
   # Nodes
   for node in nodes_list:
-    input_queue.put((
-        gs.get_random_priority(),
-        _do_compute_node,
-        {'gs': gs, 'input_queue': input_queue, 'cluster_guid': cluster_guid,
-         'node': node, 'g': g}))
+    _do_compute_node(cluster_guid, node, g)
+
+  # Pods
+  for pod in kubernetes.get_pods(gs):
+    _do_compute_pod(cluster_guid, pod, g)
 
   # Services
   for service in kubernetes.get_services(gs):
-    input_queue.put((
-        gs.get_random_priority(),
-        _do_compute_service,
-        {'gs': gs, 'cluster_guid': cluster_guid, 'service': service, 'g': g}))
+    _do_compute_service(gs, cluster_guid, service, g)
 
   # ReplicationControllers
-  rcontrollers_list = kubernetes.get_rcontrollers(gs)
-  for rcontroller in rcontrollers_list:
-    input_queue.put((
-        gs.get_random_priority(),
-        _do_compute_rcontroller,
-        {'gs': gs, 'cluster_guid': cluster_guid, 'rcontroller': rcontroller,
-         'g': g}))
+  for rcontroller in kubernetes.get_rcontrollers(gs):
+    _do_compute_rcontroller(gs, cluster_guid, rcontroller, g)
 
-  # Pods running on the master node.
-  input_queue.put((
-      gs.get_random_priority(),
-      _do_compute_master_pods,
-      {'gs': gs, 'cluster_guid': cluster_guid, 'nodes_list': nodes_list,
-       'oldest_timestamp': oldest_timestamp, 'g': g}))
-
-  # Wait until worker threads finished processing all outstanding requests.
-  # Once we return from the join(), all output was generated already.
-  input_queue.join()
-
-  # Convert any exception caught by the worker threads to an exception
-  # raised by the current thread.
-  if not output_queue.empty():
-    msg = output_queue.get_nowait()  # should not fail.
-    gs.logger_error(msg)
-    raise collector_error.CollectorError(msg)
+  # Other nodes, not on the list, such as the Kubernetes master.
+  _do_compute_other_nodes(gs, cluster_guid, nodes_list, oldest_timestamp, g)
 
   # Keep the relations_to_timestamps mapping for next call.
   gs.set_relations_to_timestamps(g.get_relations_to_timestamps())
   g.set_metadata({'timestamp': g.max_resources_and_relations_timestamp()})
 
   # Dump the resulting graph
-  return g.dump(gs, output_format)
-
-
-def worker(gs, input_queue, output_queue):
-  """A worker thread that executes tasks from the input queue.
-
-  The input queue contains tuples of the form:
-  (function, keyword-args dictionary).
-  All exceptions raised during the exection of the function are caught
-  and a textual description of the execption is pushed at the end of the
-  output queue. If the exection of the function does not raise any
-  exception, then nothing is pushed at the end of the output queue.
-
-  The worker thread pulls work from the input queue repeatedly.
-  The worker thread exits only if the tuple it pulls from the input queue
-  contains a function equivalent to None.
-
-  The the entries in the input queue are kept in a random order to prevent
-  long trains of accesses to the same minion node or to the Kubernetes
-  master. Long trains of requests to the same system component are
-  inherently sequential.
-
-  Args:
-    gs: global state.
-    input_queue: input queue containing (priority, function, kwargs) tuples.
-    output_queue: output queue containing exception information
-  """
-  assert isinstance(gs, global_state.GlobalState)
-  assert isinstance(input_queue, Queue.PriorityQueue)
-  assert isinstance(output_queue, Queue.Queue)
-
-  while True:
-    _, func, kwargs = input_queue.get()
-    if func is None:
-      break
-    assert isinstance(kwargs, types.DictType)
-
-    try:
-      func(**kwargs)
-    except collector_error.CollectorError as e:
-      output_queue.put(str(e))
-    except:
-      msg = ('calling %s with arguments %s failed with exception %s' %
-             (str(func), str(kwargs), sys.exc_info()[0]))
-      gs.logger_error(msg)
-      output_queue.put(msg)
-
-    input_queue.task_done()
+  return g.dump(output_format)
 
 
 @utilities.global_state_string_args
@@ -752,45 +547,4 @@ def compute_graph(gs, output_format):
   The context graph in the specified format.
   """
   with gs.get_bounded_semaphore():
-    input_queue = Queue.PriorityQueue()
-    output_queue = Queue.Queue()
-
-    # Compute the number of workers threads to create.
-    if gs.get_testing():
-      nworkers = 1
-    elif gs.get_num_workers() > 0:
-      # no range restrictions.
-      nworkers = gs.get_num_workers()
-    else:
-      # get_nodes() may trigger an exception. It will be handled by
-      # the exception handler in the caller of this routine.
-      nworkers = len(kubernetes.get_nodes(gs))
-      # The number of workers must be in the range
-      # [constants.MIN_CONCURRENT_WORKERS, constants.MAX_CONCURRENT_WORKERS].
-      nworkers = utilities.range_limit(
-          nworkers,
-          constants.MIN_CONCURRENT_WORKERS, constants.MAX_CONCURRENT_WORKERS)
-
-    # Start worker threads
-    gs.logger_info('creating %d worker threads', nworkers)
-    worker_threads = []
-    for _ in range(nworkers):
-      t = threading.Thread(target=worker, args=(gs, input_queue, output_queue))
-      t.daemon = True
-      t.start()
-      worker_threads.append(t)
-
-    # Compute the graph
-    try:
-      result = _do_compute_graph(gs, input_queue, output_queue, output_format)
-    finally:
-      # Cleanup: signal all worker threads to stop and wait for them to
-      # terminate. If we do not stop the threads they may run forever
-      # and constitute a memory leak.
-      for _ in worker_threads:
-        input_queue.put((0, None, None))
-
-      for t in worker_threads:
-        t.join()
-
-  return result
+    return _do_compute_graph(gs, output_format)

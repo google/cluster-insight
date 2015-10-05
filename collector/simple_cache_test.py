@@ -102,7 +102,7 @@ class TestSimpleCache(unittest.TestCase):
     Returns:
     The string 'id' followed by the string representation of the number 'i'.
     """
-    assert isinstance(i, types.IntType)
+    assert isinstance(i, int)
     return {'id': 'id%d' % i}
 
   def test_cleanup(self):
@@ -141,7 +141,7 @@ class TestSimpleCache(unittest.TestCase):
     A dictionary containing 'id', 'timestamp', and 'value' key/value pairs.
     """
     assert isinstance(name, types.StringTypes)
-    assert isinstance(timestamp_seconds, types.FloatType)
+    assert isinstance(timestamp_seconds, float)
     return {'id': name,
             'timestamp': utilities.seconds_to_timestamp(timestamp_seconds),
             'value': value}
@@ -226,7 +226,7 @@ class TestSimpleCache(unittest.TestCase):
     Returns:
     A wrapped Node object with the given 'timestamp' and 'lastHeartbeatTime'.
     """
-    assert isinstance(seconds, (types.IntType, types.LongType, types.FloatType))
+    assert isinstance(seconds, (int, long, float))
     return utilities.wrap_object(
         {'uid': KEY,
          'lastHeartbeatTime': utilities.seconds_to_timestamp(seconds)},
@@ -271,7 +271,7 @@ class TestSimpleCache(unittest.TestCase):
     Returns:
     A wrapped Node object with the given 'timestamp' and 'creationTimestamp'.
     """
-    assert isinstance(seconds, (types.IntType, types.LongType, types.FloatType))
+    assert isinstance(seconds, (int, long, float))
     return utilities.wrap_object(
         {'uid': KEY,
          'creationTimestamp': utilities.seconds_to_timestamp(seconds)},
